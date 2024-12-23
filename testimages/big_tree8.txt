@@ -1,5 +1,5 @@
-libjpeg-turbo note:  This image was extracted from the 8-bit nightshot_iso_100
-image.  The original can be downloaded at the link below.
+libjpeg-turbo note:  This image was extracted from the 8-bit big_tree image.
+The original can be downloaded at the link below.
 
 The New Image Compression Test Set - Jan 2008
 http://www.imagecompression.info/test_images

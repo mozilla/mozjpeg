@@ -288,15 +288,6 @@ API/ABI-compatible with libjpeg v8.  See [README.md](README.md) for more
 information about libjpeg v7 and v8 emulation.
 
 
-### In-Memory Source/Destination Managers
-
-When using libjpeg v6b or v7 API/ABI emulation, add `-DWITH_MEM_SRCDST=0` to
-the CMake command line to build a version of libjpeg-turbo that lacks the
-`jpeg_mem_src()` and `jpeg_mem_dest()` functions.  These functions were not
-part of the original libjpeg v6b and v7 APIs, so removing them ensures strict
-conformance with those APIs.  See [README.md](README.md) for more information.
-
-
 ### Arithmetic Coding Support
 
 Since the patent on arithmetic coding has expired, this functionality has been

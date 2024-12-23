@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2022 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2022-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -55,8 +55,12 @@ void invalid_parameter_handler(const wchar_t *expression,
 
 int main(int argc, char **argv)
 {
+#if !defined(NO_GETENV) || !defined(NO_PUTENV)
   int err;
+#endif
+#ifndef NO_GETENV
   char env[3];
+#endif
 
 #ifdef _MSC_VER
   _set_invalid_parameter_handler(invalid_parameter_handler);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021, 2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -38,7 +38,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   tjhandle handle = NULL;
   unsigned char *dstBuf = NULL, *yuvBuf = NULL;
-  int width = 0, height = 0, jpegSubsamp, jpegColorspace, pfi;
+  int width = 0, height = 0, jpegSubsamp, pfi;
   /* TJPF_RGB-TJPF_BGR share the same code paths, as do TJPF_RGBX-TJPF_XRGB and
      TJPF_RGBA-TJPF_ARGB.  Thus, the pixel formats below should be the minimum
      necessary to achieve full coverage. */
@@ -52,40 +52,50 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   putenv(env);
 #endif
 
-  if ((handle = tjInitDecompress()) == NULL)
+  if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL)
     goto bailout;
 
-  if (tjDecompressHeader3(handle, data, size, &width, &height, &jpegSubsamp,
-                          &jpegColorspace) < 0)
+  if (tj3DecompressHeader(handle, data, size) < 0)
     goto bailout;
+  width = tj3Get(handle, TJPARAM_JPEGWIDTH);
+  height = tj3Get(handle, TJPARAM_JPEGHEIGHT);
+  jpegSubsamp = tj3Get(handle, TJPARAM_SUBSAMP);
 
   /* Ignore 0-pixel images and images larger than 1 Megapixel.  Casting width
      to (uint64_t) prevents integer overflow if width * height > INT_MAX. */
   if (width < 1 || height < 1 || (uint64_t)width * height > 1048576)
     goto bailout;
 
+  tj3Set(handle, TJPARAM_SCANLIMIT, 500);
+
   for (pfi = 0; pfi < NUMPF; pfi++) {
-    int pf = pixelFormats[pfi], flags = TJFLAG_LIMITSCANS, i, sum = 0;
     int w = width, h = height;
+    int pf = pixelFormats[pfi], i, sum = 0;
 
     /* Test non-default decompression options on the first iteration. */
-    if (pfi == 0)
-      flags |= TJFLAG_BOTTOMUP | TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT;
-    /* Test IDCT scaling on the second iteration. */
-    else if (pfi == 1) {
-      w = (width + 3) / 4;
-      h = (height + 3) / 4;
+    if (!tj3Get(handle, TJPARAM_LOSSLESS)) {
+      tj3Set(handle, TJPARAM_BOTTOMUP, pfi == 0);
+      tj3Set(handle, TJPARAM_FASTUPSAMPLE, pfi == 0);
+      tj3Set(handle, TJPARAM_FASTDCT, pfi == 0);
+
+      /* Test IDCT scaling on the second iteration. */
+      if (pfi == 1) {
+        tjscalingfactor sf = { 3, 4 };
+        tj3SetScalingFactor(handle, sf);
+        w = TJSCALED(width, sf);
+        h = TJSCALED(height, sf);
+      } else
+        tj3SetScalingFactor(handle, TJUNSCALED);
     }
 
     if ((dstBuf = (unsigned char *)malloc(w * h * tjPixelSize[pf])) == NULL)
       goto bailout;
     if ((yuvBuf =
-         (unsigned char *)malloc(tjBufSizeYUV2(w, 1, h, jpegSubsamp))) == NULL)
+         (unsigned char *)malloc(tj3YUVBufSize(w, 1, h, jpegSubsamp))) == NULL)
       goto bailout;
 
-    if (tjDecompressToYUV2(handle, data, size, yuvBuf, w, 1, h, flags) == 0 &&
-        tjDecodeYUV(handle, yuvBuf, 1, jpegSubsamp, dstBuf, w, 0, h, pf,
-                    flags) == 0) {
+    if (tj3DecompressToYUV8(handle, data, size, yuvBuf, 1) == 0 &&
+        tj3DecodeYUV8(handle, yuvBuf, 1, dstBuf, w, 0, h, pf) == 0) {
       /* Touch all of the output pixels in order to catch uninitialized reads
          when using MemorySanitizer. */
       for (i = 0; i < w * h * tjPixelSize[pf]; i++)
@@ -107,6 +117,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 bailout:
   free(dstBuf);
   free(yuvBuf);
-  if (handle) tjDestroy(handle);
+  tj3Destroy(handle);
   return 0;
 }

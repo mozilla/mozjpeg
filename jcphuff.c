@@ -3,6 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1995-1997, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2011, 2015, 2018, 2021-2022, D. R. Commander.
  * Copyright (C) 2016, 2018, 2022, Matthieu Darbois.
@@ -21,7 +23,11 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#ifdef WITH_SIMD
 #include "jsimd.h"
+#else
+#include "jchuff.h"             /* Declarations shared with jc*huff.c */
+#endif
 #include <limits.h>
 
 #ifdef HAVE_INTRIN_H
@@ -223,18 +229,22 @@ start_pass_phuff(j_compress_ptr cinfo, boolean gather_statistics)
       entropy->pub.encode_mcu = encode_mcu_DC_first;
     else
       entropy->pub.encode_mcu = encode_mcu_AC_first;
+#ifdef WITH_SIMD
     if (jsimd_can_encode_mcu_AC_first_prepare())
       entropy->AC_first_prepare = jsimd_encode_mcu_AC_first_prepare;
     else
+#endif
       entropy->AC_first_prepare = encode_mcu_AC_first_prepare;
   } else {
     if (is_DC_band)
       entropy->pub.encode_mcu = encode_mcu_DC_refine;
     else {
       entropy->pub.encode_mcu = encode_mcu_AC_refine;
+#ifdef WITH_SIMD
       if (jsimd_can_encode_mcu_AC_refine_prepare())
         entropy->AC_refine_prepare = jsimd_encode_mcu_AC_refine_prepare;
       else
+#endif
         entropy->AC_refine_prepare = encode_mcu_AC_refine_prepare;
       /* AC refinement needs a correction bit buffer */
       if (entropy->bit_buffer == NULL)
@@ -489,6 +499,7 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   JBLOCKROW block;
   jpeg_component_info *compptr;
   ISHIFT_TEMPS
+  int max_coef_bits = cinfo->data_precision + 2;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;
@@ -531,7 +542,7 @@ encode_mcu_DC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
     /* Check for out-of-range coefficient values.
      * Since we're encoding a difference, the range limit is twice as much.
      */
-    if (nbits > MAX_COEF_BITS + 1)
+    if (nbits > max_coef_bits + 1)
       ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
     /* Count/emit the Huffman-coded symbol for the number of bits */
@@ -642,7 +653,7 @@ label \
     /* Find the number of bits needed for the magnitude of the coefficient */ \
     nbits = JPEG_NBITS_NONZERO(temp);  /* there must be at least one 1 bit */ \
     /* Check for out-of-range coefficient values */ \
-    if (nbits > MAX_COEF_BITS) \
+    if (nbits > max_coef_bits) \
       ERREXIT(cinfo, JERR_BAD_DCT_COEF); \
     \
     /* Count/emit Huffman symbol for run length / number of bits */ \
@@ -670,6 +681,7 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   const UJCOEF *cvalue;
   size_t zerobits;
   size_t bits[8 / SIZEOF_SIZE_T];
+  int max_coef_bits = cinfo->data_precision + 2;
 
   entropy->next_output_byte = cinfo->dest->next_output_byte;
   entropy->free_in_buffer = cinfo->dest->free_in_buffer;

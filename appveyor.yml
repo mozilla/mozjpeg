@@ -32,6 +32,8 @@ install:
 
       set MSYSTEM=MINGW32
 
+      bash -c "pacman --noconfirm -S zip"
+
       mklink /d "%ProgramData%\Oracle\Java32" "c:\Program Files (x86)\Java\jdk1.6.0"
 
       git clone --depth=1 https://github.com/libjpeg-turbo/buildscripts.git -b %APPVEYOR_REPO_BRANCH% c:/buildscripts
@@ -67,6 +69,8 @@ build_script:
 
       move c:\ljt.nightly\log-windows.txt .
 
+      zip libjpeg-turbo-installers.zip libjpeg-turbo-*.exe
+
 artifacts:
   - path: '*.tar.gz'
     name: Source tarball
@@ -77,6 +81,9 @@ artifacts:
   - path: '*-vc*.exe'
     name: SDK for Visual C++
 
+  - path: '*.zip'
+    name: All libjpeg-turbo installers
+
   - path: 'log-windows.txt'
     name: Build log
 
@@ -86,14 +93,20 @@ artifacts:
 test: off
 
 deploy:
-  provider: S3
-  access_key_id:
-    secure: Z74OYogQ6bNV/I+6b5ZEXig74+6MW2WLER0v/bPM/uk=
-  secret_access_key:
-    secure: cyGZhHVCFwZ9jgf5lXoW69mVtECmqwx3eLo61ha8ueWbMYlHho7lwDXwVvxOFiCa
-  bucket: libjpeg-turbo-pr
-  region:
-    secure: qSElYBgBRcEUf88M6Osthw==
-  folder: $(APPVEYOR_REPO_BRANCH)/windows
-  set_public: true
-  remove_files: true
+  - provider: Webhook
+    url: https://app.signpath.io/API/v1/3bc964ce-257b-4362-829f-1df1f087f5a0/Integrations/AppVeyor?ProjectSlug=libjpeg-turbo&SigningPolicySlug=release-signing
+    authorization:
+      secure: rrx5wnu5VWQqrFZJv75WdPc1H5gyYqp7cV/xVhsx1TnVR7VyUaVEiCYm/64Fcx1zmEPHGyEBrlrbjuRHgDjURA==
+    on:
+      appveyor_repo_tag: true
+  - provider: S3
+    access_key_id:
+      secure: Z74OYogQ6bNV/I+6b5ZEXig74+6MW2WLER0v/bPM/uk=
+    secret_access_key:
+      secure: cyGZhHVCFwZ9jgf5lXoW69mVtECmqwx3eLo61ha8ueWbMYlHho7lwDXwVvxOFiCa
+    bucket: libjpeg-turbo-pr
+    region:
+      secure: qSElYBgBRcEUf88M6Osthw==
+    folder: $(APPVEYOR_REPO_BRANCH)/windows
+    set_public: true
+    remove_files: true

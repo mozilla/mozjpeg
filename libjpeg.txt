@@ -2,8 +2,10 @@ USING THE IJG JPEG LIBRARY
 
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
+Lossless JPEG Modifications:
+Copyright (C) 1999, Ken Murchison.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2018, 2020, 2022, D. R. Commander.
+Copyright (C) 2010, 2014-2018, 2020, 2022-2023, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -11,8 +13,8 @@ For conditions of distribution and use, see the accompanying README.ijg file.
 This file describes how to use the IJG JPEG library within an application
 program.  Read it if you want to write a program that uses the library.
 
-The file example.txt provides heavily commented skeleton code for calling the
-JPEG library.  Also see jpeglib.h (the include file to be used by application
+The file example.c provides heavily commented code for calling the JPEG
+library.  Also see jpeglib.h (the include file to be used by application
 programs) for full details about data structures and function parameter lists.
 The library source code, of course, is the ultimate reference.
 
@@ -29,6 +31,7 @@ TABLE OF CONTENTS
 
 Overview:
         Functions provided by the library
+        12-bit and 16-bit Data Precision
         Outline of typical usage
 Basic library usage:
         Data formats
@@ -96,18 +99,68 @@ the ISO JPEG standard; most baseline, extended-sequential, and progressive
 JPEG processes are supported.  (Our subset includes all features now in common
 use.)  Unsupported ISO options include:
         * Hierarchical storage
-        * Lossless JPEG
         * DNL marker
         * Nonintegral subsampling ratios
-We support both 8- and 12-bit data precision, but this is a compile-time
-choice rather than a run-time choice; hence it is difficult to use both
-precisions in a single application.
+We support 8-bit (lossy and lossless), 12-bit (lossy and lossless), and 16-bit
+(lossless) data precision.
 
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
 surrounding code to process interchange or abbreviated JPEG datastreams that
 are embedded in more complex file formats.  (For example, this library is
 used by the free LIBTIFF library to support JPEG compression in TIFF.)
+
+
+12-bit and 16-bit Data Precision
+--------------------------------
+
+The JPEG standard provides for baseline 8-bit and 12-bit DCT processes as well
+as 8-bit, 12-bit, and 16-bit lossless (predictive) processes.  This code
+supports 12-bit-per-component lossy or lossless JPEG if you set
+cinfo->data_precision to 12 and 16-bit-per-component lossless JPEG if you set
+cinfo->data_precision to 16.  Note that this causes the sample size to be
+larger than a char, so it affects the surrounding application's image data.
+The sample applications cjpeg and djpeg can support 12-bit mode only for PPM,
+PGM, and GIF file formats and 16-bit mode only for PPM and PGM file formats.
+
+Note that, when 12-bit data precision is enabled, the library always compresses
+in Huffman optimization mode, in order to generate valid Huffman tables.  This
+is necessary because our default Huffman tables only cover 8-bit data.  If you
+need to output 12-bit files in one pass, you'll have to supply suitable default
+Huffman tables.  You may also want to supply your own DCT quantization tables;
+the existing quality-scaling code has been developed for 8-bit use, and
+probably doesn't generate especially good tables for 12-bit.
+
+Functions that are specific to 12-bit data precision have a prefix of "jpeg12_"
+instead of "jpeg_" and use the following data types and macros:
+
+  * J12SAMPLE instead of JSAMPLE
+  * J12SAMPROW instead of JSAMPROW
+  * J12SAMPARRAY instead of JSAMPARRAY
+  * J12SAMPIMAGE instead of JSAMPIMAGE
+  * MAXJ12SAMPLE instead of MAXJSAMPLE
+  * CENTERJ12SAMPLE instead of CENTERJSAMPLE
+
+Functions that are specific to 16-bit data precision have a prefix of "jpeg16_"
+instead of "jpeg_" and use the following data types and macros:
+
+  * J16SAMPLE instead of JSAMPLE
+  * J16SAMPROW instead of JSAMPROW
+  * J16SAMPARRAY instead of JSAMPARRAY
+  * J16SAMPIMAGE instead of JSAMPIMAGE
+  * MAXJ16SAMPLE instead of MAXJSAMPLE
+  * CENTERJ16SAMPLE instead of CENTERJSAMPLE
+
+This allows 8-bit, 12-bit, and 16-bit data precision to be used in a single
+application.  (Refer to example.c).  Arithmetic coding and SIMD acceleration
+are not currently implemented for 12-bit data precision, nor are they
+implemented for lossless mode with any data precision.
+
+Refer to the descriptions of the data_precision compression and decompression
+parameters below for further information.
+
+This documentation uses "J*SAMPLE", "J*SAMPROW", "J*SAMPARRAY", and
+"J*SAMPIMAGE" to generically refer to the 8-bit, 12-bit, or 16-bit data types.
 
 
 Outline of typical usage
@@ -120,7 +173,10 @@ The rough outline of a JPEG compression operation is:
         Set parameters for compression, including image size & colorspace
         jpeg_start_compress(...);
         while (scan lines remain to be written)
-                jpeg_write_scanlines(...);
+                jpeg_write_scanlines(...);  /* Use jpeg12_write_scanlines() for
+                                               12-bit data precision and
+                                               jpeg16_write_scanlines() for
+                                               16-bit data precision. */
         jpeg_finish_compress(...);
         Release the JPEG compression object
 
@@ -132,7 +188,7 @@ same parameter settings for a sequence of images.  Re-use of a JPEG object
 also has important implications for processing abbreviated JPEG datastreams,
 as discussed later.
 
-The image data to be compressed is supplied to jpeg_write_scanlines() from
+The image data to be compressed is supplied to jpeg*_write_scanlines() from
 in-memory buffers.  If the application is doing file-to-file compression,
 reading image data from the source file is the application's responsibility.
 The library emits compressed data by calling a "data destination manager",
@@ -147,7 +203,10 @@ Similarly, the rough outline of a JPEG decompression operation is:
         Set parameters for decompression
         jpeg_start_decompress(...);
         while (scan lines remain to be read)
-                jpeg_read_scanlines(...);
+                jpeg_read_scanlines(...);  /* Use jpeg12_read_scanlines() for
+                                              12-bit data precision and
+                                              jpeg16_read_scanlines() for
+                                              16-bit data precision. */
         jpeg_finish_decompress(...);
         Release the JPEG decompression object
 
@@ -160,7 +219,7 @@ output scaling ratio that will fit the image into the available screen size.
 The decompression library obtains compressed data by calling a data source
 manager, which typically will read the data from a file; but other behaviors
 can be obtained with a custom source manager.  Decompressed data is delivered
-into in-memory buffers passed to jpeg_read_scanlines().
+into in-memory buffers passed to jpeg*_read_scanlines().
 
 It is possible to abort an incomplete compression or decompression operation
 by calling jpeg_abort(); or, if you do not need to retain the JPEG object,
@@ -208,16 +267,16 @@ and the other references mentioned in the README.ijg file.
 Pixels are stored by scanlines, with each scanline running from left to
 right.  The component values for each pixel are adjacent in the row; for
 example, R,G,B,R,G,B,R,G,B,... for 24-bit RGB color.  Each scanline is an
-array of data type JSAMPLE --- which is typically "unsigned char", unless
-you've changed jmorecfg.h.  (You can also change the RGB pixel layout, say
-to B,G,R order, by modifying jmorecfg.h.  But see the restrictions listed in
-that file before doing so.)
+array of data type JSAMPLE or J12SAMPLE --- which is typically "unsigned char"
+or "short" (respectively), unless you've changed jmorecfg.h.  (You can also
+change the RGB pixel layout, say to B,G,R order, by modifying jmorecfg.h.  But
+see the restrictions listed in that file before doing so.)
 
 A 2-D array of pixels is formed by making a list of pointers to the starts of
 scanlines; so the scanlines need not be physically adjacent in memory.  Even
 if you process just one scanline at a time, you must make a one-element
-pointer array to conform to this structure.  Pointers to JSAMPLE rows are of
-type JSAMPROW, and the pointer to the pointer array is of type JSAMPARRAY.
+pointer array to conform to this structure.  Pointers to J*SAMPLE rows are of
+type J*SAMPROW, and the pointer to the pointer array is of type J*SAMPARRAY.
 
 The library accepts or supplies one or more complete scanlines per call.
 It is not possible to process part of a row at a time.  Scanlines are always
@@ -226,24 +285,24 @@ have it all in memory, but usually it's simplest to process one scanline at
 a time.
 
 For best results, source data values should have the precision specified by
-BITS_IN_JSAMPLE (normally 8 bits).  For instance, if you choose to compress
-data that's only 6 bits/channel, you should left-justify each value in a
-byte before passing it to the compressor.  If you need to compress data
-that has more than 8 bits/channel, compile with BITS_IN_JSAMPLE = 12.
-(See "Library compile-time options", later.)
+cinfo->data_precision (normally 8 bits).  For instance, if you choose to
+compress data that's only 6 bits/channel, you should left-justify each value in
+a byte before passing it to the compressor.  If you need to compress data
+that has more than 8 bits/channel, set cinfo->data_precision = 12 or 16.
 
 
 The data format returned by the decompressor is the same in all details,
 except that colormapped output is supported.  (Again, a JPEG file is never
 colormapped.  But you can ask the decompressor to perform on-the-fly color
 quantization to deliver colormapped output.)  If you request colormapped
-output then the returned data array contains a single JSAMPLE per pixel;
+output then the returned data array contains a single J*SAMPLE per pixel;
 its value is an index into a color map.  The color map is represented as
-a 2-D JSAMPARRAY in which each row holds the values of one color component,
+a 2-D J*SAMPARRAY in which each row holds the values of one color component,
 that is, colormap[i][j] is the value of the i'th color component for pixel
 value (map index) j.  Note that since the colormap indexes are stored in
-JSAMPLEs, the maximum number of colors is limited by the size of JSAMPLE
-(ie, at most 256 colors for an 8-bit JPEG library).
+J*SAMPLEs, the maximum number of colors is limited by the size of J*SAMPLE
+(ie, at most 256 colors for 8-bit data precision, 4096 colors for 12-bit data
+precision, and 65536 colors for 16-bit data precision).
 
 
 Compression details
@@ -380,9 +439,12 @@ the compression cycle.
 
 
 5. while (scan lines remain to be written)
-        jpeg_write_scanlines(...);
+        jpeg_write_scanlines(...);  /* Use jpeg12_write_scanlines() for 12-bit
+                                       data precision and
+                                       jpeg16_write_scanlines() for 16-bit data
+                                       precision. */
 
-Now write all the required image data by calling jpeg_write_scanlines()
+Now write all the required image data by calling jpeg*_write_scanlines()
 one or more times.  You can pass one or more scanlines in each call, up
 to the total image height.  In most applications it is convenient to pass
 just one or a few scanlines at a time.  The expected format for the passed
@@ -402,20 +464,24 @@ this variable as the loop counter, so that the loop test looks like
 "while (cinfo.next_scanline < cinfo.image_height)".
 
 Code for this step depends heavily on the way that you store the source data.
-example.txt shows the following code for the case of a full-size 2-D source
+example.c shows the following code for the case of a full-size 2-D source
 array containing 3-byte RGB pixels:
 
-        JSAMPROW row_pointer[1];        /* pointer to a single row */
-        int row_stride;                 /* physical row width in buffer */
-
-        row_stride = image_width * 3;   /* JSAMPLEs per row in image_buffer */
+        JSAMPROW row_pointer[1];        /* pointer to a single row
+                                           Use J12SAMPROW for 12-bit data
+                                           precision and J16SAMPROW for 16-bit
+                                           data precision. */
 
         while (cinfo.next_scanline < cinfo.image_height) {
-            row_pointer[0] = &image_buffer[cinfo.next_scanline * row_stride];
+            row_pointer[0] = image_buffer[cinfo.next_scanline];
             jpeg_write_scanlines(&cinfo, row_pointer, 1);
+                                        /* Use jpeg12_write_scanlines() for
+                                           12-bit data precision and
+                                           jpeg16_write_scanlines() for 16-bit
+                                           data precision. */
         }
 
-jpeg_write_scanlines() returns the number of scanlines actually written.
+jpeg*_write_scanlines() returns the number of scanlines actually written.
 This will normally be equal to the number passed in, so you can usually
 ignore the return value.  It is different in just two cases:
   * If you try to write more scanlines than the declared image height,
@@ -640,11 +706,11 @@ colormapped output has been requested.  Useful fields include
         actual_number_of_colors         number of entries in colormap
 
 output_components is 1 (a colormap index) when quantizing colors; otherwise it
-equals out_color_components.  It is the number of JSAMPLE values that will be
+equals out_color_components.  It is the number of J*SAMPLE values that will be
 emitted per pixel in the output arrays.
 
 Typically you will need to allocate data buffers to hold the incoming image.
-You will need output_width * output_components JSAMPLEs per scanline in your
+You will need output_width * output_components J*SAMPLEs per scanline in your
 output buffer, and a total of output_height scanlines will be returned.
 
 Note: if you are using the JPEG library's internal memory manager to allocate
@@ -656,11 +722,14 @@ relevant parameters (scaling, output color space, and quantization flag).
 
 
 6. while (scan lines remain to be read)
-        jpeg_read_scanlines(...);
+        jpeg_read_scanlines(...);  /* Use jpeg12_read_scanlines() for 12-bit
+                                      data precision and
+                                      jpeg16_read_scanlines() for 16-bit data
+                                      precision. */
 
-Now you can read the decompressed image data by calling jpeg_read_scanlines()
+Now you can read the decompressed image data by calling jpeg*_read_scanlines()
 one or more times.  At each call, you pass in the maximum number of scanlines
-to be read (ie, the height of your working buffer); jpeg_read_scanlines()
+to be read (ie, the height of your working buffer); jpeg*_read_scanlines()
 will return up to that many lines.  The return value is the number of lines
 actually read.  The format of the returned data is discussed under "Data
 formats", above.  Don't forget that grayscale and color JPEGs will return
@@ -680,13 +749,13 @@ image_height field is the height of the original unscaled image.)
 The return value always equals the change in the value of output_scanline.
 
 If you don't use a suspending data source, it is safe to assume that
-jpeg_read_scanlines() reads at least one scanline per call, until the
+jpeg*_read_scanlines() reads at least one scanline per call, until the
 bottom of the image has been reached.
 
 If you use a buffer larger than one scanline, it is NOT safe to assume that
-jpeg_read_scanlines() fills it.  (The current implementation returns only a
+jpeg*_read_scanlines() fills it.  (The current implementation returns only a
 few scanlines per call, no matter how large a buffer you pass.)  So you must
-always provide a loop that calls jpeg_read_scanlines() repeatedly until the
+always provide a loop that calls jpeg*_read_scanlines() repeatedly until the
 whole image has been read.
 
 
@@ -744,33 +813,34 @@ partial image decompression:
 1. Skipping rows when decompressing
 
         jpeg_skip_scanlines(j_decompress_ptr cinfo, JDIMENSION num_lines);
+                /* Use jpeg12_skip_scanlines() for 12-bit data precision. */
 
 This function provides application programmers with the ability to skip over
 multiple rows in the JPEG image.
 
 Suspending data sources are not supported by this function.  Calling
-jpeg_skip_scanlines() with a suspending data source will result in undefined
+jpeg*_skip_scanlines() with a suspending data source will result in undefined
 behavior.  Two-pass color quantization is also not supported by this function.
-Calling jpeg_skip_scanlines() with two-pass color quantization enabled will
+Calling jpeg*_skip_scanlines() with two-pass color quantization enabled will
 result in an error.
 
-jpeg_skip_scanlines() will not allow skipping past the bottom of the image.  If
-the value of num_lines is large enough to skip past the bottom of the image,
+jpeg*_skip_scanlines() will not allow skipping past the bottom of the image.
+If the value of num_lines is large enough to skip past the bottom of the image,
 then the function will skip to the end of the image instead.
 
-If the value of num_lines is valid, then jpeg_skip_scanlines() will always
+If the value of num_lines is valid, then jpeg*_skip_scanlines() will always
 skip all of the input rows requested.  There is no need to inspect the return
 value of the function in that case.
 
-Best results will be achieved by calling jpeg_skip_scanlines() for large chunks
-of rows.  The function should be viewed as a way to quickly jump to a
+Best results will be achieved by calling jpeg*_skip_scanlines() for large
+chunks of rows.  The function should be viewed as a way to quickly jump to a
 particular vertical offset in the JPEG image in order to decode a subset of the
 image.  Used in this manner, it will provide significant performance
 improvements.
 
-Calling jpeg_skip_scanlines() for small values of num_lines has several
+Calling jpeg*_skip_scanlines() for small values of num_lines has several
 potential drawbacks:
-    1) JPEG decompression occurs in blocks, so if jpeg_skip_scanlines() is
+    1) JPEG decompression occurs in blocks, so if jpeg*_skip_scanlines() is
        called from the middle of a decompression block, then it is likely that
        much of the decompression work has already been done for the first
        couple of rows that need to be skipped.
@@ -778,18 +848,19 @@ potential drawbacks:
        such that it is ready to read the next line.  This may involve
        decompressing a block that must be partially skipped.
 These issues are especially tricky for cases in which upsampling requires
-context rows.  In the worst case, jpeg_skip_scanlines() will perform similarly
-to jpeg_read_scanlines() (since it will actually call jpeg_read_scanlines().)
+context rows.  In the worst case, jpeg*_skip_scanlines() will perform similarly
+to jpeg*_read_scanlines() (since it will actually call jpeg*_read_scanlines().)
 
 2. Decompressing partial scanlines
 
         jpeg_crop_scanline (j_decompress_ptr cinfo, JDIMENSION *xoffset,
                             JDIMENSION *width)
+                /* Use jpeg12_crop_scanline() for 12-bit data precision. */
 
 This function provides application programmers with the ability to decompress
 only a portion of each row in the JPEG image.  It must be called after
-jpeg_start_decompress() and before any calls to jpeg_read_scanlines() or
-jpeg_skip_scanlines().
+jpeg_start_decompress() and before any calls to jpeg*_read_scanlines() or
+jpeg*_skip_scanlines().
 
 If xoffset and width do not form a valid subset of the image row, then this
 function will generate an error.  Note that if the output image is scaled, then
@@ -799,12 +870,12 @@ xoffset and width are passed by reference because xoffset must fall on an iMCU
 boundary.  If it doesn't, then it will be moved left to the nearest iMCU
 boundary, and width will be increased accordingly.  If the calling program does
 not like the adjusted values of xoffset and width, then it can call
-jpeg_crop_scanline() again with new values (for instance, if it wants to move
+jpeg*_crop_scanline() again with new values (for instance, if it wants to move
 xoffset to the nearest iMCU boundary to the right instead of to the left.)
 
 After calling this function, cinfo->output_width will be set to the adjusted
 width.  This value should be used when allocating an output buffer to pass to
-jpeg_read_scanlines().
+jpeg*_read_scanlines().
 
 The output image from a partial-width decompression will be identical to the
 corresponding image region from a full decode, with one exception:  The "fancy"
@@ -949,12 +1020,45 @@ jpeg_simple_progression (j_compress_ptr cinfo)
         unless you want to make a custom scan sequence.  You must ensure that
         the JPEG color space is set correctly before calling this routine.
 
+jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
+                      int point_transform)
+        Enables lossless mode with the specified predictor selection value
+        (1 - 7) and optional point transform (0 - {precision}-1, where
+        {precision} is the JPEG data precision).  A point transform value of 0
+        is necessary in order to create a fully lossless JPEG image.  (A
+        non-zero point transform value right-shifts the input samples by the
+        specified number of bits, which is effectively a form of lossy color
+        quantization.)  Note that the following features will be unavailable
+        when compressing or decompressing lossless JPEG images:
+          * Partial image decompression
+          * Quality/quantization table selection
+          * DCT/IDCT algorithm selection
+          * Smoothing
+          * Downsampling/upsampling
+          * Color space conversion (the JPEG image will use the same color
+            space as the input image)
+          * Color quantization
+          * IDCT scaling
+          * Raw (downsampled) data input/output
+          * Transcoding of DCT coefficients
+        Any parameters used to enable or configure those features will be
+        ignored.
+
 
 Compression parameters (cinfo fields) include:
 
 boolean arith_code
         If TRUE, use arithmetic coding.
         If FALSE, use Huffman coding.
+
+int data_precision
+        To create a 12-bit-per-component JPEG file, set data_precision to 12
+        prior to calling jpeg_start_compress() or using the memory manager,
+        then use jpeg12_write_scanlines() or jpeg12_write_raw_data() instead of
+        jpeg_write_scanlines() or jpeg_write_raw_data().  To create a
+        16-bit-per-component lossless JPEG file, set data_precision to 16 prior
+        to calling jpeg_start_compress() or using the memory manager, then use
+        jpeg16_write_scanlines() instead of jpeg_write_scanlines().
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:
@@ -1010,15 +1114,15 @@ boolean optimize_coding
 unsigned int restart_interval
 int restart_in_rows
         To emit restart markers in the JPEG file, set one of these nonzero.
-        Set restart_interval to specify the exact interval in MCU blocks.
-        Set restart_in_rows to specify the interval in MCU rows.  (If
-        restart_in_rows is not 0, then restart_interval is set after the
-        image width in MCUs is computed.)  Defaults are zero (no restarts).
-        One restart marker per MCU row is often a good choice.
-        NOTE: the overhead of restart markers is higher in grayscale JPEG
-        files than in color files, and MUCH higher in progressive JPEGs.
-        If you use restarts, you may want to use larger intervals in those
-        cases.
+        Set restart_interval to specify the exact interval in MCU blocks
+        (samples in lossless mode).  Set restart_in_rows to specify the
+        interval in MCU rows.  (If restart_in_rows is not 0, then
+        restart_interval is set after the image width in MCUs is computed.)
+        Defaults are zero (no restarts).  One restart marker per MCU row is
+        often a good choice.  NOTE: the overhead of restart markers is higher
+        in grayscale JPEG files than in color files, and MUCH higher in
+        progressive JPEGs.  If you use restarts, you may want to use larger
+        intervals in those cases.
 
 const jpeg_scan_info *scan_info
 int num_scans
@@ -1176,6 +1280,14 @@ processing.
 The following fields in the JPEG object are set by jpeg_read_header() and
 may be useful to the application in choosing decompression parameters:
 
+int data_precision                      Data precision (bits per component)
+        If data_precision is 12, then use jpeg12_read_scanlines(),
+        jpeg12_skip_scanlines(), jpeg12_crop_scanline(), and/or
+        jpeg12_read_raw_data() instead of jpeg_read_scanlines(),
+        jpeg_skip_scanlines(), jpeg_crop_scanline(), and/or
+        jpeg_read_raw_data().  If data_precision is 16, then use
+        jpeg16_read_scanlines() instead of jpeg_read_scanlines().
+
 JDIMENSION image_width                  Width and height of image
 JDIMENSION image_height
 int num_components                      Number of color components
@@ -1259,6 +1371,9 @@ JSAMPARRAY colormap
         CAUTION: if the JPEG library creates its own colormap, the storage
         pointed to by this field is released by jpeg_finish_decompress().
         Copy the colormap somewhere else first, if you want to save it.
+        CAUTION: if data_precision is 12 or 16, then this is actually a
+        J12SAMPARRAY or a J16SAMPARRAY, so it must be type-cast in order to
+        read/write 12-bit or 16-bit samples from/to the array.
 
 int actual_number_of_colors
         The number of colors in the color map.
@@ -1338,10 +1453,10 @@ int rec_outbuf_height           Recommended height of scanline buffer.
 
 When quantizing colors, output_components is 1, indicating a single color map
 index per pixel.  Otherwise it equals out_color_components.  The output arrays
-are required to be output_width * output_components JSAMPLEs wide.
+are required to be output_width * output_components J*SAMPLEs wide.
 
 rec_outbuf_height is the recommended minimum height (in scanlines) of the
-buffer passed to jpeg_read_scanlines().  If the buffer is smaller, the
+buffer passed to jpeg*_read_scanlines().  If the buffer is smaller, the
 library will still work, but time will be wasted due to unnecessary data
 copying.  In high-quality modes, rec_outbuf_height is always 1, but some
 faster, lower-quality modes set it to larger values (typically 2 to 4).
@@ -1445,7 +1560,7 @@ When the default error handler is used, any error detected inside the JPEG
 routines will cause a message to be printed on stderr, followed by exit().
 You can supply your own error handling routines to override this behavior
 and to control the treatment of nonfatal warnings and trace/debug messages.
-The file example.txt illustrates the most common case, which is to have the
+The file example.c illustrates the most common case, which is to have the
 application regain control after an error rather than exiting.
 
 The JPEG library never writes any message directly; it always goes through
@@ -1462,7 +1577,7 @@ You may, if you wish, simply replace the entire JPEG error handling module
 only replacing some of the routines depending on the behavior you need.
 This is accomplished by calling jpeg_std_error() as usual, but then overriding
 some of the method pointers in the jpeg_error_mgr struct, as illustrated by
-example.txt.
+example.c.
 
 All of the error handling routines will receive a pointer to the JPEG object
 (a j_common_ptr which points to either a jpeg_compress_struct or a
@@ -1473,7 +1588,7 @@ additional data which is not known to the JPEG library or the standard error
 handler.  The most convenient way to do this is to embed either the JPEG
 object or the jpeg_error_mgr struct in a larger structure that contains
 additional fields; then casting the passed pointer provides access to the
-additional fields.  Again, see example.txt for one way to do it.  (Beginning
+additional fields.  Again, see example.c for one way to do it.  (Beginning
 with IJG version 6b, there is also a void pointer "client_data" in each
 JPEG object, which the application can also use to find related data.
 The library does not touch client_data at all.)
@@ -1725,10 +1840,10 @@ Compression suspension:
 
 For compression suspension, use an empty_output_buffer() routine that returns
 FALSE; typically it will not do anything else.  This will cause the
-compressor to return to the caller of jpeg_write_scanlines(), with the return
+compressor to return to the caller of jpeg*_write_scanlines(), with the return
 value indicating that not all the supplied scanlines have been accepted.
 The application must make more room in the output buffer, adjust the output
-buffer pointer/count appropriately, and then call jpeg_write_scanlines()
+buffer pointer/count appropriately, and then call jpeg*_write_scanlines()
 again, pointing to the first unconsumed scanline.
 
 When forced to suspend, the compressor will backtrack to a convenient stopping
@@ -1744,7 +1859,7 @@ for efficiency; you don't want the compressor to suspend often.  (In fact, an
 overly small buffer could lead to infinite looping, if a single MCU required
 more data than would fit in the buffer.)  We recommend a buffer of at least
 several Kbytes.  You may want to insert explicit code to ensure that you don't
-call jpeg_write_scanlines() unless there is a reasonable amount of space in
+call jpeg*_write_scanlines() unless there is a reasonable amount of space in
 the output buffer; in other words, flush the buffer before trying to compress
 more data.
 
@@ -1778,11 +1893,11 @@ This will cause the decompressor to return to its caller with an indication
 that suspension has occurred.  This can happen at four places:
   * jpeg_read_header(): will return JPEG_SUSPENDED.
   * jpeg_start_decompress(): will return FALSE, rather than its usual TRUE.
-  * jpeg_read_scanlines(): will return the number of scanlines already
+  * jpeg*_read_scanlines(): will return the number of scanlines already
         completed (possibly 0).
   * jpeg_finish_decompress(): will return FALSE, rather than its usual TRUE.
 The surrounding application must recognize these cases, load more data into
-the input buffer, and repeat the call.  In the case of jpeg_read_scanlines(),
+the input buffer, and repeat the call.  In the case of jpeg*_read_scanlines(),
 increment the passed pointers past any scanlines successfully read.
 
 Just as with compression, the decompressor will typically backtrack to a
@@ -1919,7 +2034,7 @@ progressive scan sequence design.  (If you want to provide user control of
 scan sequences, you may wish to borrow the scan script reading code found
 in rdswitch.c, so that you can read scan script files just like cjpeg's.)
 When scan_info is not NULL, the compression library will store DCT'd data
-into a buffer array as jpeg_write_scanlines() is called, and will emit all
+into a buffer array as jpeg*_write_scanlines() is called, and will emit all
 the requested scans during jpeg_finish_compress().  This implies that
 multiple-scan output cannot be created with a suspending data destination
 manager, since jpeg_finish_compress() does not support suspension.  We
@@ -1967,7 +2082,10 @@ The basic control flow for buffered-image decoding is
             adjust output decompression parameters if required
             jpeg_start_output()         /* start a new output pass */
             for (all scanlines in image) {
-                jpeg_read_scanlines()
+                jpeg_read_scanlines()   /* Use jpeg12_read_scanlines() for
+                                           12-bit data precision and
+                                           jpeg16_read_scanlines() for 16-bit
+                                           data precision. */
                 display scanlines
             }
             jpeg_finish_output()        /* terminate output pass */
@@ -1997,7 +2115,7 @@ input and output processing run in lockstep.
 
 After reading the final scan and reaching the end of the input file, the
 buffered image remains available; it can be read additional times by
-repeating the jpeg_start_output()/jpeg_read_scanlines()/jpeg_finish_output()
+repeating the jpeg_start_output()/jpeg*_read_scanlines()/jpeg_finish_output()
 sequence.  For example, a useful technique is to use fast one-pass color
 quantization for display passes made while the image is arriving, followed by
 a final display pass using two-pass quantization for highest quality.  This
@@ -2161,7 +2279,7 @@ buffered-image mode must be prepared for suspension returns from these
 routines:
 * jpeg_start_output() performs input only if you request 2-pass quantization
   and the target scan isn't fully read yet.  (This is discussed below.)
-* jpeg_read_scanlines(), as always, returns the number of scanlines that it
+* jpeg*_read_scanlines(), as always, returns the number of scanlines that it
   was able to produce before suspending.
 * jpeg_finish_output() will read any markers following the target scan,
   up to the end of the file or the SOS marker that begins another scan.
@@ -2520,7 +2638,7 @@ Adobe markers and will set the JPEG colorspace properly when one is found.
 
 You can write special markers immediately following the datastream header by
 calling jpeg_write_marker() after jpeg_start_compress() and before the first
-call to jpeg_write_scanlines().  When you do this, the markers appear after
+call to jpeg*_write_scanlines().  When you do this, the markers appear after
 the SOI and the JFIF APP0 and Adobe APP14 markers (if written), but before
 all else.  Specify the marker type parameter as "JPEG_COM" for COM or
 "JPEG_APP0 + n" for APPn.  (Actually, jpeg_write_marker will let you write
@@ -2662,9 +2780,9 @@ JPEG file while writing it, or to extract the profile data from a JPEG file
 while reading it.
 
 jpeg_write_icc_profile() must be called after calling jpeg_start_compress() and
-before the first call to jpeg_write_scanlines() or jpeg_write_raw_data().  This
-ordering ensures that the APP2 marker(s) will appear after the SOI and JFIF or
-Adobe markers, but before all other data.
+before the first call to jpeg*_write_scanlines() or jpeg*_write_raw_data().
+This ordering ensures that the APP2 marker(s) will appear after the SOI and
+JFIF or Adobe markers, but before all other data.
 
 jpeg_read_icc_profile() returns TRUE if an ICC profile was found and FALSE
 otherwise.  If an ICC profile was found, then the function will allocate a
@@ -2700,8 +2818,8 @@ To compress raw data, you must supply the data in the colorspace to be used
 in the JPEG file (please read the earlier section on Special color spaces)
 and downsampled to the sampling factors specified in the JPEG parameters.
 You must supply the data in the format used internally by the JPEG library,
-namely a JSAMPIMAGE array.  This is an array of pointers to two-dimensional
-arrays, each of type JSAMPARRAY.  Each 2-D array holds the values for one
+namely a J*SAMPIMAGE array.  This is an array of pointers to two-dimensional
+arrays, each of type J*SAMPARRAY.  Each 2-D array holds the values for one
 color component.  This structure is necessary since the components are of
 different sizes.  If the image dimensions are not a multiple of the MCU size,
 you must also pad the data correctly (usually, this is done by replicating
@@ -2713,8 +2831,9 @@ images, the standard image size is usually a multiple of the DCT block size,
 so that no padding need actually be done.)
 
 The procedure for compression of raw data is basically the same as normal
-compression, except that you call jpeg_write_raw_data() in place of
-jpeg_write_scanlines().  Before calling jpeg_start_compress(), you must do
+compression, except that you call jpeg_write_raw_data() or
+jpeg12_write_raw_data() in place of jpeg_write_scanlines() or
+jpeg12_write_scanlines().  Before calling jpeg_start_compress(), you must do
 the following:
   * Set cinfo->raw_data_in to TRUE.  (It is set FALSE by jpeg_set_defaults().)
     This notifies the library that you will be supplying raw data.
@@ -2727,13 +2846,13 @@ the following:
     dimensions of the data you are supplying, it's wise to set them
     explicitly, rather than assuming the library's defaults are what you want.
 
-To pass raw data to the library, call jpeg_write_raw_data() in place of
-jpeg_write_scanlines().  The two routines work similarly except that
-jpeg_write_raw_data takes a JSAMPIMAGE data array rather than JSAMPARRAY.
-The scanlines count passed to and returned from jpeg_write_raw_data is
+To pass raw data to the library, call jpeg*_write_raw_data() in place of
+jpeg*_write_scanlines().  The routines work similarly except that
+jpeg*_write_raw_data takes a J*SAMPIMAGE data array rather than J*SAMPARRAY.
+The scanlines count passed to and returned from jpeg*_write_raw_data is
 measured in terms of the component with the largest v_samp_factor.
 
-jpeg_write_raw_data() processes one MCU row per call, which is to say
+jpeg*_write_raw_data() processes one MCU row per call, which is to say
 v_samp_factor*DCTSIZE sample rows of each component.  The passed num_lines
 value must be at least max_v_samp_factor*DCTSIZE, and the return value will
 be exactly that amount (or possibly some multiple of that amount, in future
@@ -2764,7 +2883,7 @@ downsampled_width = 51 and width_in_blocks = 7 for Cb and Cr (and the same
 for the height fields).  You must pad the Y data to at least 13*8 = 104
 columns and rows, the Cb/Cr data to at least 7*8 = 56 columns and rows.  The
 MCU height is max_v_samp_factor = 2 DCT rows so you must pass at least 16
-scanlines on each call to jpeg_write_raw_data(), which is to say 16 actual
+scanlines on each call to jpeg*_write_raw_data(), which is to say 16 actual
 sample rows of Y and 8 each of Cb and Cr.  A total of 7 MCU rows are needed,
 so you must pass a total of 7*16 = 112 "scanlines".  The last DCT block row
 of Y data is dummy, so it doesn't matter what you pass for it in the data
@@ -2772,7 +2891,7 @@ arrays, but the scanlines count must total up to 112 so that all of the Cb
 and Cr data gets passed.
 
 Output suspension is supported with raw-data compression: if the data
-destination module suspends, jpeg_write_raw_data() will return 0.
+destination module suspends, jpeg*_write_raw_data() will return 0.
 In this case the same data rows must be passed again on the next call.
 
 
@@ -2786,10 +2905,11 @@ The library will not convert to a different color space for you.
 To obtain raw data output, set cinfo->raw_data_out = TRUE before
 jpeg_start_decompress() (it is set FALSE by jpeg_read_header()).  Be sure to
 verify that the color space and sampling factors are ones you can handle.
-Then call jpeg_read_raw_data() in place of jpeg_read_scanlines().  The
-decompression process is otherwise the same as usual.
+Then call jpeg_read_raw_data() or jpeg12_read_raw_data() in place of
+jpeg_read_scanlines() or jpeg12_read_scanlines().  The decompression process is
+otherwise the same as usual.
 
-jpeg_read_raw_data() returns one MCU row per call, and thus you must pass a
+jpeg*_read_raw_data() returns one MCU row per call, and thus you must pass a
 buffer of at least max_v_samp_factor*DCTSIZE scanlines (scanline counting is
 the same as for raw-data compression).  The buffer you pass must be large
 enough to hold the actual data plus padding to DCT-block boundaries.  As with
@@ -2799,7 +2919,7 @@ above example of computing buffer dimensions for raw-data compression is
 equally valid for decompression.
 
 Input suspension is supported with raw-data decompression: if the data source
-module suspends, jpeg_read_raw_data() will return 0.  You can also use
+module suspends, jpeg*_read_raw_data() will return 0.  You can also use
 buffered-image mode to read raw data in multiple passes.
 
 
@@ -2814,7 +2934,7 @@ multi-strip or multi-tile TIFF/JPEG file into a single JPEG datastream, etc.
 
 To read the contents of a JPEG file as DCT coefficients, open the file and do
 jpeg_read_header() as usual.  But instead of calling jpeg_start_decompress()
-and jpeg_read_scanlines(), call jpeg_read_coefficients().  This will read the
+and jpeg*_read_scanlines(), call jpeg_read_coefficients().  This will read the
 entire image into a set of virtual coefficient-block arrays, one array per
 component.  The return value is a pointer to an array of virtual-array
 descriptors.  Each virtual array can be accessed directly using the JPEG
@@ -2855,7 +2975,7 @@ the DCT coefficients stored in virtual block arrays.  You can either pass
 block arrays read from an input JPEG file by jpeg_read_coefficients(), or
 allocate virtual arrays from the JPEG compression object and fill them
 yourself.  In either case, jpeg_write_coefficients() is substituted for
-jpeg_start_compress() and jpeg_write_scanlines().  Thus the sequence is
+jpeg_start_compress() and jpeg*_write_scanlines().  Thus the sequence is
   * Create compression object
   * Set all compression parameters as necessary
   * Request virtual arrays if needed
@@ -2899,7 +3019,7 @@ Some applications may need to regain control from the JPEG library every so
 often.  The typical use of this feature is to produce a percent-done bar or
 other progress display.  (For a simple example, see cjpeg.c or djpeg.c.)
 Although you do get control back frequently during the data-transferring pass
-(the jpeg_read_scanlines or jpeg_write_scanlines loop), any additional passes
+(the jpeg*_read_scanlines or jpeg*_write_scanlines loop), any additional passes
 will occur inside jpeg_finish_compress or jpeg_start_decompress; those
 routines may take a long time to execute, and you don't get control back
 until they are done.
@@ -2910,8 +3030,8 @@ so we don't recommend you use it for mouse tracking or anything like that.
 At present, a call will occur once per MCU row, scanline, or sample row
 group, whichever unit is convenient for the current processing mode; so the
 wider the image, the longer the time between calls.  During the data
-transferring pass, only one call occurs per call of jpeg_read_scanlines or
-jpeg_write_scanlines, so don't pass a large number of scanlines at once if
+transferring pass, only one call occurs per call of jpeg*_read_scanlines or
+jpeg*_write_scanlines, so don't pass a large number of scanlines at once if
 you want fine resolution in the progress count.  (If you really need to use
 the callback mechanism for time-critical tasks like mouse tracking, you could
 insert additional calls inside some of the library's inner loops.)
@@ -3033,9 +3153,9 @@ This does not count any memory allocated by the application, such as a
 buffer to hold the final output image.
 
 The above figures are valid for 8-bit JPEG data precision and a machine with
-32-bit ints.  For 12-bit JPEG data, double the size of the strip buffers and
-quantization pixel buffer.  The "fixed-size" data will be somewhat smaller
-with 16-bit ints, larger with 64-bit ints.  Also, CMYK or other unusual
+32-bit ints.  For 12-bit and 16-bit JPEG data, double the size of the strip
+buffers and quantization pixel buffer.  The "fixed-size" data will be somewhat
+smaller with 16-bit ints, larger with 64-bit ints.  Also, CMYK or other unusual
 color spaces will require different amounts of space.
 
 The full-image coefficient and pixel buffers, if needed at all, do not
@@ -3058,23 +3178,6 @@ Library compile-time options
 
 A number of compile-time options are available by modifying jmorecfg.h.
 
-The JPEG standard provides for both the baseline 8-bit DCT process and
-a 12-bit DCT process.  The IJG code supports 12-bit lossy JPEG if you define
-BITS_IN_JSAMPLE as 12 rather than 8.  Note that this causes JSAMPLE to be
-larger than a char, so it affects the surrounding application's image data.
-The sample applications cjpeg and djpeg can support 12-bit mode only for PPM
-and GIF file formats; you must disable the other file formats to compile a
-12-bit cjpeg or djpeg.  At present, a 12-bit library can handle *only* 12-bit
-images, not both precisions.
-
-Note that a 12-bit library always compresses in Huffman optimization mode,
-in order to generate valid Huffman tables.  This is necessary because our
-default Huffman tables only cover 8-bit data.  If you need to output 12-bit
-files in one pass, you'll have to supply suitable default Huffman tables.
-You may also want to supply your own DCT quantization tables; the existing
-quality-scaling code has been developed for 8-bit use, and probably doesn't
-generate especially good tables for 12-bit.
-
 The maximum number of components (color channels) in the image is determined
 by MAX_COMPONENTS.  The JPEG standard allows up to 255 components, but we
 expect that few applications will need more than four or so.
@@ -3084,7 +3187,7 @@ performance or reduce memory space by tweaking the various typedefs in
 jmorecfg.h.  In particular, on some RISC CPUs, access to arrays of "short"s
 is quite slow; consider trading memory for speed by making JCOEF, INT16, and
 UINT16 be "int" or "unsigned int".  UINT8 is also a candidate to become int.
-You probably don't want to make JSAMPLE be int unless you have lots of memory
+You probably don't want to make J*SAMPLE be int unless you have lots of memory
 to burn.
 
 You can reduce the size of the library by compiling out various optional

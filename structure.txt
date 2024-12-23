@@ -2,8 +2,10 @@ IJG JPEG LIBRARY:  SYSTEM ARCHITECTURE
 
 This file was part of the Independent JPEG Group's software:
 Copyright (C) 1991-2012, Thomas G. Lane, Guido Vollbeding.
-It was modified by The libjpeg-turbo Project to include only information
-relevant to libjpeg-turbo.
+Lossless JPEG Modifications:
+Copyright (C) 1999, Ken Murchison.
+libjpeg-turbo Modifications:
+Copyright (C) 2022-2023, D. R. Commander.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
 
@@ -23,8 +25,10 @@ In this document, JPEG-specific terminology follows the JPEG standard:
   A "sample" is a single component value (i.e., one number in the image data).
   A "coefficient" is a frequency coefficient (a DCT transform output number).
   A "block" is an 8x8 group of samples or coefficients.
-  An "MCU" (minimum coded unit) is an interleaved set of blocks of size
-        determined by the sampling factors, or a single block in a
+  A "data unit" is an abstract data type that is either a block for lossy
+        (DCT-based) codecs or a sample for lossless (predictive) codecs.
+  An "MCU" (minimum coded unit) is an interleaved set of data units of size
+        determined by the sampling factors, or a single data unit in a
         noninterleaved scan.
 We do not use the terms "pixel" and "sample" interchangeably.  When we say
 pixel, we mean an element of the full-size image, while a sample is an element
@@ -45,22 +49,14 @@ command-line user interface and I/O routines for several uncompressed image
 formats.  This document concentrates on the library itself.
 
 We desire the library to be capable of supporting all JPEG baseline, extended
-sequential, and progressive DCT processes.  Hierarchical processes are not
-supported.
-
-The library does not support the lossless (spatial) JPEG process.  Lossless
-JPEG shares little or no code with lossy JPEG, and would normally be used
-without the extensive pre- and post-processing provided by this library.
-We feel that lossless JPEG is better handled by a separate library.
+sequential, progressive DCT, and lossless (spatial) processes.  Hierarchical
+processes are not supported.
 
 Within these limits, any set of compression parameters allowed by the JPEG
 spec should be readable for decompression.  (We can be more restrictive about
 what formats we can generate.)  Although the system design allows for all
 parameter values, some uncommon settings are not yet implemented and may
-never be; nonintegral sampling ratios are the prime example.  Furthermore,
-we treat 8-bit vs. 12-bit data precision as a compile-time switch, not a
-run-time option, because most machines can store 8-bit pixels much more
-compactly than 12-bit.
+never be; nonintegral sampling ratios are the prime example.
 
 By itself, the library handles only interchange JPEG datastreams --- in
 particular the widely used JFIF file format.  The library can be used by
@@ -103,9 +99,13 @@ elements:
     * Color space conversion (e.g., RGB to YCbCr).
     * Edge expansion and downsampling.  Optionally, this step can do simple
       smoothing --- this is often helpful for low-quality source data.
-  JPEG proper:
+  Lossy JPEG proper:
     * MCU assembly, DCT, quantization.
     * Entropy coding (sequential or progressive, Huffman or arithmetic).
+  Lossless JPEG proper:
+    * Point transform.
+    * Prediction, differencing.
+    * Entropy coding (Huffman or arithmetic)
 
 In addition to these modules we need overall control, marker generation,
 and support code (memory management & error handling).  There is also a
@@ -115,9 +115,13 @@ do something else with the data.
 
 The decompressor library contains the following main elements:
 
-  JPEG proper:
+  Lossy JPEG proper:
     * Entropy decoding (sequential or progressive, Huffman or arithmetic).
     * Dequantization, inverse DCT, MCU disassembly.
+  Lossless JPEG proper:
+    * Entropy decoding (Huffman or arithmetic).
+    * Prediction, undifferencing.
+    * Point transform, sample size scaling.
   Postprocessing:
     * Upsampling.  Optionally, this step may be able to do more general
       rescaling of the image.
@@ -283,7 +287,8 @@ task performed by any one controller.
 
 *** Compression object structure ***
 
-Here is a sketch of the logical structure of the JPEG compression library:
+Here is a sketch of the logical structure of the JPEG compression library in
+lossy mode:
 
                                                  |-- Colorspace conversion
                   |-- Preprocessing controller --|
@@ -292,6 +297,19 @@ Main controller --|
                   |                            |-- Forward DCT, quantize
                   |-- Coefficient controller --|
                                                |-- Entropy encoding
+
+... and in lossless mode:
+
+                                                 |-- Colorspace conversion
+                  |-- Preprocessing controller --|
+                  |                              |-- Downsampling
+Main controller --|
+                  |                           |-- Point transform
+                  |                           |
+                  |-- Difference controller --|-- Prediction, differencing
+                                              |
+                                              |-- Lossless mode entropy
+                                                  encoding
 
 This sketch also describes the flow of control (subroutine calls) during
 typical image data processing.  Each of the components shown in the diagram is
@@ -346,6 +364,22 @@ The objects shown above are:
   during each pass, and the coder must emit the appropriate subset of
   coefficients.
 
+* Difference controller: buffer controller for the spatial difference data.
+  When emitting a multiscan JPEG file, this controller is responsible for
+  buffering the full image.  The equivalent of one fully interleaved MCU row
+  of subsampled data is processed per call, even when the JPEG file is
+  noninterleaved.
+
+* Point transform: Downscale the data by the point transform value.
+
+* Prediction and differencing: Calculate the predictor and subtract it
+  from the input.  Works on one scanline per call.  The difference
+  controller supplies the prior scanline, which is used for prediction.
+
+* Lossless mode entropy encoding: Perform Huffman or arithmetic entropy coding
+  and emit the coded data to the data destination module.  This module handles
+  MCU assembly.  Works on one MCU row per call.
+
 In addition to the above objects, the compression library includes these
 objects:
 
@@ -386,7 +420,8 @@ decompression; the progress monitor, if used, may be shared as well.
 
 *** Decompression object structure ***
 
-Here is a sketch of the logical structure of the JPEG decompression library:
+Here is a sketch of the logical structure of the JPEG decompression library in
+lossy mode:
 
                                                |-- Entropy decoding
                   |-- Coefficient controller --|
@@ -395,6 +430,20 @@ Main controller --|
                   |                               |-- Upsampling
                   |-- Postprocessing controller --|   |-- Colorspace conversion
                                                   |-- Color quantization
+                                                  |-- Color precision reduction
+
+... and in lossless mode:
+
+                                              |-- Lossless mode entropy
+                                              |   decoding
+                                              |
+                  |-- Difference controller --|-- Prediction, undifferencing
+                  |                           |
+                  |                           |-- Point transform, sample size
+                  |                               scaling
+Main controller --|
+                  |                               |-- Upsampling
+                  |-- Postprocessing controller --|
                                                   |-- Color precision reduction
 
 As before, this diagram also represents typical control flow.  The objects
@@ -430,6 +479,22 @@ shown are:
   that emit fewer samples per DCT block, not the full 8x8.  Works on one DCT
   block at a time.
 
+* Difference controller: buffer controller for the spatial difference data.
+  When reading a multiscan JPEG file, this controller is responsible for
+  buffering the full image. The equivalent of one fully interleaved MCU row
+  is processed per call, even when the source JPEG file is noninterleaved.
+
+* Lossless mode entropy decoding: Read coded data from the data source module
+  and perform Huffman or arithmetic entropy decoding.  Works on one MCU row per
+  call.
+
+* Prediction and undifferencing: Calculate the predictor and add it to the
+  decoded difference.  Works on one scanline per call.  The difference
+  controller supplies the prior scanline, which is used for prediction.
+
+* Point transform and sample size scaling: Upscale the data by the point
+  transform value and downscale it to fit into the compiled-in sample size.
+
 * Postprocessing controller: buffer controller for the color quantization
   input buffer, when quantization is in use.  (Without quantization, this
   controller just calls the upsampler.)  For two-pass quantization, this
@@ -453,9 +518,9 @@ shown are:
   is not used for full-color output.  Works on one pixel row at a time; may
   require two passes to generate a color map.  Note that the output will
   always be a single component representing colormap indexes.  In the current
-  design, the output values are JSAMPLEs, so an 8-bit compilation cannot
-  quantize to more than 256 colors.  This is unlikely to be a problem in
-  practice.
+  design, the output values are JSAMPLEs, J12SAMPLEs, or J16SAMPLEs, so the
+  library cannot quantize to more than 256 colors when using 8-bit data
+  precision.  This is unlikely to be a problem in practice.
 
 * Color reduction: this module handles color precision reduction, e.g.,
   generating 15-bit color (5 bits/primary) from JPEG's 24-bit output.
@@ -541,28 +606,44 @@ there isn't any real need for it.
 
 *** Data formats ***
 
-Arrays of pixel sample values use the following data structure:
+Arrays of 8-bit pixel sample values use the following data structure:
 
     typedef something JSAMPLE;          a pixel component value, 0..MAXJSAMPLE
     typedef JSAMPLE *JSAMPROW;          ptr to a row of samples
     typedef JSAMPROW *JSAMPARRAY;       ptr to a list of rows
     typedef JSAMPARRAY *JSAMPIMAGE;     ptr to a list of color-component arrays
 
-The basic element type JSAMPLE will be one of unsigned char or short.  Short
-will be used if samples wider than 8 bits are to be supported (this is a
-compile-time option).  Otherwise, unsigned char is used.
+Arrays of 12-bit pixel sample values use the following data structure:
 
-With these conventions, JSAMPLE values can be assumed to be >= 0.  This helps
+    typedef something J12SAMPLE;        a pixel component value, 0..MAXJ12SAMPLE
+    typedef J12SAMPLE *J12SAMPROW;      ptr to a row of samples
+    typedef J12SAMPROW *J12SAMPARRAY;   ptr to a list of rows
+    typedef J12SAMPARRAY *J12SAMPIMAGE; ptr to a list of color-component arrays
+
+Arrays of 16-bit pixel sample values use the following data structure:
+
+    typedef something J16SAMPLE;        a pixel component value, 0..MAXJ16SAMPLE
+    typedef J16SAMPLE *J16SAMPROW;      ptr to a row of samples
+    typedef J16SAMPROW *J16SAMPARRAY;   ptr to a list of rows
+    typedef J16SAMPARRAY *J16SAMPIMAGE; ptr to a list of color-component arrays
+
+The basic element type JSAMPLE (8-bit sample) will be unsigned char, the basic
+element type J12SAMPLE (12-bit sample) will be short, and the basic element
+type J16SAMPLE (16-bit sample) will be unsigned short.
+
+With these conventions, J*SAMPLE values can be assumed to be >= 0.  This helps
 simplify correct rounding during downsampling, etc.  The JPEG standard's
-specification that sample values run from -128..127 is accommodated by
+specification that 8-bit sample values run from -128..127 is accommodated by
 subtracting 128 from the sample value in the DCT step.  Similarly, during
 decompression the output of the IDCT step will be immediately shifted back to
-0..255.  (NB: different values are required when 12-bit samples are in use.
-The code is written in terms of MAXJSAMPLE and CENTERJSAMPLE, which will be
-defined as 255 and 128 respectively in an 8-bit implementation, and as 4095
-and 2048 in a 12-bit implementation.)
+0..255.  (NOTE: different values are required when 12-bit samples are in use.
+When 8-bit samples are in use, the code uses MAXJSAMPLE and CENTERJSAMPLE,
+which are defined as 255 and 128 respectively.  When 12-bit samples are in use,
+the code uses MAXJ12SAMPLE and CENTERJ12SAMPLE, which are defined as 4095 and
+2048 respectively.  When 16-bit samples are in use, the code uses MAXJ16SAMPLE
+and CENTERJ16SAMPLE, which are defined as 65535 and 32768 respectively.)
 
-We use a pointer per row, rather than a two-dimensional JSAMPLE array.  This
+We use a pointer per row, rather than a two-dimensional J*SAMPLE array.  This
 choice costs only a small amount of memory and has several benefits:
 * Code using the data structure doesn't need to know the allocated width of
   the rows.  This simplifies edge expansion/compression, since we can work
@@ -592,9 +673,9 @@ be precomputed by copying the relevant pointer.
 Since most image-processing applications prefer to work on images in which
 the components of a pixel are stored together, the data passed to or from the
 surrounding application uses the traditional convention: a single pixel is
-represented by N consecutive JSAMPLE values, and an image row is an array of
-(# of color components)*(image width) JSAMPLEs.  One or more rows of data can
-be represented by a pointer of type JSAMPARRAY in this scheme.  This scheme is
+represented by N consecutive J*SAMPLE values, and an image row is an array of
+(# of color components)*(image width) J*SAMPLEs.  One or more rows of data can
+be represented by a pointer of type J*SAMPARRAY in this scheme.  This scheme is
 converted to component-wise storage inside the JPEG library.  (Applications
 that want to skip JPEG preprocessing or postprocessing will have to contend
 with component-wise storage.)
@@ -733,17 +814,17 @@ The memory manager deals with three kinds of object:
    pointers on MS-DOS machines.)  Note that individual "large" objects cannot
    exceed the size allowed by type size_t, which may be 64K or less on some
    machines.
-3. "Virtual" objects.  These are large 2-D arrays of JSAMPLEs or JBLOCKs
+3. "Virtual" objects.  These are large 2-D arrays of J*SAMPLEs or JBLOCKs
    (typically large enough for the entire image being processed).  The
    memory manager provides stripwise access to these arrays.  On machines
    without virtual memory, the rest of the array may be swapped out to a
    temporary file.
 
-(Note: JSAMPARRAY and JBLOCKARRAY data structures are a combination of large
+(Note: J*SAMPARRAY and JBLOCKARRAY data structures are a combination of large
 objects for the data proper and small objects for the row pointers.  For
 convenience and speed, the memory manager provides single routines to create
 these structures.  Similarly, virtual arrays include a small control block
-and a JSAMPARRAY or JBLOCKARRAY working buffer, all created with one call.)
+and a J*SAMPARRAY or JBLOCKARRAY working buffer, all created with one call.)
 
 In the present implementation, virtual arrays are only permitted to have image
 lifespan.  (Permanent lifespan would not be reasonable, and pass lifespan is
@@ -770,7 +851,7 @@ To support all this, we establish the following protocol for doing business
 with the memory manager:
   1. Modules must request virtual arrays (which may have only image lifespan)
      during the initial setup phase, i.e., in their jinit_xxx routines.
-  2. All "large" objects (including JSAMPARRAYs and JBLOCKARRAYs) must also be
+  2. All "large" objects (including J*SAMPARRAYs and JBLOCKARRAYs) must also be
      allocated during initial setup.
   3. realize_virt_arrays will be called at the completion of initial setup.
      The above conventions ensure that sufficient information is available

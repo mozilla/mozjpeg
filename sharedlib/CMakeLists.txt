@@ -29,19 +29,15 @@ if(WITH_SIMD AND (MSVC_IDE OR XCODE))
 endif()
 
 if(WIN32)
-  if(WITH_MEM_SRCDST)
-    set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}-memsrcdst.def)
-  else()
-    set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}.def)
-  endif()
+  set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}.def)
 endif()
 if(MSVC)
   configure_file(${CMAKE_SOURCE_DIR}/win/jpeg.rc.in
     ${CMAKE_BINARY_DIR}/win/jpeg.rc)
   set(JPEG_SRCS ${JPEG_SRCS} ${CMAKE_BINARY_DIR}/win/jpeg.rc)
 endif()
-add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} $<TARGET_OBJECTS:simd>
-  ${SIMD_OBJS})
+add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} ${SIMD_TARGET_OBJECTS}
+  ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12> $<TARGET_OBJECTS:jpeg16>)
 
 set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
   VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
@@ -60,7 +56,8 @@ if(MSVC)
   set_target_properties(jpeg PROPERTIES
     RUNTIME_OUTPUT_NAME jpeg${SO_MAJOR_VERSION})
   # The jsimd_*.c file is built using /MT, so this prevents a linker warning.
-  set_target_properties(jpeg PROPERTIES LINK_FLAGS "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
+  set_target_properties(jpeg PROPERTIES LINK_FLAGS
+    "/NODEFAULTLIB:LIBCMT /NODEFAULTLIB:LIBCMTD")
 elseif(MINGW)
   set_target_properties(jpeg PROPERTIES SUFFIX -${SO_MAJOR_VERSION}.dll)
 endif()
@@ -68,27 +65,43 @@ endif()
 if(WIN32)
   set(USE_SETMODE "-DUSE_SETMODE")
 endif()
-if(WITH_12BIT)
-  set(COMPILE_FLAGS "-DGIF_SUPPORTED -DPPM_SUPPORTED ${USE_SETMODE}")
-else()
-  set(COMPILE_FLAGS "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
-  set(CJPEG_BMP_SOURCES ../rdbmp.c ../rdtarga.c)
-  set(DJPEG_BMP_SOURCES ../wrbmp.c ../wrtarga.c)
-endif()
+set(CDJPEG_COMPILE_FLAGS
+  "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 
-add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c
-  ../rdswitch.c ${CJPEG_BMP_SOURCES})
-set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+# Compile a separate version of these source files with 12-bit and 16-bit data
+# precision.
+add_library(cjpeg12 OBJECT ../rdgif.c ../rdppm.c)
+set_property(TARGET cjpeg12 PROPERTY COMPILE_FLAGS
+  "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+add_library(cjpeg16 OBJECT ../rdgif.c ../rdppm.c)
+set_property(TARGET cjpeg16 PROPERTY COMPILE_FLAGS
+  "-DBITS_IN_JSAMPLE=16 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdbmp.c ../rdgif.c ../rdppm.c
+  ../rdswitch.c ../rdtarga.c $<TARGET_OBJECTS:cjpeg12>
+  $<TARGET_OBJECTS:cjpeg16>)
+set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${CDJPEG_COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)
 
+# Compile a separate version of these source files with 12-bit and 16-bit data
+# precision.
+add_library(djpeg12 OBJECT ../rdcolmap.c ../wrgif.c ../wrppm.c)
+set_property(TARGET djpeg12 PROPERTY COMPILE_FLAGS
+  "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
+add_library(djpeg16 OBJECT ../wrppm.c)
+set_property(TARGET djpeg16 PROPERTY COMPILE_FLAGS
+  "-DBITS_IN_JSAMPLE=16 -DPPM_SUPPORTED")
 add_executable(djpeg ../djpeg.c ../cdjpeg.c ../rdcolmap.c ../rdswitch.c
-  ../wrgif.c ../wrppm.c ${DJPEG_BMP_SOURCES})
-set_property(TARGET djpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
+  ../wrbmp.c ../wrgif.c ../wrppm.c ../wrtarga.c $<TARGET_OBJECTS:djpeg12>
+  $<TARGET_OBJECTS:djpeg16>)
+set_property(TARGET djpeg PROPERTY COMPILE_FLAGS ${CDJPEG_COMPILE_FLAGS})
 target_link_libraries(djpeg jpeg)
 
 add_executable(jpegtran ../jpegtran.c ../cdjpeg.c ../rdswitch.c ../transupp.c)
 target_link_libraries(jpegtran jpeg)
 set_property(TARGET jpegtran PROPERTY COMPILE_FLAGS "${USE_SETMODE}")
+
+add_executable(example ../example.c)
+target_link_libraries(example jpeg)
 
 add_executable(jcstest ../jcstest.c)
 target_link_libraries(jcstest jpeg)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021, 2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2023 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,8 +37,8 @@
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
   tjhandle handle = NULL;
-  unsigned char *dstBuf = NULL;
-  int width = 0, height = 0, jpegSubsamp, jpegColorspace, pfi;
+  void *dstBuf = NULL;
+  int width = 0, height = 0, precision, sampleSize, pfi;
   /* TJPF_RGB-TJPF_BGR share the same code paths, as do TJPF_RGBX-TJPF_XRGB and
      TJPF_RGBA-TJPF_ARGB.  Thus, the pixel formats below should be the minimum
      necessary to achieve full coverage. */
@@ -52,14 +52,15 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   putenv(env);
 #endif
 
-  if ((handle = tjInitDecompress()) == NULL)
+  if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL)
     goto bailout;
 
-  /* We ignore the return value of tjDecompressHeader3(), because some JPEG
-     images may have unusual subsampling configurations that the TurboJPEG API
-     cannot identify but can still decompress. */
-  tjDecompressHeader3(handle, data, size, &width, &height, &jpegSubsamp,
-                      &jpegColorspace);
+  if (tj3DecompressHeader(handle, data, size) < 0)
+    goto bailout;
+  width = tj3Get(handle, TJPARAM_JPEGWIDTH);
+  height = tj3Get(handle, TJPARAM_JPEGHEIGHT);
+  precision = tj3Get(handle, TJPARAM_PRECISION);
+  sampleSize = (precision > 8 ? 2 : 1);
 
   /* Ignore 0-pixel images and images larger than 1 Megapixel, as Google's
      OSS-Fuzz target for libjpeg-turbo did.  Casting width to (uint64_t)
@@ -67,41 +68,80 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
   if (width < 1 || height < 1 || (uint64_t)width * height > 1048576)
     goto bailout;
 
+  tj3Set(handle, TJPARAM_SCANLIMIT, 500);
+
   for (pfi = 0; pfi < NUMPF; pfi++) {
-    int pf = pixelFormats[pfi], flags = TJFLAG_LIMITSCANS, i, sum = 0;
     int w = width, h = height;
+    int pf = pixelFormats[pfi], i;
+    int64_t sum = 0;
 
     /* Test non-default decompression options on the first iteration. */
-    if (pfi == 0)
-      flags |= TJFLAG_BOTTOMUP | TJFLAG_FASTUPSAMPLE | TJFLAG_FASTDCT;
-    /* Test IDCT scaling on the second iteration. */
-    else if (pfi == 1) {
-      w = (width + 1) / 2;
-      h = (height + 1) / 2;
+    tj3Set(handle, TJPARAM_BOTTOMUP, pfi == 0);
+    tj3Set(handle, TJPARAM_FASTUPSAMPLE, pfi == 0);
+
+    if (!tj3Get(handle, TJPARAM_LOSSLESS)) {
+      tj3Set(handle, TJPARAM_FASTDCT, pfi == 0);
+
+      /* Test IDCT scaling on the second iteration. */
+      if (pfi == 1) {
+        tjscalingfactor sf = { 1, 2 };
+        tj3SetScalingFactor(handle, sf);
+        w = TJSCALED(width, sf);
+        h = TJSCALED(height, sf);
+      } else
+        tj3SetScalingFactor(handle, TJUNSCALED);
+
+      /* Test partial image decompression on the fourth iteration, if the image
+         is large enough. */
+      if (pfi == 3 && w >= 97 && h >= 75) {
+        tjregion cr = { 32, 16, 65, 59 };
+        tj3SetCroppingRegion(handle, cr);
+      } else
+        tj3SetCroppingRegion(handle, TJUNCROPPED);
     }
 
-    if ((dstBuf = (unsigned char *)malloc(w * h * tjPixelSize[pf])) == NULL)
+    if ((dstBuf = malloc(w * h * tjPixelSize[pf] * sampleSize)) == NULL)
       goto bailout;
 
-    if (tjDecompress2(handle, data, size, dstBuf, w, 0, h, pf, flags) == 0) {
-      /* Touch all of the output pixels in order to catch uninitialized reads
-         when using MemorySanitizer. */
-      for (i = 0; i < w * h * tjPixelSize[pf]; i++)
-        sum += dstBuf[i];
-    } else
-      goto bailout;
+    if (precision == 8) {
+      if (tj3Decompress8(handle, data, size, (unsigned char *)dstBuf, 0,
+                         pf) == 0) {
+        /* Touch all of the output pixels in order to catch uninitialized reads
+           when using MemorySanitizer. */
+        for (i = 0; i < w * h * tjPixelSize[pf]; i++)
+          sum += ((unsigned char *)dstBuf)[i];
+      } else
+        goto bailout;
+    } else if (precision == 12) {
+      if (tj3Decompress12(handle, data, size, (short *)dstBuf, 0, pf) == 0) {
+        /* Touch all of the output pixels in order to catch uninitialized reads
+           when using MemorySanitizer. */
+        for (i = 0; i < w * h * tjPixelSize[pf]; i++)
+          sum += ((short *)dstBuf)[i];
+      } else
+        goto bailout;
+    } else {
+      if (tj3Decompress16(handle, data, size, (unsigned short *)dstBuf, 0,
+                          pf) == 0) {
+        /* Touch all of the output pixels in order to catch uninitialized reads
+           when using MemorySanitizer. */
+        for (i = 0; i < w * h * tjPixelSize[pf]; i++)
+          sum += ((unsigned short *)dstBuf)[i];
+      } else
+        goto bailout;
+    }
 
     free(dstBuf);
     dstBuf = NULL;
 
     /* Prevent the code above from being optimized out.  This test should never
        be true, but the compiler doesn't know that. */
-    if (sum > 255 * 1048576 * tjPixelSize[pf])
+    if (sum > ((1LL << precision) - 1LL) * 1048576LL * tjPixelSize[pf])
       goto bailout;
   }
 
 bailout:
   free(dstBuf);
-  if (handle) tjDestroy(handle);
+  tj3Destroy(handle);
   return 0;
 }

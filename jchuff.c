@@ -3,11 +3,14 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016, 2018-2022, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014-2016, 2018-2023, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  * Copyright (C) 2018, Matthias Räncker.
  * Copyright (C) 2020, Arm Limited.
+ * Copyright (C) 2022, Felix Hanau.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -26,7 +29,11 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
+#ifdef WITH_SIMD
 #include "jsimd.h"
+#else
+#include "jchuff.h"             /* Declarations shared with jc*huff.c */
+#endif
 #include <limits.h>
 
 /*
@@ -179,7 +186,9 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
     entropy->pub.finish_pass = finish_pass_huff;
   }
 
+#ifdef WITH_SIMD
   entropy->simd = jsimd_can_huff_encode_one_block();
+#endif
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
@@ -219,6 +228,7 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
   }
 
   /* Initialize bit buffer to empty */
+#ifdef WITH_SIMD
   if (entropy->simd) {
     entropy->saved.put_buffer.simd = 0;
 #if defined(__aarch64__) && !defined(NEON_INTRINSICS)
@@ -226,7 +236,9 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
 #else
     entropy->saved.free_bits = SIMD_BIT_BUF_SIZE;
 #endif
-  } else {
+  } else
+#endif
+  {
     entropy->saved.put_buffer.c = 0;
     entropy->saved.free_bits = BIT_BUF_SIZE;
   }
@@ -241,7 +253,7 @@ start_pass_huff(j_compress_ptr cinfo, boolean gather_statistics)
  * Compute the derived values for a Huffman table.
  * This routine also performs some validation checks on the table.
  *
- * Note this is also used by jcphuff.c.
+ * Note this is also used by jcphuff.c and jclhuff.c.
  */
 
 GLOBAL(void)
@@ -317,12 +329,12 @@ jpeg_make_c_derived_tbl(j_compress_ptr cinfo, boolean isDC, int tblno,
   memset(dtbl->ehufco, 0, sizeof(dtbl->ehufco));
   memset(dtbl->ehufsi, 0, sizeof(dtbl->ehufsi));
 
-  /* This is also a convenient place to check for out-of-range
-   * and duplicated VAL entries.  We allow 0..255 for AC symbols
-   * but only 0..15 for DC.  (We could constrain them further
-   * based on data depth and mode, but this seems enough.)
+  /* This is also a convenient place to check for out-of-range and duplicated
+   * VAL entries.  We allow 0..255 for AC symbols but only 0..15 for DC in
+   * lossy mode and 0..16 for DC in lossless mode.  (We could constrain them
+   * further based on data depth and mode, but this seems enough.)
    */
-  maxsymbol = isDC ? 15 : 255;
+  maxsymbol = isDC ? (cinfo->master->lossless ? 16 : 15) : 255;
 
   for (p = 0; p < lastp; p++) {
     i = htbl->huffval[p];
@@ -541,6 +553,8 @@ flush_bits(working_state *state)
 }
 
 
+#ifdef WITH_SIMD
+
 /* Encode a single block's worth of coefficients */
 
 LOCAL(boolean)
@@ -560,6 +574,8 @@ encode_one_block_simd(working_state *state, JCOEFPTR block, int last_dc_val,
   return TRUE;
 }
 
+#endif
+
 LOCAL(boolean)
 encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
                  c_derived_tbl *dctbl, c_derived_tbl *actbl)
@@ -568,6 +584,7 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
   bit_buf_type put_buffer;
   JOCTET _buffer[BUFSIZE], *buffer;
   int localbuf = 0;
+  int max_coef_bits = state->cinfo->data_precision + 2;
 
   free_bits = state->cur.free_bits;
   put_buffer = state->cur.put_buffer.c;
@@ -588,6 +605,11 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
 
   /* Find the number of bits needed for the magnitude of the coefficient */
   nbits = JPEG_NBITS(nbits);
+  /* Check for out-of-range coefficient values.
+   * Since we're encoding a difference, the range limit is twice as much.
+   */
+  if (nbits > max_coef_bits + 1)
+    ERREXIT(state->cinfo, JERR_BAD_DCT_COEF);
 
   /* Emit the Huffman-coded symbol for the number of bits.
    * Emit that number of bits of the value, if positive,
@@ -613,6 +635,9 @@ encode_one_block(working_state *state, JCOEFPTR block, int last_dc_val,
     temp += nbits; \
     nbits ^= temp; \
     nbits = JPEG_NBITS_NONZERO(nbits); \
+    /* Check for out-of-range coefficient values */ \
+    if (nbits > max_coef_bits) \
+      ERREXIT(state->cinfo, JERR_BAD_DCT_COEF); \
     /* if run length > 15, must emit special run-length-16 codes (0xF0) */ \
     while (r >= 16 * 16) { \
       r -= 16 * 16; \
@@ -704,6 +729,7 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   }
 
   /* Encode the MCU data blocks */
+#ifdef WITH_SIMD
   if (entropy->simd) {
     for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
       ci = cinfo->MCU_membership[blkn];
@@ -716,7 +742,9 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       /* Update last_dc_val */
       state.cur.last_dc_val[ci] = MCU_data[blkn][0][0];
     }
-  } else {
+  } else
+#endif
+  {
     for (blkn = 0; blkn < cinfo->blocks_in_MCU; blkn++) {
       ci = cinfo->MCU_membership[blkn];
       compptr = cinfo->cur_comp_info[ci];
@@ -800,6 +828,7 @@ htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
   register int temp;
   register int nbits;
   register int k, r;
+  int max_coef_bits = cinfo->data_precision + 2;
 
   /* Encode the DC coefficient difference per section F.1.2.1 */
 
@@ -816,7 +845,7 @@ htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
   /* Check for out-of-range coefficient values.
    * Since we're encoding a difference, the range limit is twice as much.
    */
-  if (nbits > MAX_COEF_BITS + 1)
+  if (nbits > max_coef_bits + 1)
     ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
   /* Count the Huffman symbol for the number of bits */
@@ -845,7 +874,7 @@ htest_one_block(j_compress_ptr cinfo, JCOEFPTR block, int last_dc_val,
       while ((temp >>= 1))
         nbits++;
       /* Check for out-of-range coefficient values */
-      if (nbits > MAX_COEF_BITS)
+      if (nbits > max_coef_bits)
         ERREXIT(cinfo, JERR_BAD_DCT_COEF);
 
       /* Count Huffman symbol for run length / number of bits */
@@ -900,7 +929,7 @@ encode_mcu_gather(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
 
 /*
  * Generate the best Huffman code table for the given counts, fill htbl.
- * Note this is also used by jcphuff.c.
+ * Note this is also used by jcphuff.c and jclhuff.c.
  *
  * The JPEG standard requires that no symbol be assigned a codeword of all
  * one bits (so that padding bits added at the end of a compressed segment
@@ -932,11 +961,15 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
 {
 #define MAX_CLEN  32            /* assumed maximum initial code length */
   UINT8 bits[MAX_CLEN + 1];     /* bits[k] = # of symbols with code length k */
+  int bit_pos[MAX_CLEN + 1];    /* # of symbols with smaller code length */
   int codesize[257];            /* codesize[k] = code length of symbol k */
+  int nz_index[257];            /* index of nonzero symbol in the original freq
+                                   array */
   int others[257];              /* next symbol in current branch of tree */
   int c1, c2;
   int p, i, j;
-  long v;
+  int num_nz_symbols;
+  long v, v2;
 
   /* This algorithm is explained in section K.2 of the JPEG standard */
 
@@ -951,28 +984,41 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
    * will be placed last in the largest codeword category.
    */
 
+  /* Group nonzero frequencies together so we can more easily find the
+   * smallest.
+   */
+  num_nz_symbols = 0;
+  for (i = 0; i < 257; i++) {
+    if (freq[i]) {
+      nz_index[num_nz_symbols] = i;
+      freq[num_nz_symbols] = freq[i];
+      num_nz_symbols++;
+    }
+  }
+
   /* Huffman's basic algorithm to assign optimal code lengths to symbols */
 
   for (;;) {
-    /* Find the smallest nonzero frequency, set c1 = its symbol */
-    /* In case of ties, take the larger symbol number */
+    /* Find the two smallest nonzero frequencies; set c1, c2 = their symbols */
+    /* In case of ties, take the larger symbol number.  Since we have grouped
+     * the nonzero symbols together, checking for zero symbols is not
+     * necessary.
+     */
     c1 = -1;
-    v = 1000000000L;
-    for (i = 0; i <= 256; i++) {
-      if (freq[i] && freq[i] <= v) {
-        v = freq[i];
-        c1 = i;
-      }
-    }
-
-    /* Find the next smallest nonzero frequency, set c2 = its symbol */
-    /* In case of ties, take the larger symbol number */
     c2 = -1;
     v = 1000000000L;
-    for (i = 0; i <= 256; i++) {
-      if (freq[i] && freq[i] <= v && i != c1) {
-        v = freq[i];
-        c2 = i;
+    v2 = 1000000000L;
+    for (i = 0; i < num_nz_symbols; i++) {
+      if (freq[i] <= v2) {
+        if (freq[i] <= v) {
+          c2 = c1;
+          v2 = v;
+          v = freq[i];
+          c1 = i;
+        } else {
+          v2 = freq[i];
+          c2 = i;
+        }
       }
     }
 
@@ -982,7 +1028,10 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
 
     /* Else merge the two counts/trees */
     freq[c1] += freq[c2];
-    freq[c2] = 0;
+    /* Set the frequency to a very high value instead of zero, so we don't have
+     * to check for zero values.
+     */
+    freq[c2] = 1000000001L;
 
     /* Increment the codesize of everything in c1's tree branch */
     codesize[c1]++;
@@ -1002,15 +1051,24 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
   }
 
   /* Now count the number of symbols of each code length */
-  for (i = 0; i <= 256; i++) {
-    if (codesize[i]) {
-      /* The JPEG standard seems to think that this can't happen, */
-      /* but I'm paranoid... */
-      if (codesize[i] > MAX_CLEN)
-        ERREXIT(cinfo, JERR_HUFF_CLEN_OVERFLOW);
+  for (i = 0; i < num_nz_symbols; i++) {
+    /* The JPEG standard seems to think that this can't happen, */
+    /* but I'm paranoid... */
+    if (codesize[i] > MAX_CLEN)
+      ERREXIT(cinfo, JERR_HUFF_CLEN_OVERFLOW);
 
-      bits[codesize[i]]++;
-    }
+    bits[codesize[i]]++;
+  }
+
+  /* Count the number of symbols with a length smaller than i bits, so we can
+   * construct the symbol table more efficiently.  Note that this includes the
+   * pseudo-symbol 256, but since it is the last symbol, it will not affect the
+   * table.
+   */
+  p = 0;
+  for (i = 1; i <= MAX_CLEN; i++) {
+    bit_pos[i] = p;
+    p += bits[i];
   }
 
   /* JPEG doesn't allow symbols with code lengths over 16 bits, so if the pure
@@ -1050,14 +1108,9 @@ jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[])
    * changes made above, but Rec. ITU-T T.81 | ISO/IEC 10918-1 seems to think
    * this works.
    */
-  p = 0;
-  for (i = 1; i <= MAX_CLEN; i++) {
-    for (j = 0; j <= 255; j++) {
-      if (codesize[j] == i) {
-        htbl->huffval[p] = (UINT8)j;
-        p++;
-      }
-    }
+  for (i = 0; i < num_nz_symbols - 1; i++) {
+    htbl->huffval[bit_pos[codesize[i]]] = (UINT8)nz_index[i];
+    bit_pos[codesize[i]]++;
   }
 
   /* Set sent_table FALSE so updated table will be written to JPEG file. */

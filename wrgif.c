@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2015-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2015, 2017, 2022, D. R. Commander.
+ * Copyright (C) 2015, 2017, 2022-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -31,8 +31,9 @@
  */
 
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
+#include "jsamplecomp.h"
 
-#ifdef GIF_SUPPORTED
+#if defined(GIF_SUPPORTED) && BITS_IN_JSAMPLE != 16
 
 
 #define MAX_LZW_BITS     12     /* maximum LZW code size (4096 symbols) */
@@ -249,7 +250,7 @@ put_3bytes(gif_dest_ptr dinfo, int val)
 
 
 LOCAL(void)
-emit_header(gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
+emit_header(gif_dest_ptr dinfo, int num_colors, _JSAMPARRAY colormap)
 /* Output the GIF file header, including color map */
 /* If colormap == NULL, synthesize a grayscale colormap */
 {
@@ -308,7 +309,7 @@ emit_header(gif_dest_ptr dinfo, int num_colors, JSAMPARRAY colormap)
       }
     } else {
       /* fill out the map to a power of 2 */
-      put_3bytes(dinfo, CENTERJSAMPLE >> cshift);
+      put_3bytes(dinfo, _CENTERJSAMPLE >> cshift);
     }
   }
   /* Write image separator and Image Descriptor */
@@ -337,9 +338,10 @@ start_output_gif(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
   gif_dest_ptr dest = (gif_dest_ptr)dinfo;
 
   if (cinfo->quantize_colors)
-    emit_header(dest, cinfo->actual_number_of_colors, cinfo->colormap);
+    emit_header(dest, cinfo->actual_number_of_colors,
+                (_JSAMPARRAY)cinfo->colormap);
   else
-    emit_header(dest, 256, (JSAMPARRAY)NULL);
+    emit_header(dest, 256, (_JSAMPARRAY)NULL);
 }
 
 
@@ -358,14 +360,14 @@ put_LZW_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
                    JDIMENSION rows_supplied)
 {
   gif_dest_ptr dest = (gif_dest_ptr)dinfo;
-  register JSAMPROW ptr;
+  register _JSAMPROW ptr;
   register JDIMENSION col;
   code_int c;
   register hash_int i;
   register hash_int disp;
   register hash_entry probe_value;
 
-  ptr = dest->pub.buffer[0];
+  ptr = dest->pub._buffer[0];
   for (col = cinfo->output_width; col > 0; col--) {
     /* Accept and compress one 8-bit byte */
     c = (code_int)(*ptr++);
@@ -459,11 +461,11 @@ put_raw_pixel_rows(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo,
                    JDIMENSION rows_supplied)
 {
   gif_dest_ptr dest = (gif_dest_ptr)dinfo;
-  register JSAMPROW ptr;
+  register _JSAMPROW ptr;
   register JDIMENSION col;
   code_int c;
 
-  ptr = dest->pub.buffer[0];
+  ptr = dest->pub._buffer[0];
   for (col = cinfo->output_width; col > 0; col--) {
     c = (code_int)(*ptr++);
     /* Accept and output one pixel value.
@@ -522,9 +524,12 @@ calc_buffer_dimensions_gif(j_decompress_ptr cinfo, djpeg_dest_ptr dinfo)
  */
 
 GLOBAL(djpeg_dest_ptr)
-jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw)
+_jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw)
 {
   gif_dest_ptr dest;
+
+  if (cinfo->data_precision != BITS_IN_JSAMPLE)
+    ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
   /* Create module interface object, fill in method pointers */
   dest = (gif_dest_ptr)
@@ -554,7 +559,7 @@ jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw)
     ERREXIT(cinfo, JERR_GIF_BUG);
 
   /* Create decompressor output buffer. */
-  dest->pub.buffer = (*cinfo->mem->alloc_sarray)
+  dest->pub._buffer = (_JSAMPARRAY)(*cinfo->mem->alloc_sarray)
     ((j_common_ptr)cinfo, JPOOL_IMAGE, cinfo->output_width, (JDIMENSION)1);
   dest->pub.buffer_height = 1;
 
@@ -577,4 +582,4 @@ jinit_write_gif(j_decompress_ptr cinfo, boolean is_lzw)
   return (djpeg_dest_ptr)dest;
 }
 
-#endif /* GIF_SUPPORTED */
+#endif /* defined(GIF_SUPPORTED) && BITS_IN_JSAMPLE != 16 */

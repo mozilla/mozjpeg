@@ -106,26 +106,8 @@ jobs:
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test
           JSIMD_FORCESSE2=1 make test
-          cmake -DFLOATTEST=no-fp-contract ..
+          cmake -DFLOATTEST8=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
-          popd
-  linux-12bit:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-      - name: Build
-        env:
-          CTEST_OUTPUT_ON_FAILURE: 1
-        run: |
-          mkdir build
-          pushd build
-          cmake -G"Unix Makefiles" -DWITH_12BIT=1 \
-            -DCMAKE_C_FLAGS='--std=gnu90 -Wall -Werror -Wextra -Wpedantic -pedantic-errors -Wdouble-promotion -Wformat-overflow=2 -Wformat-security -Wformat-signedness -Wformat-truncation=2 -Wformat-y2k -Wmissing-include-dirs -Wshift-overflow=2 -Wswitch-bool -Wno-unused-parameter -Wuninitialized -Wstrict-overflow=2 -Wstringop-overflow=4 -Wstringop-truncation -Wduplicated-branches -Wduplicated-cond -Wdeclaration-after-statement -Wshadow -Wunsafe-loop-optimizations -Wundef -Wcast-align -Wno-clobbered -Wjump-misses-init -Wno-sign-compare -Wlogical-op -Waggregate-return -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wdisabled-optimization -Wno-overlength-strings' \
-            ..
-          export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
-          make -j$NUMCPUS --load-average=$NUMCPUS
-          make test
           popd
   linux-jpeg7-x32:
     runs-on: ubuntu-latest
@@ -142,14 +124,14 @@ jobs:
         run: |
           mkdir build
           pushd build
-          cmake -G"Unix Makefiles" -DWITH_JPEG7=1 -DCMAKE_C_FLAGS=-mx32 \
-            -DCMAKE_C_FLAGS='--std=gnu90 -Wall -Werror -Wextra -Wpedantic -pedantic-errors -Wdouble-promotion -Wformat-overflow=2 -Wformat-security -Wformat-signedness -Wformat-truncation=2 -Wformat-y2k -Wmissing-include-dirs -Wshift-overflow=2 -Wswitch-bool -Wno-unused-parameter -Wuninitialized -Wstrict-overflow=2 -Wstringop-overflow=4 -Wstringop-truncation -Wduplicated-branches -Wduplicated-cond -Wdeclaration-after-statement -Wshadow -Wunsafe-loop-optimizations -Wundef -Wcast-align -Wno-clobbered -Wjump-misses-init -Wno-sign-compare -Wlogical-op -Waggregate-return -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wdisabled-optimization -Wno-overlength-strings' \
+          cmake -G"Unix Makefiles" -DWITH_JPEG7=1 \
+            -DCMAKE_C_FLAGS='-mx32 --std=gnu90 -Wall -Werror -Wextra -Wpedantic -pedantic-errors -Wdouble-promotion -Wformat-overflow=2 -Wformat-security -Wformat-signedness -Wformat-truncation=2 -Wformat-y2k -Wmissing-include-dirs -Wshift-overflow=2 -Wswitch-bool -Wno-unused-parameter -Wuninitialized -Wstrict-overflow=2 -Wstringop-overflow=4 -Wstringop-truncation -Wduplicated-branches -Wduplicated-cond -Wdeclaration-after-statement -Wshadow -Wunsafe-loop-optimizations -Wundef -Wcast-align -Wno-clobbered -Wjump-misses-init -Wno-sign-compare -Wlogical-op -Waggregate-return -Wstrict-prototypes -Wold-style-definition -Wmissing-prototypes -Wmissing-declarations -Wpacked -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wdisabled-optimization -Wno-overlength-strings' \
             ..
           export NUMCPUS=`grep -c '^processor' /proc/cpuinfo`
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test
           JSIMD_FORCESSE2=1 make test
-          cmake -DFLOATTEST=no-fp-contract ..
+          cmake -DFLOATTEST8=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
           popd
   linux-jpeg8:
@@ -173,7 +155,7 @@ jobs:
           make -j$NUMCPUS --load-average=$NUMCPUS
           make test
           JSIMD_FORCESSE2=1 make test
-          cmake -DFLOATTEST=no-fp-contract ..
+          cmake -DFLOATTEST8=no-fp-contract ..
           JSIMD_FORCENONE=1 make test
           popd
   linux-msan:

@@ -47,7 +47,8 @@ Build Requirements
 
   If you don't already have Visual C++, then the easiest way to get it is by
   installing
-  [Visual Studio Community Edition](https://visualstudio.microsoft.com).
+  [Visual Studio Community Edition](https://visualstudio.microsoft.com),
+  which includes everything necessary to build libjpeg-turbo.
 
   * You can also download and install the standalone Windows SDK (for Windows 7
     or later), which includes command-line versions of the 32-bit and 64-bit

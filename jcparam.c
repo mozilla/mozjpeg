@@ -6,9 +6,9 @@
  * Modified 2003-2008 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2009-2011, 2018, D. R. Commander.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains optional default-setting code for the JPEG compressor.
  * Applications do not have to use this file, but those that don't use it
@@ -26,7 +26,7 @@
  */
 
 GLOBAL(void)
-jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
+jpeg_add_quant_table(j_compress_ptr cinfo, int which_tbl,
                      const unsigned int *basic_table, int scale_factor,
                      boolean force_baseline)
 /* Define a quantization table equal to the basic_table times
@@ -46,19 +46,19 @@ jpeg_add_quant_table (j_compress_ptr cinfo, int which_tbl,
   if (which_tbl < 0 || which_tbl >= NUM_QUANT_TBLS)
     ERREXIT1(cinfo, JERR_DQT_INDEX, which_tbl);
 
-  qtblptr = & cinfo->quant_tbl_ptrs[which_tbl];
+  qtblptr = &cinfo->quant_tbl_ptrs[which_tbl];
 
   if (*qtblptr == NULL)
-    *qtblptr = jpeg_alloc_quant_table((j_common_ptr) cinfo);
+    *qtblptr = jpeg_alloc_quant_table((j_common_ptr)cinfo);
 
   for (i = 0; i < DCTSIZE2; i++) {
-    temp = ((long) basic_table[i] * scale_factor + 50L) / 100L;
+    temp = ((long)basic_table[i] * scale_factor + 50L) / 100L;
     /* limit the values to the valid range */
     if (temp <= 0L) temp = 1L;
     if (temp > 32767L) temp = 32767L; /* max quantizer needed for 12 bits */
     if (force_baseline && temp > 255L)
       temp = 255L;              /* limit to baseline range if requested */
-    (*qtblptr)->quantval[i] = (UINT16) temp;
+    (*qtblptr)->quantval[i] = (UINT16)temp;
   }
 
   /* Initialize sent_table FALSE so table will be written to JPEG file. */
@@ -291,7 +291,7 @@ static const unsigned int std_chrominance_quant_tbl[9][DCTSIZE2] = {
 
 #if JPEG_LIB_VERSION >= 70
 GLOBAL(void)
-jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
+jpeg_default_qtables(j_compress_ptr cinfo, boolean force_baseline)
 /* Set or change the 'quality' (quantization) setting, using default tables
  * and straight percentage-scaling quality scales.
  * This entry point allows different scalings for luminance and chrominance.
@@ -307,8 +307,8 @@ jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
 
 
 GLOBAL(void)
-jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
-                         boolean force_baseline)
+jpeg_set_linear_quality(j_compress_ptr cinfo, int scale_factor,
+                        boolean force_baseline)
 /* Set or change the 'quality' (quantization) setting, using default tables
  * and a straight percentage-scaling quality scale.  In most cases it's better
  * to use jpeg_set_quality (below); this entry point is provided for
@@ -324,7 +324,7 @@ jpeg_set_linear_quality (j_compress_ptr cinfo, int scale_factor,
 
 
 GLOBAL(int)
-jpeg_quality_scaling (int quality)
+jpeg_quality_scaling(int quality)
 {
   return jpeg_float_quality_scaling(quality);
 }
@@ -356,7 +356,7 @@ jpeg_float_quality_scaling(float quality)
 
 
 GLOBAL(void)
-jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
+jpeg_set_quality(j_compress_ptr cinfo, int quality, boolean force_baseline)
 /* Set or change the 'quality' (quantization) setting, using default tables.
  * This is the standard quality-adjusting entry point for typical user
  * interfaces; only those who want detailed control over quantization tables
@@ -382,7 +382,7 @@ jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
  */
 
 GLOBAL(void)
-jpeg_set_defaults (j_compress_ptr cinfo)
+jpeg_set_defaults(j_compress_ptr cinfo)
 {
   int i;
 
@@ -396,7 +396,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
    */
   if (cinfo->comp_info == NULL)
     cinfo->comp_info = (jpeg_component_info *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_PERMANENT,
                                   MAX_COMPONENTS * sizeof(jpeg_component_info));
 
   /* Initialize everything not dependent on the color space */
@@ -409,7 +409,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
   /* Set up two quantization tables using default quality of 75 */
   jpeg_set_quality(cinfo, 75, TRUE);
   /* Set up two Huffman tables */
-  std_huff_tables((j_common_ptr) cinfo);
+  std_huff_tables((j_common_ptr)cinfo);
 
   /* Initialize default arithmetic coding conditioning */
   for (i = 0; i < NUM_ARITH_TBLS; i++) {
@@ -520,7 +520,7 @@ jpeg_set_defaults (j_compress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_default_colorspace (j_compress_ptr cinfo)
+jpeg_default_colorspace(j_compress_ptr cinfo)
 {
   switch (cinfo->in_color_space) {
   case JCS_GRAYSCALE:
@@ -562,12 +562,12 @@ jpeg_default_colorspace (j_compress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
+jpeg_set_colorspace(j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
 {
   jpeg_component_info *compptr;
   int ci;
 
-#define SET_COMP(index,id,hsamp,vsamp,quant,dctbl,actbl)  \
+#define SET_COMP(index, id, hsamp, vsamp, quant, dctbl, actbl) \
   (compptr = &cinfo->comp_info[index], \
    compptr->component_id = (id), \
    compptr->h_samp_factor = (hsamp), \
@@ -594,39 +594,39 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
     cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
     cinfo->num_components = 1;
     /* JFIF specifies component ID 1 */
-    SET_COMP(0, 1, 1,1, 0, 0,0);
+    SET_COMP(0, 1, 1, 1, 0, 0, 0);
     break;
   case JCS_RGB:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag RGB */
     cinfo->num_components = 3;
-    SET_COMP(0, 0x52 /* 'R' */, 1,1, 0, 0,0);
-    SET_COMP(1, 0x47 /* 'G' */, 1,1, 0, 0,0);
-    SET_COMP(2, 0x42 /* 'B' */, 1,1, 0, 0,0);
+    SET_COMP(0, 0x52 /* 'R' */, 1, 1, 0, 0, 0);
+    SET_COMP(1, 0x47 /* 'G' */, 1, 1, 0, 0, 0);
+    SET_COMP(2, 0x42 /* 'B' */, 1, 1, 0, 0, 0);
     break;
   case JCS_YCbCr:
     cinfo->write_JFIF_header = TRUE; /* Write a JFIF marker */
     cinfo->num_components = 3;
     /* JFIF specifies component IDs 1,2,3 */
     /* We default to 2x2 subsamples of chrominance */
-    SET_COMP(0, 1, 2,2, 0, 0,0);
-    SET_COMP(1, 2, 1,1, 1, 1,1);
-    SET_COMP(2, 3, 1,1, 1, 1,1);
+    SET_COMP(0, 1, 2, 2, 0, 0, 0);
+    SET_COMP(1, 2, 1, 1, 1, 1, 1);
+    SET_COMP(2, 3, 1, 1, 1, 1, 1);
     break;
   case JCS_CMYK:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag CMYK */
     cinfo->num_components = 4;
-    SET_COMP(0, 0x43 /* 'C' */, 1,1, 0, 0,0);
-    SET_COMP(1, 0x4D /* 'M' */, 1,1, 0, 0,0);
-    SET_COMP(2, 0x59 /* 'Y' */, 1,1, 0, 0,0);
-    SET_COMP(3, 0x4B /* 'K' */, 1,1, 0, 0,0);
+    SET_COMP(0, 0x43 /* 'C' */, 1, 1, 0, 0, 0);
+    SET_COMP(1, 0x4D /* 'M' */, 1, 1, 0, 0, 0);
+    SET_COMP(2, 0x59 /* 'Y' */, 1, 1, 0, 0, 0);
+    SET_COMP(3, 0x4B /* 'K' */, 1, 1, 0, 0, 0);
     break;
   case JCS_YCCK:
     cinfo->write_Adobe_marker = TRUE; /* write Adobe marker to flag YCCK */
     cinfo->num_components = 4;
-    SET_COMP(0, 1, 2,2, 0, 0,0);
-    SET_COMP(1, 2, 1,1, 1, 1,1);
-    SET_COMP(2, 3, 1,1, 1, 1,1);
-    SET_COMP(3, 4, 2,2, 0, 0,0);
+    SET_COMP(0, 1, 2, 2, 0, 0, 0);
+    SET_COMP(1, 2, 1, 1, 1, 1, 1);
+    SET_COMP(2, 3, 1, 1, 1, 1, 1);
+    SET_COMP(3, 4, 2, 2, 0, 0, 0);
     break;
   case JCS_UNKNOWN:
     cinfo->num_components = cinfo->input_components;
@@ -634,7 +634,7 @@ jpeg_set_colorspace (j_compress_ptr cinfo, J_COLOR_SPACE colorspace)
       ERREXIT2(cinfo, JERR_COMPONENT_COUNT, cinfo->num_components,
                MAX_COMPONENTS);
     for (ci = 0; ci < cinfo->num_components; ci++) {
-      SET_COMP(ci, ci, 1,1, 0, 0,0);
+      SET_COMP(ci, ci, 1, 1, 0, 0, 0);
     }
     break;
   default:
@@ -676,8 +676,7 @@ fill_a_scan_pair (jpeg_scan_info * scanptr, int ci,
 }
 
 LOCAL(jpeg_scan_info *)
-fill_scans (jpeg_scan_info *scanptr, int ncomps,
-            int Ss, int Se, int Ah, int Al)
+fill_scans(jpeg_scan_info *scanptr, int ncomps, int Ss, int Se, int Ah, int Al)
 /* Support routine: generate one scan for each component */
 {
   int ci;
@@ -695,7 +694,7 @@ fill_scans (jpeg_scan_info *scanptr, int ncomps,
 }
 
 LOCAL(jpeg_scan_info *)
-fill_dc_scans (jpeg_scan_info *scanptr, int ncomps, int Ah, int Al)
+fill_dc_scans(jpeg_scan_info *scanptr, int ncomps, int Ah, int Al)
 /* Support routine: generate interleaved DC scan if possible, else N scans */
 {
   int ci;
@@ -849,7 +848,7 @@ jpeg_search_progression (j_compress_ptr cinfo)
  */
 
 GLOBAL(void)
-jpeg_simple_progression (j_compress_ptr cinfo)
+jpeg_simple_progression(j_compress_ptr cinfo)
 {
   int ncomps;
   int nscans;
@@ -887,7 +886,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
       else
         nscans = 1 + 4 * ncomps;  /* 2 DC scans; 4 AC scans per component */
     } else {
-      if (ncomps > MAX_COMPS_IN_SCAN)
+    if (ncomps > MAX_COMPS_IN_SCAN)
       nscans = 6 * ncomps;      /* 2 DC + 4 AC scans per component */
     else
       nscans = 2 + 4 * ncomps;  /* 2 DC scans; 4 AC scans per component */
@@ -904,7 +903,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
   if (cinfo->script_space == NULL || cinfo->script_space_size < nscans) {
     cinfo->script_space_size = MAX(nscans, 10);
     cinfo->script_space = (jpeg_scan_info *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_PERMANENT,
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_PERMANENT,
                         cinfo->script_space_size * sizeof(jpeg_scan_info));
   }
   scanptr = cinfo->script_space;
@@ -975,7 +974,7 @@ jpeg_simple_progression (j_compress_ptr cinfo)
       /* Successive approximation final pass */
       scanptr = fill_scans(scanptr, ncomps, 1, 63, 1, 0);
     } else {
-      /* Successive approximation first pass */
+    /* Successive approximation first pass */
     scanptr = fill_dc_scans(scanptr, ncomps, 0, 1);
     scanptr = fill_scans(scanptr, ncomps, 1, 5, 0, 2);
     scanptr = fill_scans(scanptr, ncomps, 6, 63, 0, 2);

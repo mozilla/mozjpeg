@@ -6,9 +6,9 @@
  * Modified 2000-2009 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2020, 2022, D. R. Commander.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains library routines for transcoding compression,
  * that is, writing raw DCT coefficient arrays to an output JPEG file.
@@ -41,7 +41,7 @@ LOCAL(void) transencode_coef_controller(j_compress_ptr cinfo,
  */
 
 GLOBAL(void)
-jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
+jpeg_write_coefficients(j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
 {
   /* setting up scan optimisation pattern failed, disable scan optimisation */
   if (cinfo->master->num_scans_luma == 0)
@@ -52,7 +52,7 @@ jpeg_write_coefficients (j_compress_ptr cinfo, jvirt_barray_ptr *coef_arrays)
   /* Mark all tables to be written */
   jpeg_suppress_tables(cinfo, FALSE);
   /* (Re)initialize error mgr and destination modules */
-  (*cinfo->err->reset_error_mgr) ((j_common_ptr) cinfo);
+  (*cinfo->err->reset_error_mgr) ((j_common_ptr)cinfo);
   (*cinfo->dest->init_destination) (cinfo);
   /* Perform master selection of active modules */
   transencode_master_selection(cinfo, coef_arrays);
@@ -104,11 +104,11 @@ jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo, j_compress_ptr ds
   /* Copy the source's quantization tables. */
   for (tblno = 0; tblno < NUM_QUANT_TBLS; tblno++) {
     if (srcinfo->quant_tbl_ptrs[tblno] != NULL) {
-      qtblptr = & dstinfo->quant_tbl_ptrs[tblno];
+      qtblptr = &dstinfo->quant_tbl_ptrs[tblno];
       if (*qtblptr == NULL)
-        *qtblptr = jpeg_alloc_quant_table((j_common_ptr) dstinfo);
+        *qtblptr = jpeg_alloc_quant_table((j_common_ptr)dstinfo);
       memcpy((*qtblptr)->quantval, srcinfo->quant_tbl_ptrs[tblno]->quantval,
-              sizeof((*qtblptr)->quantval));
+             sizeof((*qtblptr)->quantval));
       (*qtblptr)->sent_table = FALSE;
     }
   }
@@ -171,7 +171,7 @@ jpeg_copy_critical_parameters (const j_decompress_ptr srcinfo, j_compress_ptr ds
  */
 
 LOCAL(void)
-transencode_master_selection (j_compress_ptr cinfo,
+transencode_master_selection(j_compress_ptr cinfo,
                              jvirt_barray_ptr *coef_arrays)
 {
   /* Although we don't actually use input_components for transcoding,
@@ -205,7 +205,7 @@ transencode_master_selection (j_compress_ptr cinfo,
   jinit_marker_writer(cinfo);
 
   /* We can now tell the memory manager to allocate virtual arrays. */
-  (*cinfo->mem->realize_virt_arrays) ((j_common_ptr) cinfo);
+  (*cinfo->mem->realize_virt_arrays) ((j_common_ptr)cinfo);
 
   /* Write the datastream header (SOI, JFIF) immediately.
    * Frame and scan headers are postponed till later.
@@ -244,10 +244,10 @@ typedef my_coef_controller *my_coef_ptr;
 
 
 LOCAL(void)
-start_iMCU_row (j_compress_ptr cinfo)
+start_iMCU_row(j_compress_ptr cinfo)
 /* Reset within-iMCU-row counters for a new row */
 {
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
+  my_coef_ptr coef = (my_coef_ptr)cinfo->coef;
 
   /* In an interleaved scan, an MCU row is the same as an iMCU row.
    * In a noninterleaved scan, an iMCU row has v_samp_factor MCU rows.
@@ -256,7 +256,7 @@ start_iMCU_row (j_compress_ptr cinfo)
   if (cinfo->comps_in_scan > 1) {
     coef->MCU_rows_per_iMCU_row = 1;
   } else {
-    if (coef->iMCU_row_num < (cinfo->total_iMCU_rows-1))
+    if (coef->iMCU_row_num < (cinfo->total_iMCU_rows - 1))
       coef->MCU_rows_per_iMCU_row = cinfo->cur_comp_info[0]->v_samp_factor;
     else
       coef->MCU_rows_per_iMCU_row = cinfo->cur_comp_info[0]->last_row_height;
@@ -272,9 +272,9 @@ start_iMCU_row (j_compress_ptr cinfo)
  */
 
 METHODDEF(void)
-start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
+start_pass_coef(j_compress_ptr cinfo, J_BUF_MODE pass_mode)
 {
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
+  my_coef_ptr coef = (my_coef_ptr)cinfo->coef;
 
   if (pass_mode != JBUF_CRANK_DEST)
     ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
@@ -295,9 +295,9 @@ start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
  */
 
 METHODDEF(boolean)
-compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
+compress_output(j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 {
-  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
+  my_coef_ptr coef = (my_coef_ptr)cinfo->coef;
   JDIMENSION MCU_col_num;       /* index of current MCU within row */
   JDIMENSION last_MCU_col = cinfo->MCUs_per_row - 1;
   JDIMENSION last_iMCU_row = cinfo->total_iMCU_rows - 1;
@@ -312,9 +312,9 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     compptr = cinfo->cur_comp_info[ci];
     buffer[ci] = (*cinfo->mem->access_virt_barray)
-      ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
+      ((j_common_ptr)cinfo, coef->whole_image[compptr->component_index],
        coef->iMCU_row_num * compptr->v_samp_factor,
-       (JDIMENSION) compptr->v_samp_factor, FALSE);
+       (JDIMENSION)compptr->v_samp_factor, FALSE);
   }
 
   /* Loop to process one whole iMCU row */
@@ -331,9 +331,9 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
                                                   compptr->last_col_width;
         for (yindex = 0; yindex < compptr->MCU_height; yindex++) {
           if (coef->iMCU_row_num < last_iMCU_row ||
-              yindex+yoffset < compptr->last_row_height) {
+              yindex + yoffset < compptr->last_row_height) {
             /* Fill in pointers to real blocks in this row */
-            buffer_ptr = buffer[ci][yindex+yoffset] + start_col;
+            buffer_ptr = buffer[ci][yindex + yoffset] + start_col;
             for (xindex = 0; xindex < blockcnt; xindex++)
               MCU_buffer[blkn++] = buffer_ptr++;
           } else {
@@ -348,13 +348,13 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
            */
           for (; xindex < compptr->MCU_width; xindex++) {
             MCU_buffer[blkn] = coef->dummy_buffer[blkn];
-            MCU_buffer[blkn][0][0] = MCU_buffer[blkn-1][0][0];
+            MCU_buffer[blkn][0][0] = MCU_buffer[blkn - 1][0][0];
             blkn++;
           }
         }
       }
       /* Try to write the MCU. */
-      if (! (*cinfo->entropy->encode_mcu) (cinfo, MCU_buffer)) {
+      if (!(*cinfo->entropy->encode_mcu) (cinfo, MCU_buffer)) {
         /* Suspension forced; update state counters and exit */
         coef->MCU_vert_offset = yoffset;
         coef->mcu_ctr = MCU_col_num;
@@ -380,7 +380,7 @@ compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
  */
 
 LOCAL(void)
-transencode_coef_controller (j_compress_ptr cinfo,
+transencode_coef_controller(j_compress_ptr cinfo,
                             jvirt_barray_ptr *coef_arrays)
 {
   my_coef_ptr coef;
@@ -388,9 +388,9 @@ transencode_coef_controller (j_compress_ptr cinfo,
   int i;
 
   coef = (my_coef_ptr)
-    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(my_coef_controller));
-  cinfo->coef = (struct jpeg_c_coef_controller *) coef;
+  cinfo->coef = (struct jpeg_c_coef_controller *)coef;
   coef->pub.start_pass = start_pass_coef;
   coef->pub.compress_data = compress_output;
 
@@ -399,9 +399,9 @@ transencode_coef_controller (j_compress_ptr cinfo,
 
   /* Allocate and pre-zero space for dummy DCT blocks. */
   buffer = (JBLOCKROW)
-    (*cinfo->mem->alloc_large) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+    (*cinfo->mem->alloc_large) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 C_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
-  jzero_far((void *) buffer, C_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
+  jzero_far((void *)buffer, C_MAX_BLOCKS_IN_MCU * sizeof(JBLOCK));
   for (i = 0; i < C_MAX_BLOCKS_IN_MCU; i++) {
     coef->dummy_buffer[i] = buffer + i;
   }

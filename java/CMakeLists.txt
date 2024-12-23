@@ -37,7 +37,7 @@ if(WIN32)
     ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)
 else()
   configure_file(org/libjpegturbo/turbojpeg/TJLoader-unix.java.in
-  ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)
+    ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)
 endif()
 set(JAVA_SOURCES ${JAVA_SOURCES}
   ${CMAKE_CURRENT_BINARY_DIR}/org/libjpegturbo/turbojpeg/TJLoader.java)

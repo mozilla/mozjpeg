@@ -31,7 +31,7 @@ endif()
 if(WIN32)
   if(WITH_MEM_SRCDST)
     set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}-memsrcdst.def)
-else()
+  else()
     set(DEFFILE ../win/jpeg${SO_MAJOR_VERSION}.def)
   endif()
 endif()
@@ -85,7 +85,8 @@ else()
   endif()
 endif()
 
-add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c ../rdjpeg.c
+add_executable(cjpeg ../cjpeg.c ../cdjpeg.c ../rdgif.c ../rdppm.c
+  ../rdjpeg.c
   ../rdswitch.c ${CJPEG_BMP_SOURCES})
 set_property(TARGET cjpeg PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
 target_link_libraries(cjpeg jpeg)

@@ -8,7 +8,6 @@
  * Copyright (C) 2015-2016, 2019, 2021, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * Copyright (C) 2021, Alex Richardson.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -352,9 +351,9 @@ struct jpeg_color_quantizer {
 /* Miscellaneous useful macros */
 
 #undef MAX
-#define MAX(a,b)        ((a) > (b) ? (a) : (b))
+#define MAX(a, b)       ((a) > (b) ? (a) : (b))
 #undef MIN
-#define MIN(a,b)        ((a) < (b) ? (a) : (b))
+#define MIN(a, b)       ((a) < (b) ? (a) : (b))
 
 
 /* We assume that right shift corresponds to signed division by 2 with
@@ -369,54 +368,54 @@ struct jpeg_color_quantizer {
 
 #ifdef RIGHT_SHIFT_IS_UNSIGNED
 #define SHIFT_TEMPS     JLONG shift_temp;
-#define RIGHT_SHIFT(x,shft)  \
+#define RIGHT_SHIFT(x, shft) \
   ((shift_temp = (x)) < 0 ? \
-         (shift_temp >> (shft)) | ((~((JLONG) 0)) << (32-(shft))) : \
+   (shift_temp >> (shft)) | ((~((JLONG)0)) << (32 - (shft))) : \
    (shift_temp >> (shft)))
 #else
 #define SHIFT_TEMPS
-#define RIGHT_SHIFT(x,shft)     ((x) >> (shft))
+#define RIGHT_SHIFT(x, shft)    ((x) >> (shft))
 #endif
 
 
 /* Compression module initialization routines */
-EXTERN(void) jinit_compress_master (j_compress_ptr cinfo);
-EXTERN(void) jinit_c_master_control (j_compress_ptr cinfo,
+EXTERN(void) jinit_compress_master(j_compress_ptr cinfo);
+EXTERN(void) jinit_c_master_control(j_compress_ptr cinfo,
                                     boolean transcode_only);
-EXTERN(void) jinit_c_main_controller (j_compress_ptr cinfo,
+EXTERN(void) jinit_c_main_controller(j_compress_ptr cinfo,
                                      boolean need_full_buffer);
-EXTERN(void) jinit_c_prep_controller (j_compress_ptr cinfo,
+EXTERN(void) jinit_c_prep_controller(j_compress_ptr cinfo,
                                      boolean need_full_buffer);
-EXTERN(void) jinit_c_coef_controller (j_compress_ptr cinfo,
+EXTERN(void) jinit_c_coef_controller(j_compress_ptr cinfo,
                                      boolean need_full_buffer);
-EXTERN(void) jinit_color_converter (j_compress_ptr cinfo);
-EXTERN(void) jinit_downsampler (j_compress_ptr cinfo);
-EXTERN(void) jinit_forward_dct (j_compress_ptr cinfo);
-EXTERN(void) jinit_huff_encoder (j_compress_ptr cinfo);
-EXTERN(void) jinit_phuff_encoder (j_compress_ptr cinfo);
-EXTERN(void) jinit_arith_encoder (j_compress_ptr cinfo);
-EXTERN(void) jinit_marker_writer (j_compress_ptr cinfo);
+EXTERN(void) jinit_color_converter(j_compress_ptr cinfo);
+EXTERN(void) jinit_downsampler(j_compress_ptr cinfo);
+EXTERN(void) jinit_forward_dct(j_compress_ptr cinfo);
+EXTERN(void) jinit_huff_encoder(j_compress_ptr cinfo);
+EXTERN(void) jinit_phuff_encoder(j_compress_ptr cinfo);
+EXTERN(void) jinit_arith_encoder(j_compress_ptr cinfo);
+EXTERN(void) jinit_marker_writer(j_compress_ptr cinfo);
 /* Decompression module initialization routines */
-EXTERN(void) jinit_master_decompress (j_decompress_ptr cinfo);
-EXTERN(void) jinit_d_main_controller (j_decompress_ptr cinfo,
+EXTERN(void) jinit_master_decompress(j_decompress_ptr cinfo);
+EXTERN(void) jinit_d_main_controller(j_decompress_ptr cinfo,
                                      boolean need_full_buffer);
-EXTERN(void) jinit_d_coef_controller (j_decompress_ptr cinfo,
+EXTERN(void) jinit_d_coef_controller(j_decompress_ptr cinfo,
                                      boolean need_full_buffer);
-EXTERN(void) jinit_d_post_controller (j_decompress_ptr cinfo,
+EXTERN(void) jinit_d_post_controller(j_decompress_ptr cinfo,
                                      boolean need_full_buffer);
-EXTERN(void) jinit_input_controller (j_decompress_ptr cinfo);
-EXTERN(void) jinit_marker_reader (j_decompress_ptr cinfo);
-EXTERN(void) jinit_huff_decoder (j_decompress_ptr cinfo);
-EXTERN(void) jinit_phuff_decoder (j_decompress_ptr cinfo);
-EXTERN(void) jinit_arith_decoder (j_decompress_ptr cinfo);
-EXTERN(void) jinit_inverse_dct (j_decompress_ptr cinfo);
-EXTERN(void) jinit_upsampler (j_decompress_ptr cinfo);
-EXTERN(void) jinit_color_deconverter (j_decompress_ptr cinfo);
-EXTERN(void) jinit_1pass_quantizer (j_decompress_ptr cinfo);
-EXTERN(void) jinit_2pass_quantizer (j_decompress_ptr cinfo);
-EXTERN(void) jinit_merged_upsampler (j_decompress_ptr cinfo);
+EXTERN(void) jinit_input_controller(j_decompress_ptr cinfo);
+EXTERN(void) jinit_marker_reader(j_decompress_ptr cinfo);
+EXTERN(void) jinit_huff_decoder(j_decompress_ptr cinfo);
+EXTERN(void) jinit_phuff_decoder(j_decompress_ptr cinfo);
+EXTERN(void) jinit_arith_decoder(j_decompress_ptr cinfo);
+EXTERN(void) jinit_inverse_dct(j_decompress_ptr cinfo);
+EXTERN(void) jinit_upsampler(j_decompress_ptr cinfo);
+EXTERN(void) jinit_color_deconverter(j_decompress_ptr cinfo);
+EXTERN(void) jinit_1pass_quantizer(j_decompress_ptr cinfo);
+EXTERN(void) jinit_2pass_quantizer(j_decompress_ptr cinfo);
+EXTERN(void) jinit_merged_upsampler(j_decompress_ptr cinfo);
 /* Memory manager initialization */
-EXTERN(void) jinit_memory_mgr (j_common_ptr cinfo);
+EXTERN(void) jinit_memory_mgr(j_common_ptr cinfo);
 
 #if JPEG_LIB_VERSION >= 80 || defined(MEM_SRCDST_SUPPORTED)
 EXTERN(void)
@@ -425,14 +424,14 @@ jpeg_mem_dest_internal (j_compress_ptr cinfo,
 #endif
 
 /* Utility routines in jutils.c */
-EXTERN(long) jdiv_round_up (long a, long b);
-EXTERN(long) jround_up (long a, long b);
-EXTERN(void) jcopy_sample_rows (JSAMPARRAY input_array, int source_row,
+EXTERN(long) jdiv_round_up(long a, long b);
+EXTERN(long) jround_up(long a, long b);
+EXTERN(void) jcopy_sample_rows(JSAMPARRAY input_array, int source_row,
                                JSAMPARRAY output_array, int dest_row,
                                int num_rows, JDIMENSION num_cols);
-EXTERN(void) jcopy_block_row (JBLOCKROW input_row, JBLOCKROW output_row,
+EXTERN(void) jcopy_block_row(JBLOCKROW input_row, JBLOCKROW output_row,
                              JDIMENSION num_blocks);
-EXTERN(void) jzero_far (void *target, size_t bytestozero);
+EXTERN(void) jzero_far(void *target, size_t bytestozero);
 
 #ifdef C_ARITH_CODING_SUPPORTED
 EXTERN(void) jget_arith_rates (j_compress_ptr cinfo, int dc_tbl_no, int ac_tbl_no, arith_rates *r);

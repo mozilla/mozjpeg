@@ -6,9 +6,9 @@
  * Modified 2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2017, 2019, 2021, D. R. Commander.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
- * For conditions of distribution and use, see the accompanying README.ijg file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains common declarations for the sample applications
  * cjpeg and djpeg.  It is NOT used by the core JPEG library.

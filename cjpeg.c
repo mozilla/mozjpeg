@@ -6,9 +6,9 @@
  * Modified 2003-2011 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
  * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, D. R. Commander.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
- * For conditions of distribution and use, see the accompanying README file.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
  * This file contains a command-line user interface for the JPEG compressor.
  * It should work on any system with Unix- or MS-DOS-style command lines.
@@ -206,10 +206,10 @@ usage(void)
   fprintf(stderr, "  -grayscale     Create monochrome JPEG file\n");
   fprintf(stderr, "  -rgb           Create RGB JPEG file\n");
 #ifdef ENTROPY_OPT_SUPPORTED
-  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression, enabled by default)\n");
+  fprintf(stderr, "  -optimize      Optimize Huffman table (smaller file, but slow compression)\n");
 #endif
 #ifdef C_PROGRESSIVE_SUPPORTED
-  fprintf(stderr, "  -progressive   Create progressive JPEG file (enabled by default)\n");
+  fprintf(stderr, "  -progressive   Create progressive JPEG file\n");
 #endif
   fprintf(stderr, "  -baseline      Create baseline JPEG file (disable progressive coding)\n");
 #ifdef TARGA_SUPPORTED

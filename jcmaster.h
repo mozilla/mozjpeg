@@ -14,10 +14,10 @@
 /* Private state */
 
 typedef enum {
-        main_pass,              /* input data, also do first output step */
-        huff_opt_pass,          /* Huffman code optimization pass */
-        output_pass,            /* data output pass */
-        trellis_pass            /* trellis quantization pass */
+  main_pass,                    /* input data, also do first output step */
+  huff_opt_pass,                /* Huffman code optimization pass */
+  output_pass,                   /* data output pass */
+  trellis_pass            /* trellis quantization pass */
 } c_pass_type;
 
 typedef struct {

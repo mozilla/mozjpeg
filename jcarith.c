@@ -66,8 +66,8 @@ typedef arith_entropy_encoder *arith_entropy_ptr;
  * in the lower bits (mask 0x7F).
  */
 
-#define DC_STAT_BINS 64
-#define AC_STAT_BINS 256
+#define DC_STAT_BINS  64
+#define AC_STAT_BINS  256
 
 /* NOTE: Uncomment the following #define if you want to use the
  * given formula for calculating the AC conditioning parameter Kx
@@ -109,9 +109,9 @@ typedef arith_entropy_encoder *arith_entropy_ptr;
 #ifdef RIGHT_SHIFT_IS_UNSIGNED
 #define ISHIFT_TEMPS    int ishift_temp;
 #define IRIGHT_SHIFT(x, shft) \
-        ((ishift_temp = (x)) < 0 ? \
+  ((ishift_temp = (x)) < 0 ? \
    (ishift_temp >> (shft)) | ((~0) << (16 - (shft))) : \
-         (ishift_temp >> (shft)))
+   (ishift_temp >> (shft)))
 #else
 #define ISHIFT_TEMPS
 #define IRIGHT_SHIFT(x, shft)   ((x) >> (shft))
@@ -128,7 +128,7 @@ emit_byte(int val, j_compress_ptr cinfo)
   if (cinfo->master->trellis_passes)
     return;
   
-  *dest->next_output_byte++ = (JOCTET) val;
+  *dest->next_output_byte++ = (JOCTET)val;
   if (--dest->free_in_buffer == 0)
     if (!(*dest->empty_output_buffer) (cinfo))
       ERREXIT(cinfo, JERR_CANT_SUSPEND);
@@ -238,8 +238,8 @@ arith_encode(j_compress_ptr cinfo, unsigned char *st, int val)
    */
   sv = *st;
   qe = jpeg_aritab[sv & 0x7F];  /* => Qe_Value */
-  nl = qe & 0xFF; qe >>= 8;     /* Next_Index_LPS + Switch_MPS */
-  nm = qe & 0xFF; qe >>= 8;     /* Next_Index_MPS */
+  nl = qe & 0xFF;  qe >>= 8;    /* Next_Index_LPS + Switch_MPS */
+  nm = qe & 0xFF;  qe >>= 8;    /* Next_Index_MPS */
 
   /* Encode & estimation procedures per sections D.1.4 & D.1.5 */
   e->a -= qe;
@@ -517,7 +517,7 @@ encode_mcu_AC_first(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
           break;
         }
       }
-      arith_encode(cinfo, st + 1, 0); st += 3; k++;
+      arith_encode(cinfo, st + 1, 0);  st += 3;  k++;
     }
     st += 2;
     /* Figure F.8: Encoding the magnitude category of v */
@@ -669,7 +669,7 @@ encode_mcu_AC_refine(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
           break;
         }
       }
-      arith_encode(cinfo, st + 1, 0); st += 3; k++;
+      arith_encode(cinfo, st + 1, 0);  st += 3;  k++;
     }
   }
   /* Encode EOB decision only if k <= cinfo->Se */
@@ -777,7 +777,7 @@ encode_mcu(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
       st = entropy->ac_stats[tbl] + 3 * (k - 1);
       arith_encode(cinfo, st, 0);       /* EOB decision */
       while ((v = (*block)[jpeg_natural_order[k]]) == 0) {
-        arith_encode(cinfo, st + 1, 0); st += 3; k++;
+        arith_encode(cinfo, st + 1, 0);  st += 3;  k++;
       }
       arith_encode(cinfo, st + 1, 1);
       /* Figure F.6: Encoding nonzero value v */

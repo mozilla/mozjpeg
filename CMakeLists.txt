@@ -596,7 +596,8 @@ if(CMAKE_EXECUTABLE_SUFFIX_TMP)
 endif()
 message(STATUS "CMAKE_EXECUTABLE_SUFFIX = ${CMAKE_EXECUTABLE_SUFFIX}")
 
-set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c jcext.c
+set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
+  jcext.c
   jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
   jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
   jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c jdinput.c
@@ -754,7 +755,8 @@ else()
 endif()
 
 if(ENABLE_STATIC)
-  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdjpeg.c rdswitch.c
+  add_executable(cjpeg-static cjpeg.c cdjpeg.c rdgif.c rdppm.c rdswitch.c
+    rdjpeg.c
     ${CJPEG_BMP_SOURCES})
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS ${COMPILE_FLAGS})
   target_link_libraries(cjpeg-static jpeg-static)
@@ -1096,6 +1098,25 @@ foreach(libtype ${TEST_LIBTYPES})
     set_tests_properties(tjbench-${libtype}-tile
       PROPERTIES DEPENDS tjbench-${libtype}-tile-cp)
 
+    foreach(tile 8 16 32 64 128)
+      add_test(tjbench-${libtype}-tile-gray-${tile}x${tile}-cmp
+        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_GRAY_TILE}
+          testout_tile_GRAY_Q95_${tile}x${tile}.ppm)
+      foreach(subsamp 420 422)
+        add_test(tjbench-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
+          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
+            ${MD5_PPM_${subsamp}_${tile}x${tile}_TILE}
+            testout_tile_${subsamp}_Q95_${tile}x${tile}.ppm)
+      endforeach()
+      add_test(tjbench-${libtype}-tile-444-${tile}x${tile}-cmp
+        ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_444_TILE}
+          testout_tile_444_Q95_${tile}x${tile}.ppm)
+      foreach(subsamp gray 420 422 444)
+        set_tests_properties(tjbench-${libtype}-tile-${subsamp}-${tile}x${tile}-cmp
+          PROPERTIES DEPENDS tjbench-${libtype}-tile)
+      endforeach()
+    endforeach()
+
     add_test(tjbench-${libtype}-tilem-cp
       ${CMAKE_COMMAND} -E copy_if_different ${TESTIMAGES}/testorig.ppm
         testout_tilem.ppm)
@@ -1104,6 +1125,27 @@ foreach(libtype ${TEST_LIBTYPES})
         -rgb -fastupsample -quiet -tile -benchtime 0.01 -warmup 0)
     set_tests_properties(tjbench-${libtype}-tilem
       PROPERTIES DEPENDS tjbench-${libtype}-tilem-cp)
+
+    add_test(tjbench-${libtype}-tile-420m-8x8-cmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_420M_8x8_TILE}
+        testout_tilem_420_Q95_8x8.ppm)
+    add_test(tjbench-${libtype}-tile-422m-8x8-cmp
+      ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP} ${MD5_PPM_422M_8x8_TILE}
+        testout_tilem_422_Q95_8x8.ppm)
+    foreach(tile 16 32 64 128)
+      foreach(subsamp 420 422)
+        add_test(tjbench-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
+          ${CMAKE_CROSSCOMPILING_EMULATOR} ${MD5CMP}
+            ${MD5_PPM_${subsamp}M_TILE}
+            testout_tilem_${subsamp}_Q95_${tile}x${tile}.ppm)
+      endforeach()
+    endforeach()
+    foreach(tile 8 16 32 64 128)
+      foreach(subsamp 420 422)
+        set_tests_properties(tjbench-${libtype}-tile-${subsamp}m-${tile}x${tile}-cmp
+          PROPERTIES DEPENDS tjbench-${libtype}-tilem)
+      endforeach()
+    endforeach()
   endif()
 
   # These tests are carefully crafted to provide full coverage of as many of

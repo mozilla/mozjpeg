@@ -195,7 +195,7 @@ foreach(file ${SIMD_SOURCES})
 endforeach()
 
 if(MSVC_IDE OR XCODE)
-set(SIMD_OBJS ${SIMD_OBJS} PARENT_SCOPE)
+  set(SIMD_OBJS ${SIMD_OBJS} PARENT_SCOPE)
   add_library(simd OBJECT ${CPU_TYPE}/jsimd.c)
   add_custom_target(simd-objs DEPENDS ${SIMD_OBJS})
   add_dependencies(simd simd-objs)

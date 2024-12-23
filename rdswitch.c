@@ -26,7 +26,7 @@
 
 
 LOCAL(int)
-text_getc (FILE *file)
+text_getc(FILE *file)
 /* Read next char, skipping over any comments (# to end of line) */
 /* A comment/newline sequence is returned as a newline */
 {
@@ -43,7 +43,7 @@ text_getc (FILE *file)
 
 
 LOCAL(boolean)
-read_text_integer (FILE *file, long *result, int *termchar)
+read_text_integer(FILE *file, long *result, int *termchar)
 /* Read an unsigned decimal integer from a file, store it in result */
 /* Reads one trailing character after the integer; returns it in termchar */
 {
@@ -59,14 +59,14 @@ read_text_integer (FILE *file, long *result, int *termchar)
     }
   } while (isspace(ch));
 
-  if (! isdigit(ch)) {
+  if (!isdigit(ch)) {
     *termchar = ch;
     return FALSE;
   }
 
   val = ch - '0';
   while ((ch = text_getc(file)) != EOF) {
-    if (! isdigit(ch))
+    if (!isdigit(ch))
       break;
     val *= 10;
     val += ch - '0';
@@ -78,7 +78,7 @@ read_text_integer (FILE *file, long *result, int *termchar)
 
 
 #if JPEG_LIB_VERSION < 70
-static int q_scale_factor[NUM_QUANT_TBLS] = {100, 100, 100, 100};
+static int q_scale_factor[NUM_QUANT_TBLS] = { 100, 100, 100, 100 };
 #endif
 
 GLOBAL(boolean)
@@ -110,14 +110,14 @@ read_quant_tables(j_compress_ptr cinfo, char *filename, boolean force_baseline)
       fclose(fp);
       return FALSE;
     }
-    table[0] = (unsigned int) val;
+    table[0] = (unsigned int)val;
     for (i = 1; i < DCTSIZE2; i++) {
-      if (! read_text_integer(fp, &val, &termchar)) {
+      if (!read_text_integer(fp, &val, &termchar)) {
         fprintf(stderr, "Invalid table data in file %s\n", filename);
         fclose(fp);
         return FALSE;
       }
-      table[i] = (unsigned int) val;
+      table[i] = (unsigned int)val;
     }
 #if JPEG_LIB_VERSION >= 70
     jpeg_add_quant_table(cinfo, tblno, table, cinfo->q_scale_factor[tblno],
@@ -143,14 +143,14 @@ read_quant_tables(j_compress_ptr cinfo, char *filename, boolean force_baseline)
 #ifdef C_MULTISCAN_FILES_SUPPORTED
 
 LOCAL(boolean)
-read_scan_integer (FILE *file, long *result, int *termchar)
+read_scan_integer(FILE *file, long *result, int *termchar)
 /* Variant of read_text_integer that always looks for a non-space termchar;
  * this simplifies parsing of punctuation in scan scripts.
  */
 {
   register int ch;
 
-  if (! read_text_integer(file, result, termchar))
+  if (!read_text_integer(file, result, termchar))
     return FALSE;
   ch = *termchar;
   while (ch != EOF && isspace(ch))
@@ -172,7 +172,7 @@ read_scan_integer (FILE *file, long *result, int *termchar)
 
 
 GLOBAL(boolean)
-read_scan_script (j_compress_ptr cinfo, char *filename)
+read_scan_script(j_compress_ptr cinfo, char *filename)
 /* Read a scan script from the specified text file.
  * Each entry in the file defines one scan to be emitted.
  * Entries are separated by semicolons ';'.
@@ -209,7 +209,7 @@ read_scan_script (j_compress_ptr cinfo, char *filename)
       fclose(fp);
       return FALSE;
     }
-    scanptr->component_index[0] = (int) val;
+    scanptr->component_index[0] = (int)val;
     ncomps = 1;
     while (termchar == ' ') {
       if (ncomps >= MAX_COMPS_IN_SCAN) {
@@ -218,29 +218,29 @@ read_scan_script (j_compress_ptr cinfo, char *filename)
         fclose(fp);
         return FALSE;
       }
-      if (! read_scan_integer(fp, &val, &termchar))
+      if (!read_scan_integer(fp, &val, &termchar))
         goto bogus;
-      scanptr->component_index[ncomps] = (int) val;
+      scanptr->component_index[ncomps] = (int)val;
       ncomps++;
     }
     scanptr->comps_in_scan = ncomps;
     if (termchar == ':') {
-      if (! read_scan_integer(fp, &val, &termchar) || termchar != ' ')
+      if (!read_scan_integer(fp, &val, &termchar) || termchar != ' ')
         goto bogus;
-      scanptr->Ss = (int) val;
-      if (! read_scan_integer(fp, &val, &termchar) || termchar != ' ')
+      scanptr->Ss = (int)val;
+      if (!read_scan_integer(fp, &val, &termchar) || termchar != ' ')
         goto bogus;
-      scanptr->Se = (int) val;
-      if (! read_scan_integer(fp, &val, &termchar) || termchar != ' ')
+      scanptr->Se = (int)val;
+      if (!read_scan_integer(fp, &val, &termchar) || termchar != ' ')
         goto bogus;
-      scanptr->Ah = (int) val;
-      if (! read_scan_integer(fp, &val, &termchar))
+      scanptr->Ah = (int)val;
+      if (!read_scan_integer(fp, &val, &termchar))
         goto bogus;
-      scanptr->Al = (int) val;
+      scanptr->Al = (int)val;
     } else {
       /* set non-progressive parameters */
       scanptr->Ss = 0;
-      scanptr->Se = DCTSIZE2-1;
+      scanptr->Se = DCTSIZE2 - 1;
       scanptr->Ah = 0;
       scanptr->Al = 0;
     }
@@ -265,7 +265,7 @@ bogus:
      * but if you want to compress multiple images you'd want JPOOL_PERMANENT.
      */
     scanptr = (jpeg_scan_info *)
-      (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+      (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                   scanno * sizeof(jpeg_scan_info));
     memcpy(scanptr, scans, scanno * sizeof(jpeg_scan_info));
     cinfo->scan_info = scanptr;
@@ -506,8 +506,9 @@ static const unsigned int std_chrominance_quant_tbl[9][DCTSIZE2] = {
   }
 };
 
+
 LOCAL(void)
-jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
+jpeg_default_qtables(j_compress_ptr cinfo, boolean force_baseline)
 {
   int quant_tbl_master_idx = 0;
   if (jpeg_c_int_param_supported(cinfo, JINT_BASE_QUANT_TBL_IDX))
@@ -522,7 +523,7 @@ jpeg_default_qtables (j_compress_ptr cinfo, boolean force_baseline)
 
 
 GLOBAL(boolean)
-set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
+set_quality_ratings(j_compress_ptr cinfo, char *arg, boolean force_baseline)
 /* Process a quality-ratings parameter string, of the form
  *     N[,N,...]
  * If there are more q-table slots than parameters, the last value is replicated.
@@ -573,7 +574,7 @@ set_quality_ratings (j_compress_ptr cinfo, char *arg, boolean force_baseline)
 
 
 GLOBAL(boolean)
-set_quant_slots (j_compress_ptr cinfo, char *arg)
+set_quant_slots(j_compress_ptr cinfo, char *arg)
 /* Process a quantization-table-selectors parameter string, of the form
  *     N[,N,...]
  * If there are more components than parameters, the last value is replicated.
@@ -592,7 +593,7 @@ set_quant_slots (j_compress_ptr cinfo, char *arg)
         return FALSE;
       if (val < 0 || val >= NUM_QUANT_TBLS) {
         fprintf(stderr, "JPEG quantization tables are numbered 0..%d\n",
-                NUM_QUANT_TBLS-1);
+                NUM_QUANT_TBLS - 1);
         return FALSE;
       }
       cinfo->comp_info[ci].quant_tbl_no = val;
@@ -608,7 +609,7 @@ set_quant_slots (j_compress_ptr cinfo, char *arg)
 
 
 GLOBAL(boolean)
-set_sample_factors (j_compress_ptr cinfo, char *arg)
+set_sample_factors(j_compress_ptr cinfo, char *arg)
 /* Process a sample-factors parameter string, of the form
  *     HxV[,HxV,...]
  * If there are more components than parameters, "1x1" is assumed for the rest.

@@ -1,7 +1,6 @@
 /*
  * Copyright (C)2009-2023 D. R. Commander.  All Rights Reserved.
  * Copyright (C)2021 Alex Richardson.  All Rights Reserved.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  *
  * Redistribution and use in source and binary forms, with or without

@@ -7,7 +7,6 @@
  * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
- * mozjpeg Modifications:
  * Copyright (C) 2014, Mozilla Corporation.
  *
  * This file contains declarations for Huffman entropy encoding routines
@@ -22,9 +21,9 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
-#define MAX_COEF_BITS 10
+#define MAX_COEF_BITS  10
 #else
-#define MAX_COEF_BITS 14
+#define MAX_COEF_BITS  14
 #endif
 
 /* The progressive Huffman encoder uses an unsigned 16-bit data type to store
@@ -48,10 +47,9 @@ EXTERN(void) jpeg_make_c_derived_tbl(j_compress_ptr cinfo, boolean isDC,
                                      int tblno, c_derived_tbl **pdtbl);
 
 /* Generate an optimal table definition given the specified counts */
-EXTERN(void) jpeg_gen_optimal_table
-        (j_compress_ptr cinfo, JHUFF_TBL *htbl, long freq[]);
-
 EXTERN(void) quantize_trellis
         (j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
          JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
+EXTERN(void) jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl,
+                                    long freq[]);

@@ -20,7 +20,7 @@ runme()
 }
 
 EXT=bmp
-IMAGES="vgl_5674_0098.${EXT} vgl_6434_0018a.${EXT} vgl_6548_0026a.${EXT} big_tree8.${EXT}"
+IMAGES="vgl_5674_0098.${EXT} vgl_6434_0018a.${EXT} vgl_6548_0026a.${EXT} shira_bird8.${EXT}"
 IMGDIR=@CMAKE_CURRENT_SOURCE_DIR@/testimages
 OUTDIR=`mktemp -d /tmp/__tjbenchtest_output.XXXXXX`
 EXEDIR=@CMAKE_CURRENT_BINARY_DIR@
@@ -64,12 +64,12 @@ while [ $# -gt 0 ]; do
 # each downsampled dimension is an odd number or is evenly divisible by the MCU
 # width/height.  This disagreement basically amounts to a round-off error, but
 # there is no easy way around it, so for now, we just test the only image that
-# works.  (NOTE: big_tree8 does not suffer from the above issue, but it suffers
-# from an unrelated problem whereby the combination of tj3DecompressToYUV*()
-# and tj3DecodeYUV*() do not produce bitwise-identical results to
-# tj3Decompress*() if decompression scaling is enabled.  This latter phenomenon
-# is not yet fully understood but is also believed to be some sort of round-off
-# error.)
+# works.  (NOTE: shira_bird8 does not suffer from the above issue, but it
+# suffers from an unrelated problem whereby the combination of
+# tj3DecompressToYUV*() and tj3DecodeYUV*() does not produce bitwise-identical
+# results to tj3Decompress*() if decompression scaling is enabled.  This latter
+# phenomenon is not yet fully understood but is also believed to be some sort
+# of round-off error.)
 		IMAGES="vgl_6548_0026a.${EXT}"
 		;;
 	-alloc)
@@ -110,7 +110,7 @@ while [ $# -gt 0 ]; do
 		PRECISION=$1
 		if [ $PRECISION != 8 ]; then
 			EXT=ppm
-			IMAGES="big_building16.${EXT}"
+			IMAGES="monkey16.${EXT}"
 			BMPARG=
 		fi
 		;;
@@ -125,7 +125,7 @@ if [ $PRECISION = 8 -a "$YUVARG" = "" ]; then
 		IMAGES="vgl_6548_0026a.${EXT}"
 	elif [ "$ENTROPYARG" = "-arithmetic" -o \
 		"$ENTROPYARG" = "-progressive-arithmetic" ]; then
-		IMAGES="big_tree8.${EXT}"
+		IMAGES="shira_bird8.${EXT}"
 	fi
 fi
 
@@ -317,13 +317,13 @@ for image in $IMAGES; do
 			runme cmp $OUTDIR/${basename}_${samp}_Q${TJQUAL}_full.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 			rm $OUTDIR/${basename}_${samp}_Q${TJQUAL}_full.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 
-			runme $EXEDIR/djpeg -rgb -scale 7/8 -crop ${CROPW7_8}x81+${CROPL7_8}+3 $NSARG -outfile $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm $OUTDIR/${basename}_${samp}_accurate_cjpeg.jpg
+			runme $EXEDIR/djpeg -rgb -scale 14/16 -crop ${CROPW7_8}x81+${CROPL7_8}+3 $NSARG -outfile $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm $OUTDIR/${basename}_${samp}_accurate_cjpeg.jpg
 			runme $TJBENCH $OUTDIR/${basename}_${samp}_Q${TJQUAL}.jpg -scale 7/8 -crop ${CROPW7_8}x81+${CROPL7_8}+3 -quiet -benchtime 0.01 -warmup 0 ${dctarg} $YUVARG $ALLOCARG $ENTROPYARG $LOSSLSARG
 			runme cmp $OUTDIR/${basename}_${samp}_Q${TJQUAL}_7_8.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 			rm $OUTDIR/${basename}_${samp}_Q${TJQUAL}_7_8.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 
 			runme $EXEDIR/djpeg -rgb -scale 1/2 -crop 40x40+0+0 $NSARG -outfile $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm $OUTDIR/${basename}_${samp}_accurate_cjpeg.jpg
-			runme $TJBENCH $OUTDIR/${basename}_${samp}_Q${TJQUAL}.jpg -scale 1/2 -crop 40x40+0+0 -quiet -benchtime 0.01 -warmup 0 ${dctarg} $YUVARG $ALLOCARG $ENTROPYARG $LOSSLSARG
+			runme $TJBENCH $OUTDIR/${basename}_${samp}_Q${TJQUAL}.jpg -scale 4/8 -crop 40x40+0+0 -quiet -benchtime 0.01 -warmup 0 ${dctarg} $YUVARG $ALLOCARG $ENTROPYARG $LOSSLSARG
 			runme cmp $OUTDIR/${basename}_${samp}_Q${TJQUAL}_1_2.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 			rm $OUTDIR/${basename}_${samp}_Q${TJQUAL}_1_2.ppm $OUTDIR/${basename}_${samp}_scale_crop_djpeg.ppm
 		done

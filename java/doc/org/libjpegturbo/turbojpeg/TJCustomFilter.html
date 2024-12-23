@@ -14,7 +14,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.min.js"></script>
 </head>
 <body>
@@ -153,7 +153,7 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
             int&nbsp;transformID,
             <a href="TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>&nbsp;transform)</code></th>
 <td class="colLast">
-<div class="block">A callback function that can be used to modify the DCT coefficients after
+<div class="block">A callback method that can be used to modify the DCT coefficients after
  they are losslessly transformed but before they are transcoded to a new
  JPEG image.</div>
 </td>
@@ -188,21 +188,21 @@ $('.navPadding').css('padding-top', $('.fixedNav').css("height"));
                   int&nbsp;transformID,
                   <a href="TJTransform.html" title="class in org.libjpegturbo.turbojpeg">TJTransform</a>&nbsp;transform)
            throws <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></pre>
-<div class="block">A callback function that can be used to modify the DCT coefficients after
+<div class="block">A callback method that can be used to modify the DCT coefficients after
  they are losslessly transformed but before they are transcoded to a new
  JPEG image.  This allows for custom filters or other transformations to be
  applied in the frequency domain.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>coeffBuffer</code> - a buffer containing transformed DCT coefficients.
- (NOTE: this buffer is not guaranteed to be valid once the callback
+ (NOTE: This buffer is not guaranteed to be valid once the callback
  returns, so applications wishing to hand off the DCT coefficients to
- another function or library should make a copy of them within the body of
- the callback.)</dd>
+ another method should make a copy of them within the body of the
+ callback.)</dd>
 <dd><code>bufferRegion</code> - rectangle containing the width and height of
  <code>coeffBuffer</code> as well as its offset relative to the component
  plane.  TurboJPEG implementations may choose to split each component plane
- into multiple DCT coefficient buffers and call the callback function once
+ into multiple DCT coefficient buffers and call the callback method once
  for each buffer.</dd>
 <dd><code>planeRegion</code> - rectangle containing the width and height of the
  component plane to which <code>coeffBuffer</code> belongs</dd>

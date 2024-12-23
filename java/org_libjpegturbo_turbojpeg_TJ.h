@@ -107,6 +107,10 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_PARAM_YDENSITY 21L
 #undef org_libjpegturbo_turbojpeg_TJ_PARAM_DENSITYUNITS
 #define org_libjpegturbo_turbojpeg_TJ_PARAM_DENSITYUNITS 22L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_MAXMEMORY
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_MAXMEMORY 23L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_MAXPIXELS
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_MAXPIXELS 24L
 #undef org_libjpegturbo_turbojpeg_TJ_FLAG_BOTTOMUP
 #define org_libjpegturbo_turbojpeg_TJ_FLAG_BOTTOMUP 2L
 #undef org_libjpegturbo_turbojpeg_TJ_FLAG_FASTUPSAMPLE

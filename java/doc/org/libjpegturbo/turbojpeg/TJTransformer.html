@@ -14,7 +14,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.min.js"></script>
 </head>
 <body>
@@ -379,7 +379,8 @@ extends <a href="TJDecompressor.html" title="class in org.libjpegturbo.turbojpeg
  transformed using the parameters in <code>transforms[i]</code>.  Use
  <a href="TJ.html#bufSize(int,int,int)"><code>TJ.bufSize()</code></a> to determine the maximum size for each
  buffer based on the transformed or cropped width and height and the level
- of subsampling used in the source image.</dd>
+ of subsampling used in the destination image (taking into account
+ grayscale conversion and transposition of the width and height.)</dd>
 <dd><code>transforms</code> - an array of <a href="TJTransform.html" title="class in org.libjpegturbo.turbojpeg"><code>TJTransform</code></a> instances, each of
  which specifies the transform parameters and/or cropping region for the
  corresponding transformed JPEG image</dd>

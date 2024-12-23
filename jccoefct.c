@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1997, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, D. R. Commander.
+ * Copyright (C) 2022, 2024, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -129,7 +129,7 @@ start_pass_coef(j_compress_ptr cinfo, J_BUF_MODE pass_mode)
     coef->pub._compress_data = compress_output;
     break;
 #endif
-#if PRECISION == 8
+#if BITS_IN_JSAMPLE == 8
   case JBUF_REQUANT:
     if (coef->whole_image[0] == NULL)
       ERREXIT(cinfo, JERR_BAD_BUFFER_MODE);
@@ -352,7 +352,7 @@ compress_first_pass(j_compress_ptr cinfo, _JSAMPIMAGE input_buf)
   return compress_output(cinfo, input_buf);
 }
 
-#if PRECISION == 8
+#if BITS_IN_JSAMPLE == 8
 METHODDEF(boolean)
 compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 {
@@ -570,6 +570,7 @@ _jinit_c_coef_controller(j_compress_ptr cinfo, boolean need_full_buffer)
   coef = (my_coef_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(my_coef_controller));
+  memset(coef, 0, sizeof(my_coef_controller));
   cinfo->coef = (struct jpeg_c_coef_controller *)coef;
   coef->pub.start_pass = start_pass_coef;
 

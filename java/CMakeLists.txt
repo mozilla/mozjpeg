@@ -56,7 +56,8 @@ if(MSYS)
 endif()
 
 add_custom_target(javadoc COMMAND
-  javadoc -notimestamp -d ${CMAKE_CURRENT_SOURCE_DIR}/doc -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} org.libjpegturbo.turbojpeg)
+  javadoc -notimestamp -d ${CMAKE_CURRENT_SOURCE_DIR}/doc
+    -sourcepath ${CMAKE_CURRENT_SOURCE_DIR} org.libjpegturbo.turbojpeg)
 set(JAVACLASSPATH ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/turbojpeg-java.dir)
 if(Java_VERSION_MAJOR GREATER 9)
   add_custom_target(javah
@@ -68,10 +69,14 @@ if(Java_VERSION_MAJOR GREATER 9)
       ${CMAKE_CURRENT_SOURCE_DIR}/org/libjpegturbo/turbojpeg/TJTransformer.java)
 else()
   add_custom_target(javah
-    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJ
-    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJCompressor
-    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJDecompressor
-    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH} org.libjpegturbo.turbojpeg.TJTransformer)
+    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH}
+      org.libjpegturbo.turbojpeg.TJ
+    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH}
+      org.libjpegturbo.turbojpeg.TJCompressor
+    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH}
+      org.libjpegturbo.turbojpeg.TJDecompressor
+    COMMAND javah -d ${CMAKE_CURRENT_SOURCE_DIR} -classpath ${JAVACLASSPATH}
+      org.libjpegturbo.turbojpeg.TJTransformer)
 endif()
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_JAVADIR)
@@ -84,5 +89,10 @@ GNUInstallDirs_get_absolute_install_dir(CMAKE_INSTALL_FULL_JAVADIR
 set(CMAKE_INSTALL_JAVADIR ${CMAKE_INSTALL_JAVADIR} PARENT_SCOPE)
 set(CMAKE_INSTALL_FULL_JAVADIR ${CMAKE_INSTALL_FULL_JAVADIR} PARENT_SCOPE)
 report_directory(JAVADIR)
-install_jar(turbojpeg-java ${CMAKE_INSTALL_JAVADIR})
+if(CMAKE_VERSION VERSION_EQUAL "3.4" OR CMAKE_VERSION VERSION_GREATER "3.4")
+  install_jar(turbojpeg-java DESTINATION ${CMAKE_INSTALL_JAVADIR}
+    COMPONENT java)
+else()
+  install_jar(turbojpeg-java ${CMAKE_INSTALL_JAVADIR})
+endif()
 mark_as_advanced(CLEAR CMAKE_INSTALL_JAVADIR)

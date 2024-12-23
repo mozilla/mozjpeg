@@ -5,7 +5,7 @@
  * Copyright (C) 1994-1998, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2022, D. R. Commander.
+ * Copyright (C) 2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -104,7 +104,7 @@ jpeg_CreateCompress(j_compress_ptr cinfo, int version, size_t structsize)
                                   sizeof(my_comp_master));
   memset(cinfo->master, 0, sizeof(my_comp_master));
 
-  #if PRECISION == 8
+  #if BITS_IN_JSAMPLE == 8
   cinfo->master->compress_profile = JCP_MAX_COMPRESSION;
   #endif
 }
@@ -200,15 +200,21 @@ jpeg_finish_compress(j_compress_ptr cinfo)
        */
       if (cinfo->data_precision == 16) {
 #ifdef C_LOSSLESS_SUPPORTED
+        if (cinfo->coef->compress_data_16 == NULL)
+          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
         if (!(*cinfo->coef->compress_data_16) (cinfo, (J16SAMPIMAGE)NULL))
           ERREXIT(cinfo, JERR_CANT_SUSPEND);
 #else
         ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 #endif
       } else if (cinfo->data_precision == 12) {
+        if (cinfo->coef->compress_data_12 == NULL)
+          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
         if (!(*cinfo->coef->compress_data_12) (cinfo, (J12SAMPIMAGE)NULL))
           ERREXIT(cinfo, JERR_CANT_SUSPEND);
       } else {
+        if (cinfo->coef->compress_data == NULL)
+          ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
         if (!(*cinfo->coef->compress_data) (cinfo, (JSAMPIMAGE)NULL))
           ERREXIT(cinfo, JERR_CANT_SUSPEND);
       }

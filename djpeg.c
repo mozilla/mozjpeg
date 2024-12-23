@@ -5,7 +5,7 @@
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2013-2019 by Guido Vollbeding.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010-2011, 2013-2017, 2019-2020, 2022-2023, D. R. Commander.
+ * Copyright (C) 2010-2011, 2013-2017, 2019-2020, 2022-2024, D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -84,14 +84,14 @@ static IMAGE_FORMATS requested_fmt;
 
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
-JDIMENSION max_scans;           /* for -maxscans switch */
+static JDIMENSION max_scans;    /* for -maxscans switch */
 static char *outfilename;       /* for -outfile switch */
-boolean memsrc;                 /* for -memsrc switch */
-boolean report;                 /* for -report switch */
-boolean skip, crop;
-JDIMENSION skip_start, skip_end;
-JDIMENSION crop_x, crop_y, crop_width, crop_height;
-boolean strict;                 /* for -strict switch */
+static boolean memsrc;          /* for -memsrc switch */
+static boolean report;          /* for -report switch */
+static boolean skip, crop;
+static JDIMENSION skip_start, skip_end;
+static JDIMENSION crop_x, crop_y, crop_width, crop_height;
+static boolean strict;          /* for -strict switch */
 #define INPUT_BUF_SIZE  4096
 
 
@@ -107,8 +107,8 @@ usage(void)
 #endif
 
   fprintf(stderr, "Switches (names may be abbreviated):\n");
-  fprintf(stderr, "  -colors N      Reduce image to no more than N colors\n");
-  fprintf(stderr, "  -fast          Fast, low-quality processing\n");
+  fprintf(stderr, "  -colors N      Reduce image to no more than N colors [legacy feature]\n");
+  fprintf(stderr, "  -fast          Low-quality processing [legacy feature]\n");
   fprintf(stderr, "  -grayscale     Force grayscale output\n");
   fprintf(stderr, "  -rgb           Force RGB output\n");
   fprintf(stderr, "  -rgb565        Force RGB565 output\n");
@@ -120,13 +120,13 @@ usage(void)
           (DEFAULT_FMT == FMT_BMP ? " (default)" : ""));
 #endif
 #ifdef GIF_SUPPORTED
-  fprintf(stderr, "  -gif           Select GIF output format (LZW-compressed)%s\n",
+  fprintf(stderr, "  -gif           Select GIF output format (LZW-compressed)%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_GIF ? " (default)" : ""));
-  fprintf(stderr, "  -gif0          Select GIF output format (uncompressed)%s\n",
+  fprintf(stderr, "  -gif0          Select GIF output format (uncompressed)%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_GIF0 ? " (default)" : ""));
 #endif
 #ifdef BMP_SUPPORTED
-  fprintf(stderr, "  -os2           Select BMP output format (OS/2 style)%s\n",
+  fprintf(stderr, "  -os2           Select BMP output format (OS/2 style)%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_OS2 ? " (default)" : ""));
 #endif
 #ifdef PPM_SUPPORTED
@@ -134,7 +134,7 @@ usage(void)
           (DEFAULT_FMT == FMT_PPM ? " (default)" : ""));
 #endif
 #ifdef TARGA_SUPPORTED
-  fprintf(stderr, "  -targa         Select Targa output format%s\n",
+  fprintf(stderr, "  -targa         Select Targa output format%s [legacy feature]\n",
           (DEFAULT_FMT == FMT_TARGA ? " (default)" : ""));
 #endif
   fprintf(stderr, "Switches for advanced users:\n");
@@ -150,16 +150,18 @@ usage(void)
   fprintf(stderr, "  -dct float     Use floating-point DCT method [legacy feature]%s\n",
           (JDCT_DEFAULT == JDCT_FLOAT ? " (default)" : ""));
 #endif
-  fprintf(stderr, "  -dither fs     Use F-S dithering (default)\n");
-  fprintf(stderr, "  -dither none   Don't use dithering in quantization\n");
-  fprintf(stderr, "  -dither ordered  Use ordered dither (medium speed, quality)\n");
+  fprintf(stderr, "  -dither fs     Use Floyd-Steinberg dithering when quantizing colors (default)\n");
+  fprintf(stderr, "                 [legacy feature]\n");
+  fprintf(stderr, "  -dither none   Don't use dithering when quantizing colors [legacy feature]\n");
+  fprintf(stderr, "  -dither ordered  Use ordered dithering when quantizing colors\n");
+  fprintf(stderr, "                   [legacy feature]\n");
   fprintf(stderr, "  -icc FILE      Extract ICC profile to FILE\n");
 #ifdef QUANT_2PASS_SUPPORTED
-  fprintf(stderr, "  -map FILE      Map to colors used in named image file\n");
+  fprintf(stderr, "  -map FILE      Quantize to colors used in named image file [legacy feature]\n");
 #endif
-  fprintf(stderr, "  -nosmooth      Don't use high-quality upsampling\n");
+  fprintf(stderr, "  -nosmooth      Use faster, lower-quality upsampling\n");
 #ifdef QUANT_1PASS_SUPPORTED
-  fprintf(stderr, "  -onepass       Use 1-pass quantization (fast, low quality)\n");
+  fprintf(stderr, "  -onepass       Use 1-pass color quantization (low quality) [legacy feature]\n");
 #endif
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
   fprintf(stderr, "  -maxscans N    Maximum number of scans to allow in input file\n");
@@ -267,7 +269,8 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
       if (!printed_version) {
         fprintf(stderr, "%s version %s (build %s)\n",
                 PACKAGE_NAME, VERSION, BUILD);
-        fprintf(stderr, "%s\n\n", JCOPYRIGHT);
+        fprintf(stderr, JCOPYRIGHT1);
+        fprintf(stderr, JCOPYRIGHT2 "\n");
         fprintf(stderr, "Emulating The Independent JPEG Group's software, version %s\n\n",
                 JVERSION);
         printed_version = TRUE;
@@ -389,7 +392,7 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
     } else if (keymatch(arg, "report", 2)) {
       report = TRUE;
 
-    } else if (keymatch(arg, "scale", 2)) {
+    } else if (keymatch(arg, "scale", 1)) {
       /* Scale the output image by a fraction M/N. */
       if (++argn >= argc)       /* advance to next argument */
         usage();
@@ -398,22 +401,31 @@ parse_switches(j_decompress_ptr cinfo, int argc, char **argv,
         usage();
 
     } else if (keymatch(arg, "skip", 2)) {
+      int temp_start = -1, temp_end = -1;
       if (++argn >= argc)
         usage();
-      if (sscanf(argv[argn], "%u,%u", &skip_start, &skip_end) != 2 ||
-          skip_start > skip_end)
+      if (sscanf(argv[argn], "%d,%d", &temp_start, &temp_end) != 2 ||
+          temp_start < 0 || temp_end < 0 || temp_start > temp_end)
         usage();
       skip = TRUE;
+      skip_start = temp_start;
+      skip_end = temp_end;
 
     } else if (keymatch(arg, "crop", 2)) {
+      int temp_width = -1, temp_height = -1, temp_x = -1, temp_y = -1;
       char c;
       if (++argn >= argc)
         usage();
-      if (sscanf(argv[argn], "%u%c%u+%u+%u", &crop_width, &c, &crop_height,
-                 &crop_x, &crop_y) != 5 ||
-          (c != 'X' && c != 'x') || crop_width < 1 || crop_height < 1)
+      if (sscanf(argv[argn], "%d%c%d+%d+%d", &temp_width, &c, &temp_height,
+                 &temp_x, &temp_y) != 5 ||
+          (c != 'X' && c != 'x') || temp_width < 1 || temp_height < 1 ||
+          temp_x < 0 || temp_y < 0)
         usage();
       crop = TRUE;
+      crop_width = temp_width;
+      crop_height = temp_height;
+      crop_x = temp_x;
+      crop_y = temp_y;
 
     } else if (keymatch(arg, "strict", 2)) {
       strict = TRUE;
@@ -773,8 +785,8 @@ main(int argc, char **argv)
     /* Check for valid crop dimensions.  We cannot check these values until
      * after jpeg_start_decompress() is called.
      */
-    if (crop_x + crop_width > cinfo.output_width ||
-        crop_y + crop_height > cinfo.output_height) {
+    if ((unsigned long long)crop_x + crop_width > cinfo.output_width ||
+        (unsigned long long)crop_y + crop_height > cinfo.output_height) {
       fprintf(stderr, "%s: crop dimensions exceed image dimensions %u x %u\n",
               progname, cinfo.output_width, cinfo.output_height);
       exit(EXIT_FAILURE);

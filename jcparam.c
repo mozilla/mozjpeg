@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2018, 2023, D. R. Commander.
+ * Copyright (C) 2009-2011, 2018, 2023-2024, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -423,6 +423,9 @@ jpeg_set_defaults(j_compress_ptr cinfo)
   cinfo->scan_info = NULL;
   cinfo->num_scans = 0;
 
+  /* Default is lossy output */
+  cinfo->master->lossless = FALSE;
+
   /* Expect normal source image, not raw downsampled data */
   cinfo->raw_data_in = FALSE;
 
@@ -446,7 +449,7 @@ jpeg_set_defaults(j_compress_ptr cinfo)
    * tables will be computed.  This test can be removed if default tables
    * are supplied that are valid for the desired precision.
    */
-  if (cinfo->data_precision == 12 && !cinfo->arith_code)
+  if (cinfo->data_precision == 12)
     cinfo->optimize_coding = TRUE;
 
   /* By default, use the simpler non-cosited sampling alignment */
@@ -538,9 +541,11 @@ jpeg_default_colorspace(j_compress_ptr cinfo)
   case JCS_EXT_BGRA:
   case JCS_EXT_ABGR:
   case JCS_EXT_ARGB:
+#ifdef C_LOSSLESS_SUPPORTED
     if (cinfo->master->lossless)
       jpeg_set_colorspace(cinfo, JCS_RGB);
     else
+#endif
       jpeg_set_colorspace(cinfo, JCS_YCbCr);
     break;
   case JCS_YCbCr:
@@ -867,10 +872,12 @@ jpeg_simple_progression(j_compress_ptr cinfo)
   if (cinfo->global_state != CSTATE_START)
     ERREXIT1(cinfo, JERR_BAD_STATE, cinfo->global_state);
 
+#ifdef C_LOSSLESS_SUPPORTED
   if (cinfo->master->lossless) {
     cinfo->master->lossless = FALSE;
     jpeg_default_colorspace(cinfo);
   }
+#endif
 
   /* Figure space needed for script.  Calculation must match code below! */
   ncomps = cinfo->num_components;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011, 2013, 2018, 2022-2023 D. R. Commander.
+ * Copyright (C)2011, 2013, 2018, 2022-2024 D. R. Commander.
  *                                          All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,13 +48,13 @@ public class TJTransform extends Rectangle {
   public static final int OP_NONE       = 0;
   /**
    * Flip (mirror) image horizontally.  This transform is imperfect if there
-   * are any partial MCU blocks on the right edge.
+   * are any partial iMCUs on the right edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_HFLIP      = 1;
   /**
    * Flip (mirror) image vertically.  This transform is imperfect if there are
-   * any partial MCU blocks on the bottom edge.
+   * any partial iMCUs on the bottom edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_VFLIP      = 2;
@@ -66,95 +66,90 @@ public class TJTransform extends Rectangle {
   public static final int OP_TRANSPOSE  = 3;
   /**
    * Transverse transpose image (flip/mirror along upper right to lower left
-   * axis).  This transform is imperfect if there are any partial MCU blocks in
-   * the image.
+   * axis).  This transform is imperfect if there are any partial iMCUs in the
+   * image.
    * @see #OPT_PERFECT
    */
   public static final int OP_TRANSVERSE = 4;
   /**
    * Rotate image clockwise by 90 degrees.  This transform is imperfect if
-   * there are any partial MCU blocks on the bottom edge.
+   * there are any partial iMCUs on the bottom edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_ROT90      = 5;
   /**
    * Rotate image 180 degrees.  This transform is imperfect if there are any
-   * partial MCU blocks in the image.
+   * partial iMCUs in the image.
    * @see #OPT_PERFECT
    */
   public static final int OP_ROT180     = 6;
   /**
    * Rotate image counter-clockwise by 90 degrees.  This transform is imperfect
-   * if there are any partial MCU blocks on the right edge.
+   * if there are any partial iMCUs on the right edge.
    * @see #OPT_PERFECT
    */
   public static final int OP_ROT270     = 7;
 
 
   /**
-   * This option will cause {@link TJTransformer#transform
+   * This option causes {@link TJTransformer#transform
    * TJTransformer.transform()} to throw an exception if the transform is not
-   * perfect.  Lossless transforms operate on MCU blocks, whose size depends on
-   * the level of chrominance subsampling used.  If the image's width or height
-   * is not evenly divisible by the MCU block size (see {@link TJ#getMCUWidth
+   * perfect.  Lossless transforms operate on iMCUs, the size of which depends
+   * on the level of chrominance subsampling used.  If the image's width or
+   * height is not evenly divisible by the iMCU size (see {@link TJ#getMCUWidth
    * TJ.getMCUWidth()} and {@link TJ#getMCUHeight TJ.getMCUHeight()}), then
-   * there will be partial MCU blocks on the right and/or bottom edges.  It is
-   * not possible to move these partial MCU blocks to the top or left of the
-   * image, so any transform that would require that is "imperfect."  If this
-   * option is not specified, then any partial MCU blocks that cannot be
-   * transformed will be left in place, which will create odd-looking strips on
-   * the right or bottom edge of the image.
+   * there will be partial iMCUs on the right and/or bottom edges.  It is not
+   * possible to move these partial iMCUs to the top or left of the image, so
+   * any transform that would require that is "imperfect."  If this option is
+   * not specified, then any partial iMCUs that cannot be transformed will be
+   * left in place, which will create odd-looking strips on the right or bottom
+   * edge of the image.
    */
   public static final int OPT_PERFECT     = (1 << 0);
   /**
-   * This option will discard any partial MCU blocks that cannot be
-   * transformed.
+   * Discard any partial iMCUs that cannot be transformed.
    */
   public static final int OPT_TRIM        = (1 << 1);
   /**
-   * This option will enable lossless cropping.
+   * Enable lossless cropping.
    */
   public static final int OPT_CROP        = (1 << 2);
   /**
-   * This option will discard the color data in the source image and produce a
-   * grayscale destination image.
+   * Discard the color data in the source image, and generate a grayscale
+   * destination image.
    */
   public static final int OPT_GRAY        = (1 << 3);
   /**
-   * This option will prevent {@link TJTransformer#transform
-   * TJTransformer.transform()} from outputting a JPEG image for this
-   * particular transform.  This can be used in conjunction with a custom
-   * filter to capture the transformed DCT coefficients without transcoding
-   * them.
+   * Do not generate a destination image.  This can be used in conjunction with
+   * a custom filter to capture the transformed DCT coefficients without
+   * transcoding them.
    */
   public static final int OPT_NOOUTPUT    = (1 << 4);
   /**
-   * This option will enable progressive entropy coding in the JPEG image
-   * generated by this particular transform.  Progressive entropy coding will
-   * generally improve compression relative to baseline entropy coding (the
-   * default), but it will reduce decompression performance considerably.
-   * Can be combined with {@link #OPT_ARITHMETIC}.  Implies
-   * {@link #OPT_OPTIMIZE} unless {@link #OPT_ARITHMETIC} is also specified.
+   * Generate a progressive destination image instead of a single-scan
+   * destination image.  Progressive JPEG images generally have better
+   * compression ratios than single-scan JPEG images (much better if the image
+   * has large areas of solid color), but progressive JPEG decompression is
+   * considerably slower than single-scan JPEG decompression.  Can be combined
+   * with {@link #OPT_ARITHMETIC}.  Implies {@link #OPT_OPTIMIZE} unless
+   * {@link #OPT_ARITHMETIC} is also specified.
    */
   public static final int OPT_PROGRESSIVE = (1 << 5);
   /**
-   * This option will prevent {@link TJTransformer#transform
-   * TJTransformer.transform()} from copying any extra markers (including EXIF
-   * and ICC profile data) from the source image to the destination image.
+   * Do not copy any extra markers (including Exif and ICC profile data) from
+   * the source image to the destination image.
    */
   public static final int OPT_COPYNONE    = (1 << 6);
   /**
-   * This option will enable arithmetic entropy coding in the JPEG image
-   * generated by this particular transform.  Arithmetic entropy coding will
-   * generally improve compression relative to Huffman entropy coding (the
-   * default), but it will reduce decompression performance considerably.  Can
-   * be combined with {@link #OPT_PROGRESSIVE}.
+   * Enable arithmetic entropy coding in the destination image.  Arithmetic
+   * entropy coding generally improves compression relative to Huffman entropy
+   * coding (the default), but it reduces decompression performance
+   * considerably.  Can be combined with {@link #OPT_PROGRESSIVE}.
    */
   public static final int OPT_ARITHMETIC  = (1 << 7);
   /**
-   * This option will enable optimized baseline entropy coding in the JPEG
-   * image generated by this particular transform.  Optimized baseline entropy
-   * coding will improve compression slightly (generally 5% or less.)
+   * Enable Huffman table optimization for the destination image.  Huffman
+   * table optimization improves compression slightly (generally 5% or less.)
    */
   public static final int OPT_OPTIMIZE    = (1 << 8);
 
@@ -169,12 +164,12 @@ public class TJTransform extends Rectangle {
    * Create a new lossless transform instance with the given parameters.
    *
    * @param x the left boundary of the cropping region.  This must be evenly
-   * divisible by the MCU block width (see {@link TJ#getMCUWidth
-   * TJ.getMCUWidth()})
+   * divisible by the iMCU width (see {@link TJ#getMCUWidth TJ.getMCUWidth()})
+   * of the destination image.
    *
    * @param y the upper boundary of the cropping region.  This must be evenly
-   * divisible by the MCU block height (see {@link TJ#getMCUHeight
-   * TJ.getMCUHeight()})
+   * divisible by the iMCU height (see {@link TJ#getMCUHeight
+   * TJ.getMCUHeight()}) of the destination image.
    *
    * @param w the width of the cropping region.  Setting this to 0 is the
    * equivalent of setting it to (width of the source JPEG image -

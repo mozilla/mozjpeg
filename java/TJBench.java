@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2009-2014, 2016-2019, 2021-2023 D. R. Commander.
+ * Copyright (C)2009-2014, 2016-2019, 2021-2024 D. R. Commander.
  *                                              All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,9 @@ final class TJBench {
 
   private static boolean stopOnWarning, bottomUp, fastUpsample, fastDCT,
     optimize, progressive, limitScans, arithmetic, lossless;
-  private static int precision = 8, quiet = 0, pf = TJ.PF_BGR, yuvAlign = 1,
-    restartIntervalBlocks, restartIntervalRows = 0;
+  private static int maxMemory = 0, maxPixels = 0, precision = 8, quiet = 0,
+    pf = TJ.PF_BGR, yuvAlign = 1, restartIntervalBlocks = 0,
+    restartIntervalRows = 0;
   private static boolean compOnly, decompOnly, doTile, doYUV, write = true,
     bmp = false;
 
@@ -183,6 +184,8 @@ final class TJBench {
     tjd.set(TJ.PARAM_FASTUPSAMPLE, fastUpsample ? 1 : 0);
     tjd.set(TJ.PARAM_FASTDCT, fastDCT ? 1 : 0);
     tjd.set(TJ.PARAM_SCANLIMIT, limitScans ? 500 : 0);
+    tjd.set(TJ.PARAM_MAXMEMORY, maxMemory);
+    tjd.set(TJ.PARAM_MAXPIXELS, maxPixels);
 
     if (isCropped(cr)) {
       try {
@@ -364,6 +367,7 @@ final class TJBench {
       tjc.set(TJ.PARAM_QUALITY, jpegQual);
     tjc.set(TJ.PARAM_RESTARTBLOCKS, restartIntervalBlocks);
     tjc.set(TJ.PARAM_RESTARTROWS, restartIntervalRows);
+    tjc.set(TJ.PARAM_MAXMEMORY, maxMemory);
 
     for (tilew = doTile ? 8 : w, tileh = doTile ? 8 : h; ;
          tilew *= 2, tileh *= 2) {
@@ -550,6 +554,8 @@ final class TJBench {
     tjt.set(TJ.PARAM_FASTUPSAMPLE, fastUpsample ? 1 : 0);
     tjt.set(TJ.PARAM_FASTDCT, fastDCT ? 1 : 0);
     tjt.set(TJ.PARAM_SCANLIMIT, limitScans ? 500 : 0);
+    tjt.set(TJ.PARAM_MAXMEMORY, maxMemory);
+    tjt.set(TJ.PARAM_MAXPIXELS, maxPixels);
 
     try {
       tjt.setSourceImage(srcBuf, srcSize);
@@ -560,7 +566,7 @@ final class TJBench {
     precision = tjt.get(TJ.PARAM_PRECISION);
     cs = tjt.get(TJ.PARAM_COLORSPACE);
     if (tjt.get(TJ.PARAM_PROGRESSIVE) == 1)
-      System.out.println("JPEG image uses progressive entropy coding\n");
+      System.out.println("JPEG image is progressive\n");
     if (tjt.get(TJ.PARAM_ARITHMETIC) == 1)
       System.out.println("JPEG image uses arithmetic entropy coding\n");
     tjt.set(TJ.PARAM_PROGRESSIVE, progressive ? 1 : 0);
@@ -623,6 +629,22 @@ final class TJBench {
       }
 
       tsubsamp = subsamp;
+      if ((xformOpt & TJTransform.OPT_GRAY) != 0)
+        tsubsamp = TJ.SAMP_GRAY;
+      if (xformOp == TJTransform.OP_TRANSPOSE ||
+          xformOp == TJTransform.OP_TRANSVERSE ||
+          xformOp == TJTransform.OP_ROT90 ||
+          xformOp == TJTransform.OP_ROT270) {
+        if (tsubsamp == TJ.SAMP_422)
+          tsubsamp = TJ.SAMP_440;
+        else if (tsubsamp == TJ.SAMP_440)
+          tsubsamp = TJ.SAMP_422;
+        else if (tsubsamp == TJ.SAMP_411)
+          tsubsamp = TJ.SAMP_441;
+        else if (tsubsamp == TJ.SAMP_441)
+          tsubsamp = TJ.SAMP_411;
+      }
+
       if (doTile || xformOp != TJTransform.OP_NONE || xformOpt != 0 ||
           customFilter != null) {
         if (xformOp == TJTransform.OP_TRANSPOSE ||
@@ -635,40 +657,22 @@ final class TJBench {
         if (xformOp != TJTransform.OP_NONE &&
             xformOp != TJTransform.OP_TRANSPOSE && subsamp == TJ.SAMP_UNKNOWN)
           throw new Exception("Could not determine subsampling level of JPEG image");
-        if ((xformOpt & TJTransform.OPT_GRAY) != 0)
-          tsubsamp = TJ.SAMP_GRAY;
         if (xformOp == TJTransform.OP_HFLIP ||
+            xformOp == TJTransform.OP_TRANSVERSE ||
+            xformOp == TJTransform.OP_ROT90 ||
             xformOp == TJTransform.OP_ROT180)
           tw = tw - (tw % TJ.getMCUWidth(tsubsamp));
         if (xformOp == TJTransform.OP_VFLIP ||
-            xformOp == TJTransform.OP_ROT180)
-          th = th - (th % TJ.getMCUHeight(tsubsamp));
-        if (xformOp == TJTransform.OP_TRANSVERSE ||
-            xformOp == TJTransform.OP_ROT90)
-          tw = tw - (tw % TJ.getMCUHeight(tsubsamp));
-        if (xformOp == TJTransform.OP_TRANSVERSE ||
+            xformOp == TJTransform.OP_TRANSVERSE ||
+            xformOp == TJTransform.OP_ROT180 ||
             xformOp == TJTransform.OP_ROT270)
-          th = th - (th % TJ.getMCUWidth(tsubsamp));
+          th = th - (th % TJ.getMCUHeight(tsubsamp));
         tntilesw = (tw + ttilew - 1) / ttilew;
         tntilesh = (th + ttileh - 1) / ttileh;
 
-        if (xformOp == TJTransform.OP_TRANSPOSE ||
-            xformOp == TJTransform.OP_TRANSVERSE ||
-            xformOp == TJTransform.OP_ROT90 ||
-            xformOp == TJTransform.OP_ROT270) {
-          if (tsubsamp == TJ.SAMP_422)
-            tsubsamp = TJ.SAMP_440;
-          else if (tsubsamp == TJ.SAMP_440)
-            tsubsamp = TJ.SAMP_422;
-          else if (tsubsamp == TJ.SAMP_411)
-            tsubsamp = TJ.SAMP_441;
-          else if (tsubsamp == TJ.SAMP_441)
-            tsubsamp = TJ.SAMP_411;
-        }
-
         TJTransform[] t = new TJTransform[tntilesw * tntilesh];
         jpegBufs =
-          new byte[tntilesw * tntilesh][TJ.bufSize(ttilew, ttileh, subsamp)];
+          new byte[tntilesw * tntilesh][TJ.bufSize(ttilew, ttileh, tsubsamp)];
 
         for (y = 0, tile = 0; y < th; y += ttileh) {
           for (x = 0; x < tw; x += ttilew, tile++) {
@@ -731,7 +735,7 @@ final class TJBench {
       } else {
         if (quiet == 1)
           System.out.print("N/A     N/A     ");
-        jpegBufs = new byte[1][TJ.bufSize(ttilew, ttileh, subsamp)];
+        jpegBufs = new byte[1][TJ.bufSize(ttilew, ttileh, tsubsamp)];
         jpegSizes = new int[1];
         jpegBufs[0] = srcBuf;
         jpegSizes[0] = srcSize;
@@ -775,6 +779,11 @@ final class TJBench {
     System.out.println("-componly = Stop after running compression tests.  Do not test decompression.");
     System.out.println("-lossless = Generate lossless JPEG images when compressing (implies");
     System.out.println("     -subsamp 444).  PSV is the predictor selection value (1-7).");
+    System.out.println("-maxmemory N = Memory limit (in megabytes) for intermediate buffers used with");
+    System.out.println("     progressive JPEG compression and decompression, Huffman table");
+    System.out.println("     optimization, lossless JPEG compression, and lossless transformation");
+    System.out.println("     [default = no limit]");
+    System.out.println("-maxpixels N = Input image size limit (in pixels) [default = no limit]");
     System.out.println("-nowrite = Do not write reference or output images (improves consistency of");
     System.out.println("     benchmark results)");
     System.out.println("-rgb, -bgr, -rgbx, -bgrx, -xbgr, -xrgb =");
@@ -786,10 +795,9 @@ final class TJBench {
     System.out.println("     default = 8; if N is 16, then -lossless must also be specified]");
     System.out.println("     (-precision 12 implies -optimize unless -arithmetic is also specified)");
     System.out.println("-quiet = Output results in tabular rather than verbose format");
-    System.out.println("-restart N = When compressing, add a restart marker every N MCU rows (lossy) or");
-    System.out.println("     N sample rows (lossless) [default = 0 (no restart markers)].  Append 'B'");
-    System.out.println("     to specify the restart marker interval in MCU blocks (lossy) or samples");
-    System.out.println("     (lossless).");
+    System.out.println("-restart N = When compressing, add a restart marker every N MCU rows");
+    System.out.println("     [default = 0 (no restart markers)].  Append 'B' to specify the restart");
+    System.out.println("     marker interval in MCUs (lossy only.)");
     System.out.println("-stoponwarning = Immediately discontinue the current");
     System.out.println("     compression/decompression/transform operation if a warning (non-fatal");
     System.out.println("     error) occurs");
@@ -807,14 +815,14 @@ final class TJBench {
     System.out.println("     and H are the width and height of the region (0 = maximum possible width");
     System.out.println("     or height) and X and Y are the left and upper boundary of the region, all");
     System.out.println("     specified relative to the scaled image dimensions.  X must be divible by");
-    System.out.println("     the scaled MCU width.");
+    System.out.println("     the scaled iMCU width.");
     System.out.println("-fastdct = Use the fastest DCT/IDCT algorithm available");
     System.out.println("-fastupsample = Use the fastest chrominance upsampling algorithm available");
-    System.out.println("-optimize = Use optimized baseline entropy coding in JPEG images generated by");
+    System.out.println("-optimize = Compute optimal Huffman tables for JPEG images generated by");
     System.out.println("     compession and transform operations");
-    System.out.println("-progressive = Use progressive entropy coding in JPEG images generated by");
-    System.out.println("     compression and transform operations (can be combined with -arithmetic;");
-    System.out.println("     implies -optimize unless -arithmetic is also specified)");
+    System.out.println("-progressive = Generate progressive JPEG images when compressing or");
+    System.out.println("     transforming (can be combined with -arithmetic; implies -optimize unless");
+    System.out.println("     -arithmetic is also specified)");
     System.out.println("-limitscans = Refuse to decompress or transform progressive JPEG images that");
     System.out.println("     have an unreasonably large number of scans");
     System.out.println("-scale M/N = When decompressing, scale the width/height of the JPEG image by a");
@@ -842,7 +850,7 @@ final class TJBench {
     System.out.println("     prior to decompression (these operations are mutually exclusive)");
     System.out.println("-grayscale = Transform the input image into a grayscale JPEG image prior to");
     System.out.println("     decompression (can be combined with the other transform operations above)");
-    System.out.println("-copynone = Do not copy any extra markers (including EXIF and ICC profile data)");
+    System.out.println("-copynone = Do not copy any extra markers (including Exif and ICC profile data)");
     System.out.println("     when transforming the input image");
     System.out.println("-yuv = Compress from/decompress to intermediate planar YUV images");
     System.out.println("     ** 8-bit data precision only **");
@@ -915,21 +923,19 @@ final class TJBench {
             System.out.println("Using fastest DCT/IDCT algorithm\n");
             fastDCT = true;
           } else if (argv[i].equalsIgnoreCase("-optimize")) {
-            System.out.println("Using optimized baseline entropy coding\n");
             optimize = true;
             xformOpt |= TJTransform.OPT_OPTIMIZE;
           } else if (argv[i].equalsIgnoreCase("-progressive")) {
-            System.out.println("Using progressive entropy coding\n");
+            System.out.println("Generating progressive JPEG images\n");
             progressive = true;
             xformOpt |= TJTransform.OPT_PROGRESSIVE;
           } else if (argv[i].equalsIgnoreCase("-arithmetic")) {
             System.out.println("Using arithmetic entropy coding\n");
             arithmetic = true;
             xformOpt |= TJTransform.OPT_ARITHMETIC;
-          } else if (argv[i].equalsIgnoreCase("-lossless")) {
+          } else if (argv[i].equalsIgnoreCase("-lossless"))
             lossless = true;
-            subsamp = TJ.SAMP_444;
-          } else if (argv[i].equalsIgnoreCase("-rgb"))
+          else if (argv[i].equalsIgnoreCase("-rgb"))
             pf = TJ.PF_RGB;
           else if (argv[i].equalsIgnoreCase("-rgbx"))
             pf = TJ.PF_RGBX;
@@ -1074,7 +1080,27 @@ final class TJBench {
             write = false;
           else if (argv[i].equalsIgnoreCase("-limitscans"))
             limitScans = true;
-          else if (argv[i].equalsIgnoreCase("-restart") &&
+          else if (argv[i].equalsIgnoreCase("-maxmemory") &&
+                   i < argv.length - 1) {
+            int temp = -1;
+
+            try {
+              temp = Integer.parseInt(argv[++i]);
+            } catch (NumberFormatException e) {}
+            if (temp < 0)
+              usage();
+            maxMemory = temp;
+          } else if (argv[i].equalsIgnoreCase("-maxpixels") &&
+                     i < argv.length - 1) {
+            int temp = -1;
+
+            try {
+              temp = Integer.parseInt(argv[++i]);
+            } catch (NumberFormatException e) {}
+            if (temp < 0)
+              usage();
+            maxPixels = temp;
+          } else if (argv[i].equalsIgnoreCase("-restart") &&
                    i < argv.length - 1) {
             int temp = -1;
             String arg = argv[++i];
@@ -1095,6 +1121,13 @@ final class TJBench {
           else usage();
         }
       }
+
+      if (optimize && !progressive && !arithmetic && !lossless &&
+          precision != 12)
+        System.out.println("Computing optimal Huffman tables\n");
+
+      if (lossless)
+        subsamp = TJ.SAMP_444;
 
       if (precision == 16 && !lossless)
         throw new Exception("-lossless must be specified along with -precision 16");
@@ -1130,6 +1163,7 @@ final class TJBench {
         tjc = new TJCompressor();
         tjc.set(TJ.PARAM_STOPONWARNING, stopOnWarning ? 1 : 0);
         tjc.set(TJ.PARAM_BOTTOMUP, bottomUp ? 1 : 0);
+        tjc.set(TJ.PARAM_MAXPIXELS, maxPixels);
 
         pixelFormat[0] = pf;
         srcBuf = tjc.loadImage(precision, argv[0], width, 1, height,

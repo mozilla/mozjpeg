@@ -1,5 +1,8 @@
-NOTE:  This file was modified by The libjpeg-turbo Project to include only
-information relevant to libjpeg-turbo and to wordsmith certain sections.
+This file was part of the Independent JPEG Group's software:
+Copyright (C) 1991-2020, Thomas G. Lane, Guido Vollbeding.
+libjpeg-turbo Modifications:
+Copyright (C) 2010, 2012, 2014-2017, 2020-2024, D. R. Commander.
+For conditions of distribution and use, see the accompanying README.ijg file.
 
 USAGE instructions for the Independent JPEG Group's JPEG software
 =================================================================
@@ -50,9 +53,10 @@ or
 This syntax works on all systems, so it is useful for scripts.
 
 The currently supported image file formats are: PPM (PBMPLUS color format),
-PGM (PBMPLUS grayscale format), BMP, GIF, and Targa.  cjpeg recognizes the
-input image format automatically, with the exception of some Targa files.  You
-have to tell djpeg which format to generate.
+PGM (PBMPLUS grayscale format), BMP, GIF [legacy feature], and Targa [legacy
+feature].  cjpeg recognizes the input image format automatically, with the
+exception of some Targa files.  You have to tell djpeg which format to
+generate.
 
 JPEG files are in the defacto standard JFIF file format.  There are other,
 less widely used JPEG-based file formats, but we don't support them.
@@ -73,12 +77,12 @@ The basic command line switches for cjpeg are:
                           (See below for more info.)
 
         -grayscale      Create monochrome JPEG file from color input.  By
-                        saying -grayscale, you'll get a smaller JPEG file that
-                        takes less time to process.
+                        specifying -grayscale, you'll get a smaller JPEG file
+                        that takes less time to process.
 
-        -rgb            Create RGB JPEG file.
-                        Using this switch suppresses the conversion from RGB
-                        colorspace input to the default YCbCr JPEG colorspace.
+        -rgb            Create RGB JPEG file.  Using this switch suppresses the
+                        conversion from RGB colorspace input to the default
+                        YCbCr JPEG colorspace.
 
         -optimize       Perform optimization of entropy encoding parameters.
                         Without this, default encoding parameters are used.
@@ -87,13 +91,15 @@ The basic command line switches for cjpeg are:
                         memory.  Image quality and speed of decompression are
                         unaffected by -optimize.
 
-        -progressive    Create progressive JPEG file (see below).
+        -progressive    Create progressive JPEG file (see below).  Implies
+                        -optimize unless -arithmetic is also specified.
 
-        -targa          Input file is Targa format.  Targa files that contain
-                        an "identification" field will not be automatically
-                        recognized by cjpeg; for such files you must specify
-                        -targa to make cjpeg treat the input as Targa format.
-                        For most Targa files, you won't need this switch.
+        -targa          Input file is Targa format [legacy feature].  Targa
+                        files that contain an "identification" field will not
+                        be automatically recognized by cjpeg.  For such files,
+                        you must specify -targa to make cjpeg treat the input
+                        as Targa format.  For most Targa files, you won't need
+                        this switch.
 
 The -quality switch lets you trade off compressed file size against quality of
 the reconstructed image: the higher the quality setting, the larger the JPEG
@@ -162,10 +168,22 @@ Switches for advanced users:
 
         -precision N   Create JPEG file with N-bit data precision.
                        N is 8, 12, or 16; default is 8.  If N is 16, then
-                       -lossless must also be specified.  CAUTION: 12-bit and
-                       16-bit JPEG is not yet widely implemented, so many
-                       decoders will be unable to view a 12-bit or 16-bit JPEG
-                       file at all.
+                       -lossless must also be specified.  Note that only the
+                       PBMPLUS input file format supports data precisions other
+                       than 8.  (For historical reasons, cjpeg allows GIF input
+                       files to be converted into 12-bit-per-sample JPEG files,
+                       but this is not a useful conversion.)  Note also that
+                       PBMPLUS input files are silently scaled to the target
+                       data precision, even if it is lower than the precision
+                       of the input file.  Passing an argument of -verbose to
+                       cjpeg will cause it to print information about the
+                       precision of the input file.  CAUTION: 12-bit and 16-bit
+                       data precision is not yet widely implemented, so many
+                       decoders will be unable to handle a 12-bit-per-sample or
+                       16-bit-per-sample JPEG file at all.
+
+                       "-precision 12" implies -optimize unless -arithmetic is
+                       also specified.
 
         -lossless psv[,Pt] Create a lossless JPEG file using the specified
                         predictor selection value (1 - 7) and optional point
@@ -177,7 +195,11 @@ Switches for advanced users:
                         number of bits, which is effectively a form of lossy
                         color quantization.)  CAUTION: lossless JPEG is not yet
                         widely implemented, so many decoders will be unable to
-                        view a lossless JPEG file at all.  Note that the
+                        handle a lossless JPEG file at all.  In most cases,
+                        compressing and decompressing a lossless JPEG file is
+                        considerably slower than compressing and decompressing
+                        a lossy JPEG file, and lossless JPEG files are much
+                        larger than lossy JPEG files.  Also note that the
                         following features will be unavailable when compressing
                         or decompressing a lossless JPEG file:
                           * Quality/quantization table selection
@@ -193,9 +215,9 @@ Switches for advanced users:
                         Any switches used to enable or configure those features
                         will be ignored.
 
-        -arithmetic     Use arithmetic coding.  CAUTION: arithmetic coded JPEG
+        -arithmetic     Use arithmetic coding.  CAUTION: arithmetic-coded JPEG
                         is not yet widely implemented, so many decoders will
-                        be unable to view an arithmetic coded JPEG file at
+                        be unable to handle an arithmetic-coded JPEG file at
                         all.
 
         -dct int        Use accurate integer DCT method (default).
@@ -236,10 +258,25 @@ Switches for advanced users:
                         behavior, whereas the integer methods should give the
                         same results on all machines.
 
-        -restart N      Emit a JPEG restart marker every N MCU rows, or every
-                        N MCU blocks (samples in lossless mode) if "B" is
-                        attached to the number.  -restart 0 (the default) means
-                        no restart markers.
+        -icc FILE       Embed ICC color management profile contained in the
+                        specified file.
+
+        -restart N      Emit a JPEG restart marker every N MCU rows, or every N
+                        MCUs if "B" is attached to the number.
+
+                        In typical JPEG images, an MCU (Minimum Coded Unit) is
+                        the minimum set of interleaved "data units" (8x8 DCT
+                        blocks if the image is lossy or samples if the image is
+                        lossless) necessary to represent at least one data unit
+                        per component.  (For example, an MCU in an interleaved
+                        lossy JPEG image that uses 4:2:2 subsampling consists
+                        of two luminance blocks followed by one block for each
+                        chrominance component.)  In single-component or
+                        non-interleaved JPEG images, an MCU is the same as a
+                        data unit.  An MCU row is a row of MCUs spanning the
+                        entire width of the image.
+
+                        -restart 0 (the default) means no restart markers.
 
         -smooth N       Smooth the input image to eliminate dithering noise.
                         N, ranging from 1 to 100, indicates the strength of
@@ -251,8 +288,22 @@ Switches for advanced users:
                         For example, -max 4m selects 4000000 bytes.  If more
                         space is needed, an error will occur.
 
-        -verbose        Enable debug printout.  More -v's give more printout.
+        -memdst         Compress to memory instead of a file.  This feature was
+                        implemented mainly as a way of testing the in-memory
+                        destination manager (jpeg_mem_dest()), but it is also
+                        useful for benchmarking, since it reduces the I/O
+                        overhead.
+
+        -report         Report compression progress.
+
+        -strict         Treat all warnings as fatal.  Enabling this option will
+                        cause the compressor to abort if an LZW-compressed GIF
+                        input image contains incomplete or corrupt image data.
+
+        -verbose        Enable debug printout.  More -v's give more output.
         or -debug       Also, version information is printed at startup.
+
+        -version        Print version information and exit.
 
 The -restart option inserts extra markers that allow a JPEG decoder to
 resynchronize after a transmission error.  Without restart markers, any damage
@@ -296,64 +347,78 @@ DJPEG DETAILS
 
 The basic command line switches for djpeg are:
 
-        -colors N       Reduce image to at most N colors.  This reduces the
-        or -quantize N  number of colors used in the output image, so that it
-                        can be displayed on a colormapped display or stored in
-                        a colormapped file format.  For example, if you have
-                        an 8-bit display, you'd need to reduce to 256 or fewer
-                        colors.  (-colors is the recommended name, -quantize
-                        is provided only for backwards compatibility.)
+        -colors N       Reduce image to at most N colors [legacy feature].
+        or -quantize N  This reduces the number of colors used in the output
+                        image so that it can be stored in a colormapped file
+                        format.  This feature cannot be used when decompressing
+                        lossless JPEG images.  (-colors is the recommended
+                        name.  -quantize is provided only for backward
+                        compatibility.)
 
-        -fast           Select recommended processing options for fast, low
-                        quality output.  (The default options are chosen for
-                        highest quality output.)  Currently, this is equivalent
-                        to "-dct fast -nosmooth -onepass -dither ordered".
+        -fast           Select recommended processing options for low-quality
+                        output [legacy feature].  (The default options are
+                        chosen for highest-quality output.)  Currently, this is
+                        equivalent to "-dct fast -nosmooth -onepass -dither
+                        ordered".  On modern CPUs, these settings have little
+                        or no performance benefit and are retained solely for
+                        backward compatibility.
 
-        -grayscale      Force grayscale output even if JPEG file is color.
-                        Useful for viewing on monochrome displays; also,
-                        djpeg runs noticeably faster in this mode.
+        -grayscale      Force grayscale output even if JPEG file is full-color.
+                        This feature cannot be used when decompressing
+                        full-color lossless JPEG images.
 
-        -rgb            Force RGB output even if JPEG file is grayscale.
+        -rgb            Force RGB output even if JPEG file is grayscale.  This
+                        feature cannot be used when decompressing grayscale
+                        lossless JPEG images.
 
-        -scale M/N      Scale the output image by a factor M/N.  Currently
-                        the scale factor must be M/8, where M is an integer
-                        between 1 and 16 inclusive, or any reduced fraction
-                        thereof (such as 1/2, 3/4, etc.  Scaling is handy if
-                        the image is larger than your screen; also, djpeg runs
-                        much faster when scaling down the output.
+        -scale M/N      Scale the output image by a factor M/N.  Currently the
+                        scale factor must be M/8, where M is an integer between
+                        1 and 16 inclusive, or any reduced fraction thereof
+                        (such as 1/2, 3/4, etc.)  Scaling is handy if the image
+                        is larger than your screen.  This feature cannot be
+                        used when decompressing lossless JPEG images.
 
         -bmp            Select BMP output format (Windows flavor).  8-bit
                         colormapped format is emitted if -colors or -grayscale
                         is specified, or if the JPEG file is grayscale;
-                        otherwise, 24-bit full-color format is emitted.
+                        otherwise, 24-bit full-color format is emitted.  This
+                        format can only be used when decompressing
+                        8-bit-per-sample JPEG images.
 
-        -gif            Select GIF output format (LZW-compressed).  Since GIF
-                        does not support more than 256 colors, -colors 256 is
-                        assumed (unless you specify a smaller number of
-                        colors).  If you specify -fast, the default number of
-                        colors is 216.
+        -gif            Select GIF output format (LZW-compressed) [legacy
+                        feature].  Since GIF does not support more than 256
+                        colors, -colors 256 is assumed (unless you specify a
+                        smaller number of colors).  If you specify -fast, the
+                        default number of colors is 216.  This format can only
+                        be used when decompressing 8-bit-per-sample or
+                        12-bit-per-sample lossy JPEG images.
 
-        -gif0           Select GIF output format (uncompressed).  Since GIF
-                        does not support more than 256 colors, -colors 256 is
-                        assumed (unless you specify a smaller number of
-                        colors).  If you specify -fast, the default number of
-                        colors is 216.
+        -gif0           Select GIF output format (uncompressed) [legacy
+                        feature].  Since GIF does not support more than 256
+                        colors, -colors 256 is assumed (unless you specify a
+                        smaller number of colors).  If you specify -fast, the
+                        default number of colors is 216.  This format can only
+                        be used when decompressing 8-bit-per-sample or
+                        12-bit-per-sample lossy JPEG images.
 
-        -os2            Select BMP output format (OS/2 1.x flavor).  8-bit
-                        colormapped format is emitted if -colors or -grayscale
-                        is specified, or if the JPEG file is grayscale;
-                        otherwise, 24-bit full-color format is emitted.
+        -os2            Select BMP output format (OS/2 1.x flavor) [legacy
+                        feature].  8-bit colormapped format is emitted if
+                        -colors or -grayscale is specified, or if the JPEG file
+                        is grayscale; otherwise, 24-bit full-color format is
+                        emitted.  This format can only be used when
+                        decompressing 8-bit-per-sample JPEG images.
 
         -pnm            Select PBMPLUS (PPM/PGM) output format (this is the
                         default format).  PGM is emitted if the JPEG file is
-                        grayscale or if -grayscale is specified; otherwise
-                        PPM is emitted.
+                        grayscale or if -grayscale is specified; otherwise PPM
+                        is emitted.
 
-        -targa          Select Targa output format.  Grayscale format is
-                        emitted if the JPEG file is grayscale or if
+        -targa          Select Targa output format [legacy feature].  Grayscale
+                        format is emitted if the JPEG file is grayscale or if
                         -grayscale is specified; otherwise, colormapped format
                         is emitted if -colors is specified; otherwise, 24-bit
-                        full-color format is emitted.
+                        full-color format is emitted.  This format can only be
+                        used when decompressing 8-bit-per-sample JPEG images.
 
 Switches for advanced users:
 
@@ -397,32 +462,39 @@ Switches for advanced users:
                         behavior, whereas the integer methods should give the
                         same results on all machines.
 
-        -dither fs      Use Floyd-Steinberg dithering in color quantization.
-        -dither ordered Use ordered dithering in color quantization.
-        -dither none    Do not use dithering in color quantization.
-                        By default, Floyd-Steinberg dithering is applied when
-                        quantizing colors; this is slow but usually produces
-                        the best results.  Ordered dither is a compromise
-                        between speed and quality; no dithering is fast but
-                        usually looks awful.  Note that these switches have
-                        no effect unless color quantization is being done.
-                        Ordered dither is only available in -onepass mode.
+        -dither fs      Use Floyd-Steinberg dithering when quantizing colors
+                        [legacy feature].
+        -dither ordered Use ordered dithering when quantizing colors [legacy
+                        feature].
+        -dither none    Do not use dithering when quantizing colors [legacy
+                        feature].  By default, Floyd-Steinberg dithering is
+                        applied when quantizing colors.  This is slower but
+                        usually produces the best results.  Ordered dithering
+                        is a compromise between speed and quality.  No
+                        dithering is faster but usually looks awful.  Note that
+                        these switches have no effect unless color quantization
+                        is being done.  Ordered dithering is only available in
+                        -onepass mode.
 
-        -map FILE       Quantize to the colors used in the specified image
-                        file.  This is useful for producing multiple files
-                        with identical color maps, or for forcing a predefined
-                        set of colors to be used.  The FILE must be a GIF
-                        or PPM file.  This option overrides -colors and
-                        -onepass.
+        -icc FILE       Extract ICC color management profile to the specified
+                        file.
+
+        -map FILE       Quantize to the colors used in the specified image file
+                        [legacy feature].  This is useful for producing
+                        multiple files with identical color maps, or for
+                        forcing a predefined set of colors to be used.  The
+                        FILE must be a GIF or PPM file.  This option overrides
+                        -colors and -onepass.
 
         -nosmooth       Use a faster, lower-quality upsampling routine.
 
-        -onepass        Use one-pass instead of two-pass color quantization.
-                        The one-pass method is faster and needs less memory,
-                        but it produces a lower-quality image.  -onepass is
-                        ignored unless you also say -colors N.  Also,
-                        the one-pass method is always used for grayscale
-                        output (the two-pass method is no improvement then).
+        -onepass        Use one-pass instead of two-pass color quantization
+                        [legacy feature].  The one-pass method needs less
+                        memory, but it produces a lower-quality image.
+                        -onepass is ignored unless you also specify -colors N.
+                        Also, the one-pass method is always used for grayscale
+                        output.  (The two-pass method has no improvement in
+                        that case.)
 
         -maxmemory N    Set limit for amount of memory to use in processing
                         large images.  Value is in thousands of bytes, or
@@ -430,18 +502,62 @@ Switches for advanced users:
                         For example, -max 4m selects 4000000 bytes.  If more
                         space is needed, an error will occur.
 
-        -verbose        Enable debug printout.  More -v's give more printout.
+        -maxscans N     Abort if the JPEG image contains more than N scans.
+                        This feature demonstrates a method by which
+                        applications can guard against denial-of-service
+                        attacks instigated by specially-crafted malformed JPEG
+                        images containing numerous scans with missing image
+                        data or image data consisting only of "EOB runs" (a
+                        feature of progressive JPEG images that allows
+                        potentially hundreds of thousands of adjoining
+                        zero-value pixels to be represented using only a few
+                        bytes.)  Attempting to decompress such malformed JPEG
+                        images can cause excessive CPU activity, since the
+                        decompressor must fully process each scan (even if the
+                        scan is corrupt) before it can proceed to the next
+                        scan.
+
+        -memsrc         Load input file into memory before decompressing.  This
+                        feature was implemented mainly as a way of testing the
+                        in-memory source manager (jpeg_mem_src().)
+
+        -report         Report decompression progress.
+
+        -skip Y0,Y1     Decompress all rows of the JPEG image except those
+                        between Y0 and Y1 (inclusive.)  Note that if
+                        decompression scaling is being used, then Y0 and Y1 are
+                        relative to the scaled image dimensions.
+
+        -crop WxH+X+Y   Decompress only a rectangular subregion of the image,
+                        starting at point X,Y with width W and height H.  If
+                        necessary, X will be shifted left to the nearest iMCU
+                        boundary, and the width will be increased accordingly.
+                        Note that if decompression scaling is being used, then
+                        X, Y, W, and H are relative to the scaled image
+                        dimensions.  Currently this option only works with the
+                        PBMPLUS (PPM/PGM), GIF, and Targa output formats.
+
+        -strict         Treat all warnings as fatal.  This feature also
+                        demonstrates a method by which applications can guard
+                        against attacks instigated by specially-crafted
+                        malformed JPEG images.  Enabling this option will cause
+                        the decompressor to abort if the JPEG image contains
+                        incomplete or corrupt image data.
+
+        -verbose        Enable debug printout.  More -v's give more output.
         or  -debug      Also, version information is printed at startup.
+
+        -version        Print version information and exit.
 
 
 HINTS FOR CJPEG
 
 Color GIF files are not the ideal input for JPEG; JPEG is really intended for
-compressing full-color (24-bit) images.  In particular, don't try to convert
-cartoons, line drawings, and other images that have only a few distinct
-colors.  GIF works great on these, JPEG does not.  If you want to convert a
-GIF to JPEG, you should experiment with cjpeg's -quality and -smooth options
-to get a satisfactory conversion.  -smooth 10 or so is often helpful.
+compressing full-color (24-bit through 48-bit) images.  In particular, don't
+try to convert cartoons, line drawings, and other images that have only a few
+distinct colors.  GIF works great on these; JPEG does not.  If you want to
+convert a GIF to JPEG, you should experiment with cjpeg's -quality and -smooth
+options to get a satisfactory conversion.  -smooth 10 or so is often helpful.
 
 Avoid running an image through a series of JPEG compression/decompression
 cycles.  Image quality loss will accumulate; after ten or so cycles the image
@@ -454,20 +570,6 @@ version for posting or archiving.  It's also a win when you are using low
 quality settings to make very small JPEG files; the percentage improvement
 is often a lot more than it is on larger files.  (At present, -optimize
 mode is always selected when generating progressive JPEG files.)
-
-
-HINTS FOR DJPEG
-
-To get a quick preview of an image, use the -grayscale and/or -scale switches.
-"-grayscale -scale 1/8" is the fastest case.
-
-Several options are available that trade off image quality to gain speed.
-"-fast" turns on the recommended settings.
-
-"-dct fast" and/or "-nosmooth" gain speed at a small sacrifice in quality.
-When producing a color-quantized image, "-onepass -dither ordered" is fast but
-much lower quality than the default behavior.  "-dither none" may give
-acceptable results in two-pass mode, but is seldom tolerable in one-pass mode.
 
 
 HINTS FOR BOTH PROGRAMS
@@ -485,12 +587,12 @@ explicit -maxmemory switch.
 
 JPEGTRAN
 
-jpegtran performs various useful transformations of JPEG files.
-It can translate the coded representation from one variant of JPEG to another,
-for example from baseline JPEG to progressive JPEG or vice versa.  It can also
-perform some rearrangements of the image data, for example turning an image
-from landscape to portrait format by rotation.  For EXIF files and JPEG files
-containing Exif data, you may prefer to use exiftran instead.
+jpegtran performs various useful transformations of lossy (DCT-based) JPEG
+files.  It can translate the coded representation from one variant of JPEG to
+another, for example from baseline JPEG to progressive JPEG or vice versa.  It
+can also perform some rearrangements of the image data, for example turning an
+image from landscape to portrait format by rotation.  For EXIF files and JPEG
+files containing Exif data, you may prefer to use exiftran instead.
 
 jpegtran works by rearranging the compressed data (DCT coefficients), without
 ever fully decoding the image.  Therefore, its transformations are lossless:
@@ -514,7 +616,7 @@ jpegtran accepts a subset of the switches recognized by cjpeg:
         -progressive    Create progressive JPEG file.
         -arithmetic     Use arithmetic coding.
         -restart N      Emit a JPEG restart marker every N MCU rows, or every
-                        N MCU blocks if "B" is attached to the number.
+                        N MCUs if "B" is attached to the number.
         -scans file     Use the scan script given in the specified text file.
 See the previous discussion of cjpeg for more details about these switches.
 If you specify none of these switches, you get a plain baseline-JPEG output
@@ -646,10 +748,15 @@ The default behavior is -copy comments.  (Note: in IJG releases v6 and v6a,
 jpegtran always did the equivalent of -copy none.)
 
 Additional switches recognized by jpegtran are:
-        -outfile filename
+        -icc FILE
         -maxmemory N
+        -maxscans N
+        -outfile filename
+        -report
+        -strict
         -verbose
         -debug
+        -version
 These work the same as in cjpeg or djpeg.
 
 

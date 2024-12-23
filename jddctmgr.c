@@ -87,7 +87,7 @@ typedef union {
 #endif
 #endif
 
-#if PRECISION == 8
+#if BITS_IN_JSAMPLE == 8
 EXTERN(void) jpeg_set_idct_method_selector (j_decompress_ptr cinfo, jpeg_idct_method_selector selector){
   my_master_ptr master = (my_master_ptr) cinfo->master;
   master->custom_idct_selector = selector;
@@ -247,7 +247,7 @@ start_pass(j_decompress_ptr cinfo)
     // Allow custom idct function to be set dynamically
     master = (my_master_ptr) cinfo->master;
 
-    #if PRECISION == 8
+    #if BITS_IN_JSAMPLE == 8
     if (master->custom_idct_selector != NULL) {
       master->custom_idct_selector(cinfo, compptr, &method_ptr, &method);
     }

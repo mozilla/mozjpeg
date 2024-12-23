@@ -45,7 +45,7 @@ Version: @VERSION@
 Vendor: @PKGVENDOR@
 URL: @PKGURL@
 Group: System Environment/Libraries
-#-->Source0: http://prdownloads.sourceforge.net/@CMAKE_PROJECT_NAME@/@CMAKE_PROJECT_NAME@-%{version}.tar.gz
+#-->Source0: https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%{version}/libjpeg-turbo-%{version}.tar.gz
 Release: @BUILD@
 License: BSD-style
 BuildRoot: %{_blddir}/%{name}-buildroot-%{version}-%{release}

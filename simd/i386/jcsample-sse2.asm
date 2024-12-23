@@ -2,17 +2,13 @@
 ; jcsample.asm - downsampling (SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2016, D. R. Commander.
+; Copyright (C) 2016, 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 
 %include "jsimdext.inc"
 
@@ -69,7 +65,7 @@ EXTN(jsimd_h2v1_downsample_sse2):
 
     cld
     mov         esi, JSAMPARRAY [input_data(ebp)]  ; input_data
-    alignx      16, 7
+    ALIGNX      16, 7
 .expandloop:
     push        eax
     push        ecx
@@ -104,7 +100,7 @@ EXTN(jsimd_h2v1_downsample_sse2):
 
     mov         esi, JSAMPARRAY [input_data(ebp)]   ; input_data
     mov         edi, JSAMPARRAY [output_data(ebp)]  ; output_data
-    alignx      16, 7
+    ALIGNX      16, 7
 .rowloop:
     push        ecx
     push        edi
@@ -115,14 +111,14 @@ EXTN(jsimd_h2v1_downsample_sse2):
 
     cmp         ecx, byte SIZEOF_XMMWORD
     jae         short .columnloop
-    alignx      16, 7
+    ALIGNX      16, 7
 
 .columnloop_r8:
     movdqa      xmm0, XMMWORD [esi+0*SIZEOF_XMMWORD]
     pxor        xmm1, xmm1
     mov         ecx, SIZEOF_XMMWORD
     jmp         short .downsample
-    alignx      16, 7
+    ALIGNX      16, 7
 
 .columnloop:
     movdqa      xmm0, XMMWORD [esi+0*SIZEOF_XMMWORD]
@@ -225,7 +221,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
 
     cld
     mov         esi, JSAMPARRAY [input_data(ebp)]  ; input_data
-    alignx      16, 7
+    ALIGNX      16, 7
 .expandloop:
     push        eax
     push        ecx
@@ -260,7 +256,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
 
     mov         esi, JSAMPARRAY [input_data(ebp)]   ; input_data
     mov         edi, JSAMPARRAY [output_data(ebp)]  ; output_data
-    alignx      16, 7
+    ALIGNX      16, 7
 .rowloop:
     push        ecx
     push        edi
@@ -272,7 +268,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
 
     cmp         ecx, byte SIZEOF_XMMWORD
     jae         short .columnloop
-    alignx      16, 7
+    ALIGNX      16, 7
 
 .columnloop_r8:
     movdqa      xmm0, XMMWORD [edx+0*SIZEOF_XMMWORD]
@@ -281,7 +277,7 @@ EXTN(jsimd_h2v2_downsample_sse2):
     pxor        xmm3, xmm3
     mov         ecx, SIZEOF_XMMWORD
     jmp         short .downsample
-    alignx      16, 7
+    ALIGNX      16, 7
 
 .columnloop:
     movdqa      xmm0, XMMWORD [edx+0*SIZEOF_XMMWORD]

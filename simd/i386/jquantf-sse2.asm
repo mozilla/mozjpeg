@@ -2,17 +2,13 @@
 ; jquantf.asm - sample data conversion and quantization (SSE & SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2016, D. R. Commander.
+; Copyright (C) 2016, 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 
 %include "jsimdext.inc"
 %include "jdct.inc"
@@ -52,7 +48,7 @@ EXTN(jsimd_convsamp_float_sse2):
     mov         eax, JDIMENSION [start_col]
     mov         edi, POINTER [workspace]       ; (DCTELEM *)
     mov         ecx, DCTSIZE/2
-    alignx      16, 7
+    ALIGNX      16, 7
 .convloop:
     mov         ebx, JSAMPROW [esi+0*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
     mov         edx, JSAMPROW [esi+1*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
@@ -127,7 +123,7 @@ EXTN(jsimd_quantize_float_sse2):
     mov         edx, POINTER [divisors]
     mov         edi, JCOEFPTR [coef_block]
     mov         eax, DCTSIZE2/16
-    alignx      16, 7
+    ALIGNX      16, 7
 .quantloop:
     movaps      xmm0, XMMWORD [XMMBLOCK(0,0,esi,SIZEOF_FAST_FLOAT)]
     movaps      xmm1, XMMWORD [XMMBLOCK(0,1,esi,SIZEOF_FAST_FLOAT)]

@@ -89,7 +89,8 @@ public class TJTransformer extends TJDecompressor {
    * transformed using the parameters in <code>transforms[i]</code>.  Use
    * {@link TJ#bufSize TJ.bufSize()} to determine the maximum size for each
    * buffer based on the transformed or cropped width and height and the level
-   * of subsampling used in the source image.
+   * of subsampling used in the destination image (taking into account
+   * grayscale conversion and transposition of the width and height.)
    *
    * @param transforms an array of {@link TJTransform} instances, each of
    * which specifies the transform parameters and/or cropping region for the
@@ -130,14 +131,33 @@ public class TJTransformer extends TJDecompressor {
     byte[][] dstBufs = new byte[transforms.length][];
     if (getWidth() < 1 || getHeight() < 1)
       throw new IllegalStateException("JPEG buffer not initialized");
-    checkSubsampling();
+    int srcSubsamp = get(TJ.PARAM_SUBSAMP);
     for (int i = 0; i < transforms.length; i++) {
       int w = getWidth(), h = getHeight();
+      int dstSubsamp = srcSubsamp;
+
+      if ((transforms[i].options & TJTransform.OPT_GRAY) != 0)
+        dstSubsamp = TJ.SAMP_GRAY;
+      if (transforms[i].op == TJTransform.OP_TRANSPOSE ||
+          transforms[i].op == TJTransform.OP_TRANSVERSE ||
+          transforms[i].op == TJTransform.OP_ROT90 ||
+          transforms[i].op == TJTransform.OP_ROT270) {
+        w = getHeight();  h = getWidth();
+        if (dstSubsamp == TJ.SAMP_422)
+          dstSubsamp = TJ.SAMP_440;
+        else if (dstSubsamp == TJ.SAMP_440)
+          dstSubsamp = TJ.SAMP_422;
+        else if (dstSubsamp == TJ.SAMP_411)
+          dstSubsamp = TJ.SAMP_441;
+        else if (dstSubsamp == TJ.SAMP_441)
+          dstSubsamp = TJ.SAMP_411;
+      }
+
       if ((transforms[i].options & TJTransform.OPT_CROP) != 0) {
         if (transforms[i].width != 0) w = transforms[i].width;
         if (transforms[i].height != 0) h = transforms[i].height;
       }
-      dstBufs[i] = new byte[TJ.bufSize(w, h, get(TJ.PARAM_SUBSAMP))];
+      dstBufs[i] = new byte[TJ.bufSize(w, h, dstSubsamp)];
     }
     TJDecompressor[] tjd = new TJDecompressor[transforms.length];
     transform(dstBufs, transforms);

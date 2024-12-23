@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['y_148',['y',['../structtjregion.html#a7b3e0c24cfe87acc80e334cafdcf22c2',1,'tjregion']]]
+  ['w_0',['w',['../structtjregion.html#ab6eb73ceef584fc23c8c8097926dce42',1,'tjregion']]]
 ];

@@ -6,7 +6,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2014-2016, 2018-2023, D. R. Commander.
+ * Copyright (C) 2009-2011, 2014-2016, 2018-2024, D. R. Commander.
  * Copyright (C) 2015, Matthieu Darbois.
  * Copyright (C) 2018, Matthias Räncker.
  * Copyright (C) 2020, Arm Limited.
@@ -35,41 +35,7 @@
 #include "jchuff.h"             /* Declarations shared with jc*huff.c */
 #endif
 #include <limits.h>
-
-/*
- * NOTE: If USE_CLZ_INTRINSIC is defined, then clz/bsr instructions will be
- * used for bit counting rather than the lookup table.  This will reduce the
- * memory footprint by 64k, which is important for some mobile applications
- * that create many isolated instances of libjpeg-turbo (web browsers, for
- * instance.)  This may improve performance on some mobile platforms as well.
- * This feature is enabled by default only on Arm processors, because some x86
- * chips have a slow implementation of bsr, and the use of clz/bsr cannot be
- * shown to have a significant performance impact even on the x86 chips that
- * have a fast implementation of it.  When building for Armv6, you can
- * explicitly disable the use of clz/bsr by adding -mthumb to the compiler
- * flags (this defines __thumb__).
- */
-
-/* NOTE: Both GCC and Clang define __GNUC__ */
-#if (defined(__GNUC__) && (defined(__arm__) || defined(__aarch64__))) || \
-    defined(_M_ARM) || defined(_M_ARM64)
-#if !defined(__thumb__) || defined(__thumb2__)
-#define USE_CLZ_INTRINSIC
-#endif
-#endif
-
-#ifdef USE_CLZ_INTRINSIC
-#if defined(_MSC_VER) && !defined(__clang__)
-#define JPEG_NBITS_NONZERO(x)  (32 - _CountLeadingZeros(x))
-#else
-#define JPEG_NBITS_NONZERO(x)  (32 - __builtin_clz(x))
-#endif
-#define JPEG_NBITS(x)          (x ? JPEG_NBITS_NONZERO(x) : 0)
-#else
-#include "jpeg_nbits_table.h"
-#define JPEG_NBITS(x)          (jpeg_nbits_table[x])
-#define JPEG_NBITS_NONZERO(x)  JPEG_NBITS(x)
-#endif
+#include "jpeg_nbits.h"
 
 
 /* Expanded entropy encoder object for Huffman encoding.
@@ -108,7 +74,9 @@ typedef bit_buf_type simd_bit_buf_type;
 typedef struct {
   union {
     bit_buf_type c;
+#ifdef WITH_SIMD
     simd_bit_buf_type simd;
+#endif
   } put_buffer;                         /* current bit accumulation buffer */
   int free_bits;                        /* # of bits available in it */
                                         /* (Neon GAS: # of bits now in it) */
@@ -133,7 +101,9 @@ typedef struct {
   long *ac_count_ptrs[NUM_HUFF_TBLS];
 #endif
 
+#ifdef WITH_SIMD
   int simd;
+#endif
 } huff_entropy_encoder;
 
 typedef huff_entropy_encoder *huff_entropy_ptr;
@@ -147,7 +117,9 @@ typedef struct {
   size_t free_in_buffer;        /* # of byte spaces remaining in buffer */
   savable_state cur;            /* Current bit buffer & DC state */
   j_compress_ptr cinfo;         /* dump_buffer needs access to this */
+#ifdef WITH_SIMD
   int simd;
+#endif
 } working_state;
 
 
@@ -511,6 +483,7 @@ flush_bits(working_state *state)
   simd_bit_buf_type put_buffer;  int put_bits;
   int localbuf = 0;
 
+#ifdef WITH_SIMD
   if (state->simd) {
     if (state->cur.free_bits < 0)
       ERREXIT(state->cinfo, JERR_BAD_DCT_COEF);
@@ -520,7 +493,9 @@ flush_bits(working_state *state)
     put_bits = SIMD_BIT_BUF_SIZE - state->cur.free_bits;
 #endif
     put_buffer = state->cur.put_buffer.simd;
-  } else {
+  } else
+#endif
+  {
     put_bits = BIT_BUF_SIZE - state->cur.free_bits;
     put_buffer = state->cur.put_buffer.c;
   }
@@ -538,6 +513,7 @@ flush_bits(working_state *state)
     EMIT_BYTE(temp)
   }
 
+#ifdef WITH_SIMD
   if (state->simd) {                    /* and reset bit buffer to empty */
     state->cur.put_buffer.simd = 0;
 #if defined(__aarch64__) && !defined(NEON_INTRINSICS)
@@ -545,7 +521,9 @@ flush_bits(working_state *state)
 #else
     state->cur.free_bits = SIMD_BIT_BUF_SIZE;
 #endif
-  } else {
+  } else
+#endif
+  {
     state->cur.put_buffer.c = 0;
     state->cur.free_bits = BIT_BUF_SIZE;
   }
@@ -565,6 +543,10 @@ encode_one_block_simd(working_state *state, JCOEFPTR block, int last_dc_val,
 {
   JOCTET _buffer[BUFSIZE], *buffer;
   int localbuf = 0;
+
+#ifdef ZERO_BUFFERS
+  memset(_buffer, 0, sizeof(_buffer));
+#endif
 
   LOAD_BUFFER()
 
@@ -721,7 +703,9 @@ encode_mcu_huff(j_compress_ptr cinfo, JBLOCKROW *MCU_data)
   state.free_in_buffer = cinfo->dest->free_in_buffer;
   state.cur = entropy->saved;
   state.cinfo = cinfo;
+#ifdef WITH_SIMD
   state.simd = entropy->simd;
+#endif
 
   /* Emit restart marker if needed */
   if (cinfo->restart_interval) {
@@ -794,7 +778,9 @@ finish_pass_huff(j_compress_ptr cinfo)
   state.free_in_buffer = cinfo->dest->free_in_buffer;
   state.cur = entropy->saved;
   state.cinfo = cinfo;
+#ifdef WITH_SIMD
   state.simd = entropy->simd;
+#endif
 
   /* Flush out the last data */
   if (!flush_bits(&state))

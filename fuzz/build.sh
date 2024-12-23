@@ -9,6 +9,10 @@ if [ $# -ge 1 ]; then
 	FUZZER_SUFFIX="`echo $1 | sed 's/\./_/g'`"
 fi
 
+if [ "$SANITIZER" = "memory" ]; then
+	export CFLAGS="$CFLAGS -DZERO_BUFFERS=1"
+fi
+
 cmake . -DCMAKE_BUILD_TYPE=RelWithDebInfo -DENABLE_STATIC=1 -DENABLE_SHARED=0 \
 	-DCMAKE_C_FLAGS_RELWITHDEBINFO="-g -DNDEBUG" \
 	-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="-g -DNDEBUG" -DCMAKE_INSTALL_PREFIX=$WORK \

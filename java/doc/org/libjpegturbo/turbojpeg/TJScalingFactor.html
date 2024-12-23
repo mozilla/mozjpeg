@@ -14,7 +14,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.min.js"></script>
 </head>
 <body>
@@ -299,9 +299,9 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>getScaled</h4>
 <pre class="methodSignature">public&nbsp;int&nbsp;getScaled&#8203;(int&nbsp;dimension)</pre>
-<div class="block">Returns the scaled value of <code>dimension</code>.  This function
- performs the integer equivalent of
- <code>ceil(dimension * scalingFactor)</code>.</div>
+<div class="block">Returns the scaled value of <code>dimension</code>.  This method performs
+ the integer equivalent of
+ <code>Math.ceil(dimension * scalingFactor)</code>.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>dimension</code> - width or height to multiply by this scaling factor</dd>

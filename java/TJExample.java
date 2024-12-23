@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017-2018, 2022-2023 D. R. Commander.
+ * Copyright (C)2011-2012, 2014-2015, 2017-2018, 2022-2024 D. R. Commander.
  *                                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,8 +125,8 @@ class TJExample implements TJCustomFilter {
     System.out.println("-crop WxH+X+Y = Perform lossless cropping on the input image prior to");
     System.out.println("     decompressing it.  X and Y specify the upper left corner of the cropping");
     System.out.println("     region, and W and H specify the width and height of the cropping region.");
-    System.out.println("     X and Y must be evenly divible by the MCU block size (8x8 if the input");
-    System.out.println("     image was compressed using no subsampling or grayscale, 16x8 if it was");
+    System.out.println("     X and Y must be evenly divible by the iMCU size (8x8 if the input image");
+    System.out.println("     was compressed using no subsampling or grayscale, 16x8 if it was");
     System.out.println("     compressed using 4:2:2 subsampling, or 16x16 if it was compressed using");
     System.out.println("     4:2:0 subsampling.)\n");
 

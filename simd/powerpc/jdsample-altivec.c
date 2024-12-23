@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2015, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2015, 2024, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -49,7 +49,7 @@ void jsimd_h2v1_fancy_upsample_altivec(int max_v_samp_factor,
       {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16 },
     next_index_lastcol =
       {  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 15 },
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
     merge_pack_index =
       {  1, 17,  3, 19,  5, 21,  7, 23,  9, 25, 11, 27, 13, 29, 15, 31 };
 #else
@@ -155,7 +155,7 @@ void jsimd_h2v2_fancy_upsample_altivec(int max_v_samp_factor,
       {  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17 },
     next_index_lastcol =
       {  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 14, 15 },
-#if __BIG_ENDIAN__
+#ifdef __BIG_ENDIAN__
     merge_pack_index =
       {  1, 17,  3, 19,  5, 21,  7, 23,  9, 25, 11, 27, 13, 29, 15, 31 };
 #else

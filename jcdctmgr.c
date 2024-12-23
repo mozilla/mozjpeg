@@ -6,7 +6,7 @@
  * libjpeg-turbo Modifications:
  * Copyright (C) 1999-2006, MIYASAKA Masaru.
  * Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
- * Copyright (C) 2011, 2014-2015, 2022, D. R. Commander.
+ * Copyright (C) 2011, 2014-2015, 2022, 2024, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -23,6 +23,7 @@
 #include "jdct.h"               /* Private declarations for DCT subsystem */
 #include "jsimddct.h"
 #include "jchuff.h"
+#include "jpeg_nbits.h"
 #include <assert.h>
 #include <math.h>
 
@@ -122,8 +123,8 @@ flss(UINT16 val)
  * Compute values to do a division using reciprocal.
  *
  * This implementation is based on an algorithm described in
- *   "How to optimize for the Pentium family of microprocessors"
- *   (http://www.agner.org/assem/).
+ *   "Optimizing subroutines in assembly language:
+ *   An optimization guide for x86 platforms" (https://agner.org/optimize).
  * More information about the basic algorithm can be found in
  * the paper "Integer Division Using Reciprocals" by Robert Alverson.
  *
@@ -902,8 +903,6 @@ forward_DCT_float(j_compress_ptr cinfo, jpeg_component_info *compptr,
 
 #endif /* DCT_FLOAT_SUPPORTED */
 
-#include "jpeg_nbits_table.h"
-
 static const float jpeg_lambda_weights_flat[64] = {
   1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
   1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
@@ -933,7 +932,7 @@ LOCAL(int) get_num_dc_trellis_candidates(int dc_quantval) {
   return MIN(DC_TRELLIS_MAX_CANDIDATES, (2 + 60 / dc_quantval)|1);
 }
 
-#if PRECISION == 8
+#if BITS_IN_JSAMPLE == 8
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
@@ -1144,7 +1143,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       if (qval >= (1<<max_coef_bits))
         qval = (1<<max_coef_bits)-1;
       
-      num_candidates = jpeg_nbits_table[qval];
+      num_candidates = JPEG_NBITS(qval);
       for (k = 0; k < num_candidates; k++) {
         int delta;
         candidate[k] = (k < num_candidates - 1) ? (2 << k) - 1 : qval;
@@ -1243,7 +1242,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
           cost -= accumulated_zero_block_cost[i];
           cost += accumulated_block_cost[i];
           zero_block_run = bi - i + requires_eob[i];
-          nbits = jpeg_nbits_table[zero_block_run];
+          nbits = JPEG_NBITS(zero_block_run);
           cost += actbl->ehufsi[16*nbits] + nbits;
           
           if (cost < best_cost) {
@@ -1271,7 +1270,7 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       cost += accumulated_zero_block_cost[num_blocks];
       cost -= accumulated_zero_block_cost[i];
       zero_block_run = num_blocks - i + requires_eob[i];
-      nbits = jpeg_nbits_table[zero_block_run];
+      nbits = JPEG_NBITS(zero_block_run);
       cost += actbl->ehufsi[16*nbits] + nbits;
       if (cost < best_cost) {
         best_cost = cost;

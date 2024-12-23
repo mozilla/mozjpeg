@@ -96,6 +96,18 @@ if(NOT WIN32 AND (CMAKE_POSITION_INDEPENDENT_CODE OR ENABLE_SHARED))
   set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -DPIC")
 endif()
 
+if(CPU_TYPE STREQUAL "x86_64" AND CMAKE_ASM_NASM_OBJECT_FORMAT MATCHES "^elf")
+  check_c_source_compiles("
+    #if (__CET__ & 3) == 0
+    #error \"CET not enabled\"
+    #endif
+    int main(void) { return 0; }" HAVE_CET)
+
+  if(HAVE_CET)
+    set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} -D__CET__")
+  endif()
+endif()
+
 string(TOUPPER ${CMAKE_BUILD_TYPE} CMAKE_BUILD_TYPE_UC)
 set(EFFECTIVE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} ${CMAKE_ASM_NASM_FLAGS_${CMAKE_BUILD_TYPE_UC}}")
 message(STATUS "CMAKE_ASM_NASM_FLAGS = ${EFFECTIVE_ASM_NASM_FLAGS}")
@@ -258,48 +270,33 @@ endif()
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    int16_t input[] = {
-      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
-      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc,
-      (int16_t)argc, (int16_t)argc, (int16_t)argc, (int16_t)argc
-    };
-    int16x4x3_t output = vld1_s16_x3(input);
+    int16_t input[12];
+    int16x4x3_t output;
+    int i;
+    for (i = 0; i < 12; i++) input[i] = (int16_t)argc;
+    output = vld1_s16_x3(input);
     vst3_s16(input, output);
     return (int)input[0];
   }" HAVE_VLD1_S16_X3)
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    uint16_t input[] = {
-      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc,
-      (uint16_t)argc, (uint16_t)argc, (uint16_t)argc, (uint16_t)argc
-    };
-    uint16x4x2_t output = vld1_u16_x2(input);
+    uint16_t input[8];
+    uint16x4x2_t output;
+    int i;
+    for (i = 0; i < 8; i++) input[i] = (uint16_t)argc;
+    output = vld1_u16_x2(input);
     vst2_u16(input, output);
     return (int)input[0];
   }" HAVE_VLD1_U16_X2)
 check_c_source_compiles("
   #include <arm_neon.h>
   int main(int argc, char **argv) {
-    uint8_t input[] = {
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc,
-      (uint8_t)argc, (uint8_t)argc, (uint8_t)argc, (uint8_t)argc
-    };
-    uint8x16x4_t output = vld1q_u8_x4(input);
+    uint8_t input[64];
+    uint8x16x4_t output;
+    int i;
+    for (i = 0; i < 64; i++) input[i] = (uint8_t)argc;
+    output = vld1q_u8_x4(input);
     vst4q_u8(input, output);
     return (int)input[0];
   }" HAVE_VLD1Q_U8_X4)
@@ -354,7 +351,8 @@ if(NOT NEON_INTRINSICS)
   separate_arguments(CMAKE_ASM_FLAGS_SEP UNIX_COMMAND "${CMAKE_ASM_FLAGS}")
   execute_process(COMMAND ${CMAKE_ASM_COMPILER} ${CMAKE_ASM_FLAGS_SEP}
       -x assembler-with-cpp -c ${CMAKE_CURRENT_BINARY_DIR}/gastest.S
-    RESULT_VARIABLE RESULT OUTPUT_VARIABLE OUTPUT ERROR_VARIABLE ERROR)
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} RESULT_VARIABLE RESULT
+    OUTPUT_VARIABLE OUTPUT ERROR_VARIABLE ERROR)
   if(NOT RESULT EQUAL 0)
     message(WARNING "GAS appears to be broken.  Using the full Neon SIMD intrinsics implementation.")
     set(NEON_INTRINSICS 1 CACHE INTERNAL "" FORCE)

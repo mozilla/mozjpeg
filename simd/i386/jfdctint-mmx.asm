@@ -2,17 +2,13 @@
 ; jfdctint.asm - accurate integer FDCT (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2016, 2020, D. R. Commander.
+; Copyright (C) 2016, 2020, 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 ;
 ; This file contains a slower but more accurate integer implementation of the
 ; forward DCT (Discrete Cosine Transform). The following code is based
@@ -63,7 +59,7 @@ F_3_072 equ DESCALE(3299298341, 30 - CONST_BITS)  ; FIX(3.072711026)
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_fdct_islow_mmx)
 
 EXTN(jconst_fdct_islow_mmx):
@@ -80,7 +76,7 @@ PD_DESCALE_P1  times 2 dd  1 << (DESCALE_P1 - 1)
 PD_DESCALE_P2  times 2 dd  1 << (DESCALE_P2 - 1)
 PW_DESCALE_P2X times 4 dw  1 << (PASS1_BITS - 1)
 
-    alignz      32
+    ALIGNZ      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -109,19 +105,19 @@ EXTN(jsimd_fdct_islow_mmx):
     mov         [esp], eax
     mov         ebp, esp                    ; ebp = aligned ebp
     lea         esp, [wk(0)]
-    pushpic     ebx
+    PUSHPIC     ebx
 ;   push        ecx                     ; need not be preserved
 ;   push        edx                     ; need not be preserved
 ;   push        esi                     ; unused
 ;   push        edi                     ; unused
 
-    get_GOT     ebx                     ; get GOT address
+    GET_GOT     ebx                     ; get GOT address
 
     ; ---- Pass 1: process rows.
 
     mov         edx, POINTER [data(eax)]  ; (DCTELEM *)
     mov         ecx, DCTSIZE/4
-    alignx      16, 7
+    ALIGNX      16, 7
 .rowloop:
 
     movq        mm0, MMWORD [MMBLOCK(2,0,edx,SIZEOF_DCTELEM)]
@@ -363,7 +359,7 @@ EXTN(jsimd_fdct_islow_mmx):
 
     mov         edx, POINTER [data(eax)]  ; (DCTELEM *)
     mov         ecx, DCTSIZE/4
-    alignx      16, 7
+    ALIGNX      16, 7
 .columnloop:
 
     movq        mm0, MMWORD [MMBLOCK(2,0,edx,SIZEOF_DCTELEM)]
@@ -609,7 +605,7 @@ EXTN(jsimd_fdct_islow_mmx):
 ;   pop         esi                     ; unused
 ;   pop         edx                     ; need not be preserved
 ;   pop         ecx                     ; need not be preserved
-    poppic      ebx
+    POPPIC      ebx
     mov         esp, ebp                ; esp <- aligned ebp
     pop         esp                     ; esp <- original ebp
     pop         ebp

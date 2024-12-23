@@ -1,7 +1,7 @@
 /*
  * AltiVec optimizations for libjpeg-turbo
  *
- * Copyright (C) 2014-2015, 2020, D. R. Commander.  All Rights Reserved.
+ * Copyright (C) 2014-2015, 2020, 2024, D. R. Commander.  All Rights Reserved.
  *
  * This software is provided 'as-is', without any express or implied
  * warranty.  In no event will the authors be held liable for any damages
@@ -241,7 +241,7 @@ void jsimd_idct_islow_altivec(void *dct_table_, JCOEFPTR coef_block,
   __vector unsigned int descale_p1 = { __4X(DESCALE_P1) },
     descale_p2 = { __4X(DESCALE_P2) },
     const_bits = { __4X(CONST_BITS) };
-  __vector signed char pb_centerjsamp = { __16X(CENTERJSAMPLE) };
+  __vector signed char pb_centerjsamp = { __16X((signed char)CENTERJSAMPLE) };
 
   /* Pass 1: process columns */
 

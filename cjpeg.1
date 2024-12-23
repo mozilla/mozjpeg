@@ -1,4 +1,4 @@
-.TH CJPEG 1 "29 June 2023"
+.TH CJPEG 1 "30 August 2024"
 .SH NAME
 cjpeg \- compress an image file to a JPEG file
 .SH SYNOPSIS
@@ -16,7 +16,8 @@ cjpeg \- compress an image file to a JPEG file
 compresses the named image file, or the standard input if no file is
 named, and produces a JPEG/JFIF file on the standard output.
 The currently supported input file formats are: PPM (PBMPLUS color
-format), PGM (PBMPLUS grayscale format), BMP, GIF, and Targa.
+format), PGM (PBMPLUS grayscale format), BMP, GIF [legacy feature], and Targa
+[legacy feature].
 .SH OPTIONS
 All switch names may be abbreviated; for example,
 .B \-grayscale
@@ -29,7 +30,7 @@ Upper and lower case are equivalent (thus
 .B \-BMP
 is the same as
 .BR \-bmp ).
-British spellings are also accepted (e.g.,
+British spellings are also accepted (e.g.
 .BR \-greyscale ),
 though for brevity these are not mentioned below.
 .PP
@@ -40,13 +41,12 @@ Scale quantization tables to adjust image quality.  Quality is 0 (worst) to
 100 (best); default is 75.  (See below for more info.)
 .TP
 .B \-grayscale
-Create monochrome JPEG file from color input.  By saying
+Create monochrome JPEG file from color input.  By specifying
 .BR \-grayscale,
 you'll get a smaller JPEG file that takes less time to process.
 .TP
 .B \-rgb
-Create RGB JPEG file.
-Using this switch suppresses the conversion from RGB
+Create RGB JPEG file.  Using this switch suppresses the conversion from RGB
 colorspace input to the default YCbCr JPEG colorspace.
 .TP
 .B \-optimize
@@ -60,18 +60,22 @@ decompression are unaffected by
 .BR \-optimize .
 .TP
 .B \-progressive
-Create progressive JPEG file (see below).
+Create progressive JPEG file (see below).  Implies
+.B \-optimize
+unless
+.B \-arithmetic
+is also specified.
 .TP
 .B \-targa
-Input file is Targa format.  Targa files that contain an "identification"
-field will not be automatically recognized by
-.BR cjpeg ;
-for such files you must specify
+Input file is Targa format [legacy feature].  Targa files that contain an
+"identification" field will not be automatically recognized by
+.BR cjpeg .
+For such files, you must specify
 .B \-targa
 to make
 .B cjpeg
-treat the input as Targa format.
-For most Targa files, you won't need this switch.
+treat the input as Targa format.  For most Targa files, you won't need this
+switch.
 .PP
 The
 .B \-quality
@@ -153,10 +157,28 @@ Switches for advanced users:
 Create JPEG file with N-bit data precision.  N is 8, 12, or 16; default is 8.
 If N is 16, then
 .B -lossless
-must also be specified.
+must also be specified.  Note that only the PBMPLUS input file format supports
+data precisions other than 8.  (For historical reasons,
+.B cjpeg
+allows GIF input files to be converted into 12-bit-per-sample JPEG files, but
+this is not a useful conversion.)  Note also that PBMPLUS input files are
+silently scaled to the target data precision, even if it is lower than the
+precision of the input file.  Passing an argument of
+.B \-verbose
+to
+.B cjpeg
+will cause it to print information about the precision of the input file.
 .B Caution:
-12-bit and 16-bit JPEG is not yet widely implemented, so many decoders will be
-unable to view a 12-bit or 16-bit JPEG file at all.
+12-bit and 16-bit data precision is not yet widely implemented, so many
+decoders will be unable to handle a 12-bit-per-sample or 16-bit-per-sample JPEG
+file at all.
+.IP
+.B \-precision\ 12
+implies
+.B \-optimize
+unless
+.B \-arithmetic
+is also specified.
 .TP
 .BI \-lossless " psv[,Pt]"
 Create a lossless JPEG file using the specified predictor selection value
@@ -174,8 +196,11 @@ non-zero point transform value right-shifts the input samples by the specified
 number of bits, which is effectively a form of lossy color quantization.)
 .B Caution:
 lossless JPEG is not yet widely implemented, so many decoders will be unable to
-view a lossless JPEG file at all.  Note that the following features will be
-unavailable when compressing or decompressing a lossless JPEG file:
+handle a lossless JPEG file at all.  In most cases, compressing and
+decompressing a lossless JPEG file is considerably slower than compressing and
+decompressing a lossy JPEG file, and lossless JPEG files are much larger than
+lossy JPEG files.  Also note that the following features will be unavailable
+when compressing or decompressing a lossless JPEG file:
 .IP
 - Quality/quantization table selection
 .IP
@@ -202,8 +227,8 @@ Any switches used to enable or configure those features will be ignored.
 .B \-arithmetic
 Use arithmetic coding.
 .B Caution:
-arithmetic coded JPEG is not yet widely implemented, so many decoders will be
-unable to view an arithmetic coded JPEG file at all.
+arithmetic-coded JPEG is not yet widely implemented, so many decoders will be
+unable to handle an arithmetic-coded JPEG file at all.
 .TP
 .B \-dct int
 Use accurate integer DCT method (default).
@@ -245,8 +270,18 @@ machines.
 Embed ICC color management profile contained in the specified file.
 .TP
 .BI \-restart " N"
-Emit a JPEG restart marker every N MCU rows, or every N MCU blocks (samples in
-lossless mode) if "B" is attached to the number.
+Emit a JPEG restart marker every N MCU rows, or every N MCUs if "B" is attached
+to the number.
+.IP
+In typical JPEG images, an MCU (Minimum Coded Unit) is the minimum set of
+interleaved "data units" (8x8 DCT blocks if the image is lossy or samples if
+the image is lossless) necessary to represent at least one data unit per
+component.  (For example, an MCU in an interleaved lossy JPEG image that uses
+4:2:2 subsampling consists of two luminance blocks followed by one block for
+each chrominance component.)  In single-component or non-interleaved JPEG
+images, an MCU is the same as a data unit.  An MCU row is a row of MCUs
+spanning the entire width of the image.
+.IP
 .B \-restart 0
 (the default) means no restart markers.
 .TP
@@ -346,10 +381,10 @@ This example compresses the PPM file foo.ppm with a quality factor of
 .I foo.jpg
 .SH HINTS
 Color GIF files are not the ideal input for JPEG; JPEG is really intended for
-compressing full-color (24-bit) images.  In particular, don't try to convert
-cartoons, line drawings, and other images that have only a few distinct
-colors.  GIF works great on these, JPEG does not.  If you want to convert a
-GIF to JPEG, you should experiment with
+compressing full-color (24-bit through 48-bit) images.  In particular, don't
+try to convert cartoons, line drawings, and other images that have only a few
+distinct colors.  GIF works great on these; JPEG does not.  If you want to
+convert a GIF to JPEG, you should experiment with
 .BR cjpeg 's
 .B \-quality
 and
@@ -404,8 +439,3 @@ relevant to libjpeg-turbo, to wordsmith certain sections, and to describe
 features not present in libjpeg.
 .SH ISSUES
 Not all variants of BMP and Targa file formats are supported.
-.PP
-The
-.B \-targa
-switch is not a bug, it's a feature.  (It would be a bug if the Targa format
-designers had not been clueless.)

@@ -7,7 +7,8 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2009-2011, 2013-2014, 2016-2017, 2020, 2022, D. R. Commander.
+ * Copyright (C) 2009-2011, 2013-2014, 2016-2017, 2020, 2022-2024,
+             D. R. Commander.
  * Copyright (C) 2015, Google, Inc.
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
@@ -16,6 +17,16 @@
  * This file defines the application interface for the JPEG library.
  * Most applications using the library need only include this file,
  * and perhaps jerror.h if they want to know the exact error codes.
+ */
+
+/* NOTE: This header file does not include stdio.h, despite the fact that it
+ * uses FILE and size_t.  That is by design, since the libjpeg API predates the
+ * widespread adoption of ANSI/ISO C.  Referring to libjpeg.txt, it is a
+ * documented requirement that calling programs "include system headers that
+ * define at least the typedefs FILE and size_t" before including jpeglib.h.
+ * Technically speaking, changing that requirement by including stdio.h here
+ * would break backward API compatibility.  Please do not file bug reports,
+ * feature requests, or pull requests regarding this.
  */
 
 #ifndef JPEGLIB_H
@@ -623,11 +634,10 @@ struct jpeg_decompress_struct {
    */
   int actual_number_of_colors;  /* number of entries in use */
   JSAMPARRAY colormap;          /* The color map as a 2-D pixel array
-                                   If data_precision is 12 or 16, then this is
-                                   actually a J12SAMPARRAY or a J16SAMPARRAY,
-                                   so callers must type-cast it in order to
-                                   read/write 12-bit or 16-bit samples from/to
-                                   the array. */
+                                   If data_precision is 12, then this is
+                                   actually a J12SAMPARRAY, so callers must
+                                   type-cast it in order to read/write 12-bit
+                                   samples from/to the array. */
 
   /* State variables: these variables indicate the progress of decompression.
    * The application may examine these but must not modify them.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,19 +44,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
      necessary to achieve full coverage. */
   enum TJPF pixelFormats[NUMPF] =
     { TJPF_BGR, TJPF_XRGB, TJPF_GRAY };
-#if defined(__has_feature) && __has_feature(memory_sanitizer)
-  char env[18] = "JSIMD_FORCENONE=1";
-
-  /* The libjpeg-turbo SIMD extensions produce false positives with
-     MemorySanitizer. */
-  putenv(env);
-#endif
 
   if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL)
     goto bailout;
 
-  if (tj3DecompressHeader(handle, data, size) < 0)
-    goto bailout;
+  /* We ignore the return value of tj3DecompressHeader(), because malformed
+     JPEG images that might expose issues in libjpeg-turbo might also have
+     header errors that cause tj3DecompressHeader() to fail. */
+  tj3DecompressHeader(handle, data, size);
   width = tj3Get(handle, TJPARAM_JPEGWIDTH);
   height = tj3Get(handle, TJPARAM_JPEGHEIGHT);
   jpegSubsamp = tj3Get(handle, TJPARAM_SUBSAMP);
@@ -88,10 +83,11 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         tj3SetScalingFactor(handle, TJUNSCALED);
     }
 
-    if ((dstBuf = (unsigned char *)malloc(w * h * tjPixelSize[pf])) == NULL)
+    if ((dstBuf = (unsigned char *)tj3Alloc(w * h * tjPixelSize[pf])) == NULL)
       goto bailout;
     if ((yuvBuf =
-         (unsigned char *)malloc(tj3YUVBufSize(w, 1, h, jpegSubsamp))) == NULL)
+         (unsigned char *)tj3Alloc(tj3YUVBufSize(w, 1, h,
+                                                 jpegSubsamp))) == NULL)
       goto bailout;
 
     if (tj3DecompressToYUV8(handle, data, size, yuvBuf, 1) == 0 &&

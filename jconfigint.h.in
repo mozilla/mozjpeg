@@ -1,6 +1,9 @@
 /* libjpeg-turbo build number */
 #define BUILD  "@BUILD@"
 
+/* How to hide global symbols. */
+#define HIDDEN  @HIDDEN@
+
 /* Compiler's inline keyword */
 #undef inline
 

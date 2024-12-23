@@ -2,17 +2,13 @@
 ; jquanti.asm - sample data conversion and quantization (SSE2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2016, D. R. Commander.
+; Copyright (C) 2016, 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 
 %include "jsimdext.inc"
 %include "jdct.inc"
@@ -52,7 +48,7 @@ EXTN(jsimd_convsamp_sse2):
     mov         eax, JDIMENSION [start_col]
     mov         edi, POINTER [workspace]       ; (DCTELEM *)
     mov         ecx, DCTSIZE/4
-    alignx      16, 7
+    ALIGNX      16, 7
 .convloop:
     mov         ebx, JSAMPROW [esi+0*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
     mov         edx, JSAMPROW [esi+1*SIZEOF_JSAMPROW]  ; (JSAMPLE *)
@@ -98,8 +94,8 @@ EXTN(jsimd_convsamp_sse2):
 ; Quantize/descale the coefficients, and store into coef_block
 ;
 ; This implementation is based on an algorithm described in
-;   "How to optimize for the Pentium family of microprocessors"
-;   (http://www.agner.org/assem/).
+;   "Optimizing subroutines in assembly language:
+;   An optimization guide for x86 platforms" (https://agner.org/optimize).
 ;
 ; GLOBAL(void)
 ; jsimd_quantize_sse2(JCOEFPTR coef_block, DCTELEM *divisors,
@@ -133,7 +129,7 @@ EXTN(jsimd_quantize_sse2):
     mov         edx, POINTER [divisors]
     mov         edi, JCOEFPTR [coef_block]
     mov         eax, DCTSIZE2/32
-    alignx      16, 7
+    ALIGNX      16, 7
 .quantloop:
     movdqa      xmm4, XMMWORD [XMMBLOCK(0,0,esi,SIZEOF_DCTELEM)]
     movdqa      xmm5, XMMWORD [XMMBLOCK(1,0,esi,SIZEOF_DCTELEM)]

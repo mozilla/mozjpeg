@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021-2023
+ * Copyright (C)2011-2012, 2014-2015, 2017, 2019, 2021-2024
  *           D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
+#if !defined(_MSC_VER) || _MSC_VER > 1600
+#include <stdint.h>
+#endif
 #include <turbojpeg.h>
 
 
@@ -62,16 +66,16 @@
 #define DEFAULT_QUALITY  95
 
 
-const char *subsampName[TJ_NUMSAMP] = {
+static const char *subsampName[TJ_NUMSAMP] = {
   "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1", "4:4:1"
 };
 
-const char *colorspaceName[TJ_NUMCS] = {
+static const char *colorspaceName[TJ_NUMCS] = {
   "RGB", "YCbCr", "GRAY", "CMYK", "YCCK"
 };
 
-tjscalingfactor *scalingFactors = NULL;
-int numScalingFactors = 0;
+static tjscalingfactor *scalingFactors = NULL;
+static int numScalingFactors = 0;
 
 
 /* DCT filter example.  This produces a negative of the image. */
@@ -142,8 +146,8 @@ static void usage(char *programName)
   printf("-crop WxH+X+Y = Perform lossless cropping on the input image prior to\n");
   printf("     decompressing it.  X and Y specify the upper left corner of the cropping\n");
   printf("     region, and W and H specify the width and height of the cropping region.\n");
-  printf("     X and Y must be evenly divible by the MCU block size (8x8 if the input\n");
-  printf("     image was compressed using no subsampling or grayscale, 16x8 if it was\n");
+  printf("     X and Y must be evenly divible by the iMCU size (8x8 if the input image\n");
+  printf("     was compressed using no subsampling or grayscale, 16x8 if it was\n");
   printf("     compressed using 4:2:2 subsampling, or 16x16 if it was compressed using\n");
   printf("     4:2:0 subsampling.)\n\n");
 
@@ -253,6 +257,9 @@ int main(int argc, char **argv)
   inFormat = &inFormat[1];
   outFormat = &outFormat[1];
 
+  if ((tjInstance = tj3Init(TJINIT_TRANSFORM)) == NULL)
+    THROW_TJ("creating TurboJPEG instance");
+
   if (!strcasecmp(inFormat, "jpg")) {
     /* Input image is a JPEG image.  Decompress and/or transform it. */
     long size;
@@ -283,8 +290,6 @@ int main(int argc, char **argv)
       unsigned char *dstBuf = NULL;  /* Dynamically allocate the JPEG buffer */
       size_t dstSize = 0;
 
-      if ((tjInstance = tj3Init(TJINIT_TRANSFORM)) == NULL)
-        THROW_TJ("initializing transformer");
       xform.options |= TJXOPT_TRIM;
       if (tj3Transform(tjInstance, jpegBuf, jpegSize, 1, &dstBuf, &dstSize,
                        &xform) < 0) {
@@ -294,9 +299,6 @@ int main(int argc, char **argv)
       tj3Free(jpegBuf);
       jpegBuf = dstBuf;
       jpegSize = dstSize;
-    } else {
-      if ((tjInstance = tj3Init(TJINIT_DECOMPRESS)) == NULL)
-        THROW_TJ("initializing decompressor");
     }
     if (tj3Set(tjInstance, TJPARAM_FASTUPSAMPLE, fastUpsample) < 0)
       THROW_TJ("setting TJPARAM_FASTUPSAMPLE");
@@ -326,7 +328,6 @@ int main(int argc, char **argv)
         THROW_UNIX("opening output file");
       if (fwrite(jpegBuf, jpegSize, 1, jpegFile) < 1)
         THROW_UNIX("writing output file");
-      fclose(jpegFile);  jpegFile = NULL;
       goto bailout;
     }
 
@@ -341,9 +342,11 @@ int main(int argc, char **argv)
       outSubsamp = inSubsamp;
 
     pixelFormat = TJPF_BGRX;
+#if ULLONG_MAX > SIZE_MAX
     if ((unsigned long long)width * height * tjPixelSize[pixelFormat] >
         (unsigned long long)((size_t)-1))
       THROW("allocating uncompressed image buffer", "Image is too large");
+#endif
     if ((imgBuf =
          (unsigned char *)malloc(sizeof(unsigned char) * width * height *
                                  tjPixelSize[pixelFormat])) == NULL)
@@ -355,8 +358,6 @@ int main(int argc, char **argv)
     tj3Free(jpegBuf);  jpegBuf = NULL;
   } else {
     /* Input image is not a JPEG image.  Load it into memory. */
-    if ((tjInstance = tj3Init(TJINIT_COMPRESS)) == NULL)
-      THROW_TJ("initializing compressor");
     if ((imgBuf = tj3LoadImage8(tjInstance, argv[1], &width, 1, &height,
                                 &pixelFormat)) == NULL)
       THROW_TJ("loading input image");
@@ -391,16 +392,12 @@ int main(int argc, char **argv)
     if (tj3Compress8(tjInstance, imgBuf, width, 0, height, pixelFormat,
                      &jpegBuf, &jpegSize) < 0)
       THROW_TJ("compressing image");
-    tj3Destroy(tjInstance);  tjInstance = NULL;
 
     /* Write the JPEG image to disk. */
     if ((jpegFile = fopen(argv[2], "wb")) == NULL)
       THROW_UNIX("opening output file");
     if (fwrite(jpegBuf, jpegSize, 1, jpegFile) < 1)
       THROW_UNIX("writing output file");
-    tj3Destroy(tjInstance);  tjInstance = NULL;
-    fclose(jpegFile);  jpegFile = NULL;
-    tj3Free(jpegBuf);  jpegBuf = NULL;
   } else {
     /* Output image format is not JPEG.  Save the uncompressed image
        directly to disk. */

@@ -2,17 +2,13 @@
 ; jidctint.asm - accurate integer IDCT (MMX)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2016, 2020, D. R. Commander.
+; Copyright (C) 2016, 2020, 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 ;
 ; This file contains a slower but more accurate integer implementation of the
 ; inverse DCT (Discrete Cosine Transform). The following code is based
@@ -63,7 +59,7 @@ F_3_072 equ DESCALE(3299298341, 30 - CONST_BITS)  ; FIX(3.072711026)
 ; --------------------------------------------------------------------------
     SECTION     SEG_CONST
 
-    alignz      32
+    ALIGNZ      32
     GLOBAL_DATA(jconst_idct_islow_mmx)
 
 EXTN(jconst_idct_islow_mmx):
@@ -80,7 +76,7 @@ PD_DESCALE_P1  times 2 dd  1 << (DESCALE_P1 - 1)
 PD_DESCALE_P2  times 2 dd  1 << (DESCALE_P2 - 1)
 PB_CENTERJSAMP times 8 db  CENTERJSAMPLE
 
-    alignz      32
+    ALIGNZ      32
 
 ; --------------------------------------------------------------------------
     SECTION     SEG_TEXT
@@ -122,7 +118,7 @@ EXTN(jsimd_idct_islow_mmx):
     push        esi
     push        edi
 
-    get_GOT     ebx                     ; get GOT address
+    GET_GOT     ebx                     ; get GOT address
 
     ; ---- Pass 1: process columns from input, store into work array.
 
@@ -131,7 +127,7 @@ EXTN(jsimd_idct_islow_mmx):
     mov         esi, JCOEFPTR [coef_block(eax)]  ; inptr
     lea         edi, [workspace]                 ; JCOEF *wsptr
     mov         ecx, DCTSIZE/4                   ; ctr
-    alignx      16, 7
+    ALIGNX      16, 7
 .columnloop:
 %ifndef NO_ZERO_COLUMN_TEST_ISLOW_MMX
     mov         eax, dword [DWBLOCK(1,0,esi,SIZEOF_JCOEF)]
@@ -178,7 +174,7 @@ EXTN(jsimd_idct_islow_mmx):
     movq        MMWORD [MMBLOCK(3,0,edi,SIZEOF_JCOEF)], mm3
     movq        MMWORD [MMBLOCK(3,1,edi,SIZEOF_JCOEF)], mm3
     jmp         near .nextcolumn
-    alignx      16, 7
+    ALIGNX      16, 7
 %endif
 .columnDCT:
 
@@ -513,7 +509,7 @@ EXTN(jsimd_idct_islow_mmx):
     mov         edi, JSAMPARRAY [output_buf(eax)]  ; (JSAMPROW *)
     mov         eax, JDIMENSION [output_col(eax)]
     mov         ecx, DCTSIZE/4                     ; ctr
-    alignx      16, 7
+    ALIGNX      16, 7
 .rowloop:
 
     ; -- Even part
@@ -816,7 +812,7 @@ EXTN(jsimd_idct_islow_mmx):
     punpckldq   mm7, mm5                ; mm7=(20 21 22 23 24 25 26 27)
     punpckhdq   mm4, mm5                ; mm4=(30 31 32 33 34 35 36 37)
 
-    pushpic     ebx                     ; save GOT address
+    PUSHPIC     ebx                     ; save GOT address
 
     mov         edx, JSAMPROW [edi+0*SIZEOF_JSAMPROW]
     mov         ebx, JSAMPROW [edi+1*SIZEOF_JSAMPROW]
@@ -827,7 +823,7 @@ EXTN(jsimd_idct_islow_mmx):
     movq        MMWORD [edx+eax*SIZEOF_JSAMPLE], mm7
     movq        MMWORD [ebx+eax*SIZEOF_JSAMPLE], mm4
 
-    poppic      ebx                     ; restore GOT address
+    POPPIC      ebx                     ; restore GOT address
 
     add         esi, byte 4*SIZEOF_JCOEF     ; wsptr
     add         edi, byte 4*SIZEOF_JSAMPROW

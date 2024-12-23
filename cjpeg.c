@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, D. R. Commander.
+ * Copyright (C) 2010, 2013-2014, 2017, 2019-2022, 2024, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -167,9 +167,9 @@ select_file_type(j_compress_ptr cinfo, FILE *infile)
 static const char *progname;    /* program name for error messages */
 static char *icc_filename;      /* for -icc switch */
 static char *outfilename;       /* for -outfile switch */
-boolean memdst;                 /* for -memdst switch */
-boolean report;                 /* for -report switch */
-boolean strict;                 /* for -strict switch */
+static boolean memdst;          /* for -memdst switch */
+static boolean report;          /* for -report switch */
+static boolean strict;          /* for -strict switch */
 
 
 #ifdef CJPEG_FUZZER
@@ -328,7 +328,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   int argn;
   char *arg;
 #ifdef C_LOSSLESS_SUPPORTED
-  int psv, pt = 0;
+  int psv = 0, pt = 0;
 #endif
   boolean force_baseline;
   boolean simple_progressive;
@@ -414,7 +414,8 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       if (!printed_version) {
         fprintf(stderr, "%s version %s (build %s)\n",
                 PACKAGE_NAME, VERSION, BUILD);
-        fprintf(stderr, "%s\n\n", JCOPYRIGHT);
+        fprintf(stderr, JCOPYRIGHT1);
+        fprintf(stderr, JCOPYRIGHT2 "\n");
         fprintf(stderr, "Emulating The Independent JPEG Group's software, version %s\n\n",
                 JVERSION);
         printed_version = TRUE;
@@ -469,7 +470,8 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
                                         string */
       if (*ptr)
         sscanf(ptr, "%d", &pt);
-      jpeg_enable_lossless(cinfo, psv, pt);
+
+      /* We must postpone execution until data_precision is known. */
 #else
       fprintf(stderr, "%s: sorry, lossless output was not compiled\n",
               progname);
@@ -530,7 +532,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
         usage();
       cinfo->data_precision = val;
 
-    } else if (keymatch(arg, "progressive", 3)) {
+    } else if (keymatch(arg, "progressive", 1)) {
       /* Select simple progressive mode. */
 #ifdef C_PROGRESSIVE_SUPPORTED
       simple_progressive = TRUE;
@@ -622,7 +624,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
        * default sampling factors.
        */
 
-    } else if (keymatch(arg, "scans", 4)) {
+    } else if (keymatch(arg, "scans", 2)) {
       /* Set scan script. */
 #ifdef C_MULTISCAN_FILES_SUPPORTED
       if (++argn >= argc)       /* advance to next argument */
@@ -745,6 +747,11 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
 #ifdef C_PROGRESSIVE_SUPPORTED
     if (simple_progressive)     /* process -progressive; -scans can override */
       jpeg_simple_progression(cinfo);
+#endif
+
+#ifdef C_LOSSLESS_SUPPORTED
+    if (psv != 0)               /* process -lossless */
+      jpeg_enable_lossless(cinfo, psv, pt);
 #endif
 
 #ifdef C_MULTISCAN_FILES_SUPPORTED

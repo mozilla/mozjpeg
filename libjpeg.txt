@@ -5,7 +5,7 @@ Copyright (C) 1994-2013, Thomas G. Lane, Guido Vollbeding.
 Lossless JPEG Modifications:
 Copyright (C) 1999, Ken Murchison.
 libjpeg-turbo Modifications:
-Copyright (C) 2010, 2014-2018, 2020, 2022-2023, D. R. Commander.
+Copyright (C) 2010, 2014-2018, 2020, 2022-2024, D. R. Commander.
 Copyright (C) 2015, Google, Inc.
 For conditions of distribution and use, see the accompanying README.ijg file.
 
@@ -114,22 +114,24 @@ used by the free LIBTIFF library to support JPEG compression in TIFF.)
 12-bit and 16-bit Data Precision
 --------------------------------
 
-The JPEG standard provides for baseline 8-bit and 12-bit DCT processes as well
-as 8-bit, 12-bit, and 16-bit lossless (predictive) processes.  This code
-supports 12-bit-per-component lossy or lossless JPEG if you set
-cinfo->data_precision to 12 and 16-bit-per-component lossless JPEG if you set
-cinfo->data_precision to 16.  Note that this causes the sample size to be
-larger than a char, so it affects the surrounding application's image data.
-The sample applications cjpeg and djpeg can support 12-bit mode only for PPM,
-PGM, and GIF file formats and 16-bit mode only for PPM and PGM file formats.
+The JPEG standard provides for baseline (8-bit-per-sample) and
+12-bit-per-sample DCT processes as well as 8-bit-per-sample, 12-bit-per-sample,
+and 16-bit-per-sample lossless (predictive) processes.  This code supports
+12-bit-per-sample lossy or lossless JPEG if you set cinfo->data_precision to 12
+and 16-bit-per-sample lossless JPEG if you set cinfo->data_precision to 16.
+Note that this causes the sample size to be larger than a char, so it affects
+the surrounding application's image data.  The sample applications cjpeg and
+djpeg can support 12-bit data precision only for PPM, PGM, and GIF file formats
+and 16-bit data precision only for PPM and PGM file formats.
 
-Note that, when 12-bit data precision is enabled, the library always compresses
-in Huffman optimization mode, in order to generate valid Huffman tables.  This
-is necessary because our default Huffman tables only cover 8-bit data.  If you
-need to output 12-bit files in one pass, you'll have to supply suitable default
-Huffman tables.  You may also want to supply your own DCT quantization tables;
-the existing quality-scaling code has been developed for 8-bit use, and
-probably doesn't generate especially good tables for 12-bit.
+Note that, when 12-bit data precision is enabled in lossy mode, the library
+compresses in Huffman optimization mode by default, in order to generate valid
+Huffman tables.  This is necessary because our default Huffman tables only
+cover 8-bit data.  If you need to output 12-bit-per-sample JPEG files in one
+pass, you'll have to supply suitable default Huffman tables.  You may also want
+to supply your own DCT quantization tables; the existing quality-scaling code
+has been developed for 8-bit data precision and probably doesn't generate
+especially good tables for 12-bit data precision.
 
 Functions that are specific to 12-bit data precision have a prefix of "jpeg12_"
 instead of "jpeg_" and use the following data types and macros:
@@ -160,7 +162,8 @@ Refer to the descriptions of the data_precision compression and decompression
 parameters below for further information.
 
 This documentation uses "J*SAMPLE", "J*SAMPROW", "J*SAMPARRAY", and
-"J*SAMPIMAGE" to generically refer to the 8-bit, 12-bit, or 16-bit data types.
+"J*SAMPIMAGE" to generically refer to the 8-bit-per-sample, 12-bit-per-sample,
+or 16-bit-per-sample data types.
 
 
 Outline of typical usage
@@ -267,10 +270,9 @@ and the other references mentioned in the README.ijg file.
 Pixels are stored by scanlines, with each scanline running from left to
 right.  The component values for each pixel are adjacent in the row; for
 example, R,G,B,R,G,B,R,G,B,... for 24-bit RGB color.  Each scanline is an
-array of data type JSAMPLE or J12SAMPLE --- which is typically "unsigned char"
-or "short" (respectively), unless you've changed jmorecfg.h.  (You can also
-change the RGB pixel layout, say to B,G,R order, by modifying jmorecfg.h.  But
-see the restrictions listed in that file before doing so.)
+array of data type JSAMPLE, J12SAMPLE, or J16SAMPLE --- which is typically
+"unsigned char", "short", or "unsigned short" (respectively) unless you've
+changed jmorecfg.h.
 
 A 2-D array of pixels is formed by making a list of pointers to the starts of
 scanlines; so the scanlines need not be physically adjacent in memory.  Even
@@ -285,10 +287,11 @@ have it all in memory, but usually it's simplest to process one scanline at
 a time.
 
 For best results, source data values should have the precision specified by
-cinfo->data_precision (normally 8 bits).  For instance, if you choose to
-compress data that's only 6 bits/channel, you should left-justify each value in
-a byte before passing it to the compressor.  If you need to compress data
-that has more than 8 bits/channel, set cinfo->data_precision = 12 or 16.
+cinfo->data_precision (normally 8 bits per sample).  For instance, if you
+choose to compress data that's only 6 bits/channel, you should left-justify
+each value in a byte before passing it to the compressor.  If you need to
+compress data that has more than 8 bits/channel, set cinfo->data_precision = 12
+or 16.
 
 
 The data format returned by the decompressor is the same in all details,
@@ -301,8 +304,8 @@ a 2-D J*SAMPARRAY in which each row holds the values of one color component,
 that is, colormap[i][j] is the value of the i'th color component for pixel
 value (map index) j.  Note that since the colormap indexes are stored in
 J*SAMPLEs, the maximum number of colors is limited by the size of J*SAMPLE
-(ie, at most 256 colors for 8-bit data precision, 4096 colors for 12-bit data
-precision, and 65536 colors for 16-bit data precision).
+(ie, at most 256 colors for 8-bit data precision and 4096 colors for 12-bit
+data precision).
 
 
 Compression details
@@ -972,7 +975,7 @@ jpeg_set_quality (j_compress_ptr cinfo, int quality, boolean force_baseline)
         entries are constrained to the range 1..255 for full JPEG baseline
         compatibility.  In the current implementation, this only makes a
         difference for quality settings below 25, and it effectively prevents
-        very small/low quality files from being generated.  The IJG decoder
+        very small/low-quality files from being generated.  The IJG decoder
         is capable of reading the non-baseline files generated at low quality
         settings when force_baseline is FALSE, but other decoders may not be.
 
@@ -1028,8 +1031,11 @@ jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
         is necessary in order to create a fully lossless JPEG image.  (A
         non-zero point transform value right-shifts the input samples by the
         specified number of bits, which is effectively a form of lossy color
-        quantization.)  Note that the following features will be unavailable
-        when compressing or decompressing lossless JPEG images:
+        quantization.)  In most cases, lossless mode is considerably slower
+        than, and does not compress as effectively as, lossy mode.  Thus, it is
+        typically used only for applications that require mathematically
+        lossless compression.  Note that the following features will be
+        unavailable when compressing or decompressing lossless JPEG images:
           * Partial image decompression
           * Quality/quantization table selection
           * DCT/IDCT algorithm selection
@@ -1044,6 +1050,30 @@ jpeg_enable_lossless (j_compress_ptr cinfo, int predictor_selection_value,
         Any parameters used to enable or configure those features will be
         ignored.
 
+        Lossless mode shares no algorithms with lossy mode.  Instead, it uses
+        differential pulse-code modulation (DPCM), an algorithm whereby each
+        sample is encoded as the difference between the sample's value and a
+        "predictor", which is based on the values of neighboring samples.  If
+        Ra is the sample immediately to the left of the current sample, Rb is
+        the sample immediately above the current sample, and Rc is the sample
+        diagonally to the left and above the current sample, then the
+        relationship between the predictor selection value and the predictor is
+        as follows:
+
+        PSV  Predictor
+        --------------
+        1    Ra
+        2    Rb
+        3    Rc
+        4    Ra + Rb – Rc
+        5    Ra + (Rb – Rc) / 2
+        6    Rb + (Ra – Rc) / 2
+        7    (Ra + Rb) / 2
+
+        Predictors 1-3 are 1-dimensional predictors, whereas Predictors 4-7 are
+        2-dimensional predictors.  The best predictor for a particular image
+        depends on the image.
+
 
 Compression parameters (cinfo fields) include:
 
@@ -1052,13 +1082,15 @@ boolean arith_code
         If FALSE, use Huffman coding.
 
 int data_precision
-        To create a 12-bit-per-component JPEG file, set data_precision to 12
-        prior to calling jpeg_start_compress() or using the memory manager,
-        then use jpeg12_write_scanlines() or jpeg12_write_raw_data() instead of
-        jpeg_write_scanlines() or jpeg_write_raw_data().  To create a
-        16-bit-per-component lossless JPEG file, set data_precision to 16 prior
+        To create a 12-bit-per-sample JPEG file, set data_precision to 12 prior
         to calling jpeg_start_compress() or using the memory manager, then use
-        jpeg16_write_scanlines() instead of jpeg_write_scanlines().
+        jpeg12_write_scanlines() or jpeg12_write_raw_data() instead of
+        jpeg_write_scanlines() or jpeg_write_raw_data().  To create a
+        16-bit-per-sample lossless JPEG file, set data_precision to 16 prior to
+        calling jpeg_start_compress() or using the memory manager, then use
+        jpeg16_write_scanlines() instead of jpeg_write_scanlines().  Note that
+        16-bit data precision requires lossless mode.  (See
+        jpeg_enable_lossless().)
 
 J_DCT_METHOD dct_method
         Selects the algorithm used for the DCT step.  Choices are:
@@ -1109,20 +1141,23 @@ boolean optimize_coding
         Huffman tables.  In most cases optimal tables save only a few percent
         of file size compared to the default tables.  Note that when this is
         TRUE, you need not supply Huffman tables at all, and any you do
-        supply will be overwritten.
+        supply will be overwritten.  Optimal Huffman tables are always
+        computed, and this parameter has no effect, in progressive mode or
+        lossless mode or with 12-bit data precision (unless Huffman tables have
+        been supplied.)  This parameter also has no effect when using
+        arithmetic coding.
 
 unsigned int restart_interval
 int restart_in_rows
         To emit restart markers in the JPEG file, set one of these nonzero.
-        Set restart_interval to specify the exact interval in MCU blocks
-        (samples in lossless mode).  Set restart_in_rows to specify the
-        interval in MCU rows.  (If restart_in_rows is not 0, then
-        restart_interval is set after the image width in MCUs is computed.)
-        Defaults are zero (no restarts).  One restart marker per MCU row is
-        often a good choice.  NOTE: the overhead of restart markers is higher
-        in grayscale JPEG files than in color files, and MUCH higher in
-        progressive JPEGs.  If you use restarts, you may want to use larger
-        intervals in those cases.
+        Set restart_interval to specify the exact interval in MCUs.  Set
+        restart_in_rows to specify the interval in MCU rows.  (If
+        restart_in_rows is not 0, then restart_interval is set after the image
+        width in MCUs is computed.)  Defaults are zero (no restarts).  One
+        restart marker per MCU row is often a good choice.  NOTE: the overhead
+        of restart markers is higher in grayscale JPEG files than in color
+        files, and MUCH higher in progressive JPEGs.  If you use restarts, you
+        may want to use larger intervals in those cases.
 
 const jpeg_scan_info *scan_info
 int num_scans
@@ -1274,13 +1309,13 @@ recorded in the source file and need not be supplied by the application.
 the postprocessing done on the image to deliver it in a format suitable
 for the application's use.  Many of the parameters control speed/quality
 tradeoffs, in which faster decompression may be obtained at the price of
-a poorer-quality image.  The defaults select the highest quality (slowest)
+a poorer-quality image.  The defaults select the highest-quality (slowest)
 processing.
 
 The following fields in the JPEG object are set by jpeg_read_header() and
 may be useful to the application in choosing decompression parameters:
 
-int data_precision                      Data precision (bits per component)
+int data_precision                      Data precision (bits per sample)
         If data_precision is 12, then use jpeg12_read_scanlines(),
         jpeg12_skip_scanlines(), jpeg12_crop_scanline(), and/or
         jpeg12_read_raw_data() instead of jpeg_read_scanlines(),
@@ -1315,11 +1350,8 @@ J_COLOR_SPACE out_color_space
         based on jpeg_color_space; typically it will be RGB or grayscale.
         The application can change this field to request output in a different
         colorspace.  For example, set it to JCS_GRAYSCALE to get grayscale
-        output from a color file.  (This is useful for previewing: grayscale
-        output is faster than full color since the color components need not
-        be processed.)  Note that not all possible color space transforms are
-        currently implemented; you may need to extend jdcolor.c if you want an
-        unusual conversion.
+        output from a color file.  Note that not all possible color space
+        transforms are currently implemented.
 
 unsigned int scale_num, scale_denom
         Scale the image by the fraction scale_num/scale_denom.  Default is
@@ -1327,31 +1359,33 @@ unsigned int scale_num, scale_denom
         are M/8 with all M from 1 to 16, or any reduced fraction thereof (such
         as 1/2, 3/4, etc.)  (The library design allows for arbitrary
         scaling ratios but this is not likely to be implemented any time soon.)
-        Smaller scaling ratios permit significantly faster decoding since
-        fewer pixels need be processed and a simpler IDCT method can be used.
 
 boolean quantize_colors
+        [legacy feature]
         If set TRUE, colormapped output will be delivered.  Default is FALSE,
         meaning that full-color output will be delivered.
 
 The next three parameters are relevant only if quantize_colors is TRUE.
 
 int desired_number_of_colors
+        [legacy feature]
         Maximum number of colors to use in generating a library-supplied color
         map (the actual number of colors is returned in a different field).
         Default 256.  Ignored when the application supplies its own color map.
 
 boolean two_pass_quantize
+        [legacy feature]
         If TRUE, an extra pass over the image is made to select a custom color
         map for the image.  This usually looks a lot better than the one-size-
         fits-all colormap that is used otherwise.  Default is TRUE.  Ignored
         when the application supplies its own color map.
 
 J_DITHER_MODE dither_mode
+        [legacy feature]
         Selects color dithering method.  Supported values are:
-                JDITHER_NONE    no dithering: fast, very low quality
+                JDITHER_NONE    no dithering: faster, very low quality
                 JDITHER_ORDERED ordered dither: moderate speed and quality
-                JDITHER_FS      Floyd-Steinberg dither: slow, high quality
+                JDITHER_FS      Floyd-Steinberg dither: slower, high quality
         Default is JDITHER_FS.  (At present, ordered dither is implemented
         only in the single-pass, standard-colormap case.  If you ask for
         ordered dither when two_pass_quantize is TRUE or when you supply
@@ -1366,16 +1400,18 @@ selects a suitable color map and sets these two fields itself.
 only accepted for 3-component output color spaces.]
 
 JSAMPARRAY colormap
+        [legacy feature]
         The color map, represented as a 2-D pixel array of out_color_components
         rows and actual_number_of_colors columns.  Ignored if not quantizing.
         CAUTION: if the JPEG library creates its own colormap, the storage
         pointed to by this field is released by jpeg_finish_decompress().
         Copy the colormap somewhere else first, if you want to save it.
-        CAUTION: if data_precision is 12 or 16, then this is actually a
-        J12SAMPARRAY or a J16SAMPARRAY, so it must be type-cast in order to
-        read/write 12-bit or 16-bit samples from/to the array.
+        CAUTION: if data_precision is 12, then this is actually a J12SAMPARRAY,
+        so it must be type-cast in order to read/write 12-bit samples from/to
+        the array.
 
 int actual_number_of_colors
+        [legacy feature]
         The number of colors in the color map.
 
 Additional decompression parameters that the application may set include:
@@ -1432,6 +1468,7 @@ boolean do_block_smoothing
 boolean enable_1pass_quant
 boolean enable_external_quant
 boolean enable_2pass_quant
+        [legacy feature]
         These are significant only in buffered-image mode, which is
         described in its own section below.
 
@@ -2301,7 +2338,7 @@ limited changes of parameters.  ONLY THE FOLLOWING parameter changes are
 allowed after jpeg_start_decompress() is called:
 * dct_method can be changed before each call to jpeg_start_output().
   For example, one could use a fast DCT method for early scans, changing
-  to a higher quality method for the final scan.
+  to a higher-quality method for the final scan.
 * dither_mode can be changed before each call to jpeg_start_output();
   of course this has no impact if not using color quantization.  Typically
   one would use ordered dither for initial passes, then switch to
@@ -3153,10 +3190,10 @@ This does not count any memory allocated by the application, such as a
 buffer to hold the final output image.
 
 The above figures are valid for 8-bit JPEG data precision and a machine with
-32-bit ints.  For 12-bit and 16-bit JPEG data, double the size of the strip
-buffers and quantization pixel buffer.  The "fixed-size" data will be somewhat
-smaller with 16-bit ints, larger with 64-bit ints.  Also, CMYK or other unusual
-color spaces will require different amounts of space.
+32-bit ints.  For 12-bit-per-sample and 16-bit-per-sample JPEG data, double the
+size of the strip buffers and quantization pixel buffer.  The "fixed-size" data
+will be somewhat smaller with 16-bit ints, larger with 64-bit ints.  Also, CMYK
+or other unusual color spaces will require different amounts of space.
 
 The full-image coefficient and pixel buffers, if needed at all, do not
 have to be fully RAM resident; you can have the library use temporary
@@ -3181,14 +3218,6 @@ A number of compile-time options are available by modifying jmorecfg.h.
 The maximum number of components (color channels) in the image is determined
 by MAX_COMPONENTS.  The JPEG standard allows up to 255 components, but we
 expect that few applications will need more than four or so.
-
-On machines with unusual data type sizes, you may be able to improve
-performance or reduce memory space by tweaking the various typedefs in
-jmorecfg.h.  In particular, on some RISC CPUs, access to arrays of "short"s
-is quite slow; consider trading memory for speed by making JCOEF, INT16, and
-UINT16 be "int" or "unsigned int".  UINT8 is also a candidate to become int.
-You probably don't want to make J*SAMPLE be int unless you have lots of memory
-to burn.
 
 You can reduce the size of the library by compiling out various optional
 functions.  To do this, undefine xxx_SUPPORTED symbols as necessary.
@@ -3228,9 +3257,7 @@ than 8 bits or short is much bigger than 16 bits.  The code should work
 equally well with 16- or 32-bit ints.
 
 In a system where these assumptions are not met, you may be able to make the
-code work by modifying the typedefs in jmorecfg.h.  However, you will probably
-have difficulty if int is less than 16 bits wide, since references to plain
-int abound in the code.
+code work by modifying the typedefs in jmorecfg.h.
 
 char can be either signed or unsigned, although the code runs faster if an
 unsigned char type is available.  If char is wider than 8 bits, you will need

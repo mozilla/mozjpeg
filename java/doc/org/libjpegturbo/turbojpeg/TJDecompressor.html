@@ -14,7 +14,7 @@
 <!--[if IE]>
 <script type="text/javascript" src="../../../jquery/jszip-utils/dist/jszip-utils-ie.min.js"></script>
 <![endif]-->
-<script type="text/javascript" src="../../../jquery/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="../../../jquery/jquery-3.6.1.min.js"></script>
 <script type="text/javascript" src="../../../jquery/jquery-ui.min.js"></script>
 </head>
 <body>
@@ -838,8 +838,8 @@ implements java.io.Closeable</pre>
  with the JPEG image width and height (see <a href="#getWidth()"><code>getWidth()</code></a> and
  <a href="#getHeight()"><code>getHeight()</code></a>.)  When decompressing into a planar YUV image, an
  intermediate buffer copy will be performed if the width or height of the
- scaled destination image is not an even multiple of the MCU block size
- (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a> and <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>.)  Note that decompression scaling is not available
+ scaled destination image is not an even multiple of the iMCU size (see
+ <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a> and <a href="TJ.html#getMCUHeight(int)"><code>TJ.getMCUHeight()</code></a>.)  Note that decompression scaling is not available
  (and the specified scaling factor is ignored) when decompressing lossless
  JPEG images (see <a href="TJ.html#PARAM_LOSSLESS"><code>TJ.PARAM_LOSSLESS</code></a>), since the IDCT algorithm is
  not used with those images.  Note also that <a href="TJ.html#PARAM_FASTDCT"><code>TJ.PARAM_FASTDCT</code></a> is
@@ -862,14 +862,14 @@ implements java.io.Closeable</pre>
 <dd><code>croppingRegion</code> - <code>java.awt.Rectangle</code> instance that
  specifies a subregion of the JPEG image to decompress, or
  <a href="TJ.html#UNCROPPED"><code>TJ.UNCROPPED</code></a> for no cropping.  The left boundary of the cropping
- region must be evenly divisible by the scaled MCU block width, which can
- be determined by calling <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a> with the specified scaling factor (see
- <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>) and the MCU block width
- (see <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a>) for the level of chrominance
+ region must be evenly divisible by the scaled iMCU width, which can be
+ determined by calling <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a> with the specified scaling factor (see
+ <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>) and the iMCU width (see
+ <a href="TJ.html#getMCUWidth(int)"><code>TJ.getMCUWidth()</code></a>) for the level of chrominance
  subsampling in the JPEG image (see <a href="TJ.html#PARAM_SUBSAMP"><code>TJ.PARAM_SUBSAMP</code></a>.)  The
  cropping region should be specified relative to the scaled image
  dimensions.  Unless <code>croppingRegion</code> is <a href="TJ.html#UNCROPPED"><code>TJ.UNCROPPED</code></a>,
- the JPEG header must be read (see <a href="#setSourceImage(byte%5B%5D,int)"><code>setSourceImage(byte[], int)</code></a>
+ the JPEG header must be read (see <a href="#setSourceImage(byte%5B%5D,int)"><code>setSourceImage(byte[], int)</code></a>)
  prior to calling this method.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd>
@@ -980,9 +980,9 @@ public&nbsp;int&nbsp;getScaledHeight&#8203;(int&nbsp;desiredWidth,
  source image associated with this decompressor instance and output an
  8-bit-per-sample packed-pixel grayscale, RGB, or CMYK image to the given
  destination buffer.
- <p>
- NOTE: The destination image is fully recoverable if this method throws a
- non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is
+
+ <p>NOTE: The destination image is fully recoverable if this method throws
+ a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is
  set.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1011,7 +1011,7 @@ public&nbsp;int&nbsp;getScaledHeight&#8203;(int&nbsp;desiredWidth,
  <a href="TJ.html#getPixelSize(int)"><code>TJ.getPixelSize</code></a>(pixelFormat)</code>.)  However,
  you can also use this parameter to specify the row alignment/padding of
  the destination image, to skip rows, or to decompress/decode into a
- specific region of a larger image.  NOTE: if the source image is a lossy
+ specific region of a larger image.  NOTE: If the source image is a lossy
  JPEG image, then <code>destinationWidth</code> is either the scaled JPEG
  width (see <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>,
  <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a>, and
@@ -1118,9 +1118,9 @@ public&nbsp;byte[]&nbsp;decompress&#8203;(int&nbsp;desiredWidth,
 <div class="block">Decompress the 12-bit-per-sample JPEG source image associated with this
  decompressor instance and output a 12-bit-per-sample packed-pixel
  grayscale, RGB, or CMYK image to the given destination buffer.
- <p>
- NOTE: The destination image is fully recoverable if this method throws a
- non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is
+
+ <p>NOTE: The destination image is fully recoverable if this method throws
+ a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is
  set.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1150,7 +1150,7 @@ public&nbsp;byte[]&nbsp;decompress&#8203;(int&nbsp;desiredWidth,
  <a href="TJ.html#getPixelSize(int)"><code>TJ.getPixelSize</code></a>(pixelFormat)</code>.)  However,
  you can also use this parameter to specify the row alignment/padding of
  the destination image, to skip rows, or to decompress into a specific
- region of a larger image.  NOTE: if the source image is a lossy JPEG
+ region of a larger image.  NOTE: If the source image is a lossy JPEG
  image, then <code>destinationWidth</code> is either the scaled JPEG width
  (see <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>,
  <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a>, and
@@ -1184,7 +1184,7 @@ public&nbsp;byte[]&nbsp;decompress&#8203;(int&nbsp;desiredWidth,
 <dd><code>pixelFormat</code> - pixel format of the decompressed image (one of
  <a href="TJ.html#PF_RGB"><code>TJ.PF_*</code></a>)</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>a buffer containing an 8-bit-per-sample packed-pixel decompressed
+<dd>a buffer containing a 12-bit-per-sample packed-pixel decompressed
  image.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd>
@@ -1207,9 +1207,9 @@ public&nbsp;byte[]&nbsp;decompress&#8203;(int&nbsp;desiredWidth,
  with this decompressor instance and output a 16-bit-per-sample
  packed-pixel grayscale, RGB, or CMYK image to the given destination
  buffer.
- <p>
- NOTE: The destination image is fully recoverable if this method throws a
- non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is
+
+ <p>NOTE: The destination image is fully recoverable if this method throws
+ a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is
  set.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1258,7 +1258,7 @@ public&nbsp;byte[]&nbsp;decompress&#8203;(int&nbsp;desiredWidth,
 <dd><code>pixelFormat</code> - pixel format of the decompressed image (one of
  <a href="TJ.html#PF_RGB"><code>TJ.PF_*</code></a>)</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>a buffer containing an 8-bit-per-sample packed-pixel decompressed
+<dd>a buffer containing a 16-bit-per-sample packed-pixel decompressed
  image.</dd>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="TJException.html" title="class in org.libjpegturbo.turbojpeg">TJException</a></code></dd>
@@ -1279,9 +1279,9 @@ public&nbsp;byte[]&nbsp;decompress&#8203;(int&nbsp;desiredWidth,
  decompression but leaves out the color conversion step, so a planar YUV
  image is generated instead of a packed-pixel image.  This method cannot be
  used to decompress JPEG source images with the CMYK or YCCK colorspace.
- <p>
- NOTE: The planar YUV destination image is fully recoverable if this method
- throws a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless
+
+ <p>NOTE: The planar YUV destination image is fully recoverable if this
+ method throws a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless
  <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a> is set.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1432,9 +1432,9 @@ public&nbsp;<a href="YUVImage.html" title="class in org.libjpegturbo.turbojpeg">
  source image associated with this decompressor instance and output an
  8-bit-per-sample packed-pixel grayscale, RGB, or CMYK image to the given
  destination buffer.
- <p>
- NOTE: The destination image is fully recoverable if this method throws a
- non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a>
+
+ <p>NOTE: The destination image is fully recoverable if this method throws
+ a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a>
  is set.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
@@ -1460,7 +1460,7 @@ public&nbsp;<a href="YUVImage.html" title="class in org.libjpegturbo.turbojpeg">
  should be set to <code>destinationWidth</code>.  (Setting this parameter
  to 0 is the equivalent of setting it to <code>destinationWidth</code>.)
  However, you can also use this parameter to skip rows or to
- decompress/decode into a specific region of a larger image.  NOTE: if the
+ decompress/decode into a specific region of a larger image.  NOTE: If the
  source image is a lossy JPEG image, then <code>destinationWidth</code> is
  either the scaled JPEG width (see <a href="#setScalingFactor(org.libjpegturbo.turbojpeg.TJScalingFactor)"><code>setScalingFactor()</code></a>, <a href="TJScalingFactor.html#getScaled(int)"><code>TJScalingFactor.getScaled()</code></a>, and <a href="#getWidth()"><code>getWidth()</code></a>) or the width of the
  cropping region (see <a href="#setCroppingRegion(java.awt.Rectangle)"><code>setCroppingRegion()</code></a>.)  If
@@ -1511,9 +1511,9 @@ public&nbsp;void&nbsp;decompress&#8203;(int[]&nbsp;dstBuf,
  source image associated with this decompressor instance and output an
  8-bit-per-sample packed-pixel decompressed/decoded image to the given
  <code>BufferedImage</code> instance.
- <p>
- NOTE: The destination image is fully recoverable if this method throws a
- non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a>
+
+ <p>NOTE: The destination image is fully recoverable if this method throws
+ a non-fatal <a href="TJException.html" title="class in org.libjpegturbo.turbojpeg"><code>TJException</code></a> (unless <a href="TJ.html#PARAM_STOPONWARNING"><code>TJ.PARAM_STOPONWARNING</code></a>
  is set.)</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2021-2023 D. R. Commander.  All Rights Reserved.
+ * Copyright (C)2021-2024 D. R. Commander.  All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -44,19 +44,14 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
      necessary to achieve full coverage. */
   enum TJPF pixelFormats[NUMPF] =
     { TJPF_RGB, TJPF_BGRX, TJPF_GRAY, TJPF_CMYK };
-#if defined(__has_feature) && __has_feature(memory_sanitizer)
-  char env[18] = "JSIMD_FORCENONE=1";
-
-  /* The libjpeg-turbo SIMD extensions produce false positives with
-     MemorySanitizer. */
-  putenv(env);
-#endif
 
   if ((handle = tj3Init(TJINIT_DECOMPRESS)) == NULL)
     goto bailout;
 
-  if (tj3DecompressHeader(handle, data, size) < 0)
-    goto bailout;
+  /* We ignore the return value of tj3DecompressHeader(), because malformed
+     JPEG images that might expose issues in libjpeg-turbo might also have
+     header errors that cause tj3DecompressHeader() to fail. */
+  tj3DecompressHeader(handle, data, size);
   width = tj3Get(handle, TJPARAM_JPEGWIDTH);
   height = tj3Get(handle, TJPARAM_JPEGHEIGHT);
   precision = tj3Get(handle, TJPARAM_PRECISION);
@@ -100,7 +95,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
         tj3SetCroppingRegion(handle, TJUNCROPPED);
     }
 
-    if ((dstBuf = malloc(w * h * tjPixelSize[pf] * sampleSize)) == NULL)
+    if ((dstBuf = tj3Alloc(w * h * tjPixelSize[pf] * sampleSize)) == NULL)
       goto bailout;
 
     if (precision == 8) {

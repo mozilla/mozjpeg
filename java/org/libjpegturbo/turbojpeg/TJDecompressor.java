@@ -1,5 +1,5 @@
 /*
- * Copyright (C)2011-2015, 2018, 2022-2023 D. R. Commander.
+ * Copyright (C)2011-2015, 2018, 2022-2024 D. R. Commander.
  *                                         All Rights Reserved.
  * Copyright (C)2015 Viktor Szathmáry.  All Rights Reserved.
  *
@@ -222,8 +222,8 @@ public class TJDecompressor implements Closeable {
    * with the JPEG image width and height (see {@link #getWidth} and
    * {@link #getHeight}.)  When decompressing into a planar YUV image, an
    * intermediate buffer copy will be performed if the width or height of the
-   * scaled destination image is not an even multiple of the MCU block size
-   * (see {@link TJ#getMCUWidth TJ.getMCUWidth()} and {@link TJ#getMCUHeight
+   * scaled destination image is not an even multiple of the iMCU size (see
+   * {@link TJ#getMCUWidth TJ.getMCUWidth()} and {@link TJ#getMCUHeight
    * TJ.getMCUHeight()}.)  Note that decompression scaling is not available
    * (and the specified scaling factor is ignored) when decompressing lossless
    * JPEG images (see {@link TJ#PARAM_LOSSLESS}), since the IDCT algorithm is
@@ -255,15 +255,15 @@ public class TJDecompressor implements Closeable {
    * @param croppingRegion <code>java.awt.Rectangle</code> instance that
    * specifies a subregion of the JPEG image to decompress, or
    * {@link TJ#UNCROPPED} for no cropping.  The left boundary of the cropping
-   * region must be evenly divisible by the scaled MCU block width, which can
-   * be determined by calling {@link TJScalingFactor#getScaled
+   * region must be evenly divisible by the scaled iMCU width, which can be
+   * determined by calling {@link TJScalingFactor#getScaled
    * TJScalingFactor.getScaled()} with the specified scaling factor (see
-   * {@link #setScalingFactor setScalingFactor()}) and the MCU block width
-   * (see {@link TJ#getMCUWidth TJ.getMCUWidth()}) for the level of chrominance
+   * {@link #setScalingFactor setScalingFactor()}) and the iMCU width (see
+   * {@link TJ#getMCUWidth TJ.getMCUWidth()}) for the level of chrominance
    * subsampling in the JPEG image (see {@link TJ#PARAM_SUBSAMP}.)  The
    * cropping region should be specified relative to the scaled image
    * dimensions.  Unless <code>croppingRegion</code> is {@link TJ#UNCROPPED},
-   * the JPEG header must be read (see {@link #setSourceImage(byte[], int)}
+   * the JPEG header must be read (see {@link #setSourceImage(byte[], int)})
    * prior to calling this method.
    */
   @SuppressWarnings("checkstyle:HiddenField")
@@ -380,9 +380,9 @@ public class TJDecompressor implements Closeable {
    * source image associated with this decompressor instance and output an
    * 8-bit-per-sample packed-pixel grayscale, RGB, or CMYK image to the given
    * destination buffer.
-   * <p>
-   * NOTE: The destination image is fully recoverable if this method throws a
-   * non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING} is
+   *
+   * <p>NOTE: The destination image is fully recoverable if this method throws
+   * a non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING} is
    * set.)
    *
    * @param dstBuf buffer that will receive the packed-pixel
@@ -413,7 +413,7 @@ public class TJDecompressor implements Closeable {
    * {@link TJ#getPixelSize TJ.getPixelSize}(pixelFormat)</code>.)  However,
    * you can also use this parameter to specify the row alignment/padding of
    * the destination image, to skip rows, or to decompress/decode into a
-   * specific region of a larger image.  NOTE: if the source image is a lossy
+   * specific region of a larger image.  NOTE: If the source image is a lossy
    * JPEG image, then <code>destinationWidth</code> is either the scaled JPEG
    * width (see {@link #setScalingFactor setScalingFactor()},
    * {@link TJScalingFactor#getScaled TJScalingFactor.getScaled()}, and
@@ -515,9 +515,9 @@ public class TJDecompressor implements Closeable {
    * Decompress the 12-bit-per-sample JPEG source image associated with this
    * decompressor instance and output a 12-bit-per-sample packed-pixel
    * grayscale, RGB, or CMYK image to the given destination buffer.
-   * <p>
-   * NOTE: The destination image is fully recoverable if this method throws a
-   * non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING} is
+   *
+   * <p>NOTE: The destination image is fully recoverable if this method throws
+   * a non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING} is
    * set.)
    *
    * @param dstBuf buffer that will receive the packed-pixel
@@ -549,7 +549,7 @@ public class TJDecompressor implements Closeable {
    * {@link TJ#getPixelSize TJ.getPixelSize}(pixelFormat)</code>.)  However,
    * you can also use this parameter to specify the row alignment/padding of
    * the destination image, to skip rows, or to decompress into a specific
-   * region of a larger image.  NOTE: if the source image is a lossy JPEG
+   * region of a larger image.  NOTE: If the source image is a lossy JPEG
    * image, then <code>destinationWidth</code> is either the scaled JPEG width
    * (see {@link #setScalingFactor setScalingFactor()},
    * {@link TJScalingFactor#getScaled TJScalingFactor.getScaled()}, and
@@ -582,7 +582,7 @@ public class TJDecompressor implements Closeable {
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ#PF_RGB TJ.PF_*})
    *
-   * @return a buffer containing an 8-bit-per-sample packed-pixel decompressed
+   * @return a buffer containing a 12-bit-per-sample packed-pixel decompressed
    * image.
    */
   public short[] decompress12(int pitch, int pixelFormat) throws TJException {
@@ -603,9 +603,9 @@ public class TJDecompressor implements Closeable {
    * with this decompressor instance and output a 16-bit-per-sample
    * packed-pixel grayscale, RGB, or CMYK image to the given destination
    * buffer.
-   * <p>
-   * NOTE: The destination image is fully recoverable if this method throws a
-   * non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING} is
+   *
+   * <p>NOTE: The destination image is fully recoverable if this method throws
+   * a non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING} is
    * set.)
    *
    * @param dstBuf buffer that will receive the packed-pixel
@@ -655,7 +655,7 @@ public class TJDecompressor implements Closeable {
    * @param pixelFormat pixel format of the decompressed image (one of
    * {@link TJ#PF_RGB TJ.PF_*})
    *
-   * @return a buffer containing an 8-bit-per-sample packed-pixel decompressed
+   * @return a buffer containing a 16-bit-per-sample packed-pixel decompressed
    * image.
    */
   public short[] decompress16(int pitch, int pixelFormat) throws TJException {
@@ -678,9 +678,9 @@ public class TJDecompressor implements Closeable {
    * decompression but leaves out the color conversion step, so a planar YUV
    * image is generated instead of a packed-pixel image.  This method cannot be
    * used to decompress JPEG source images with the CMYK or YCCK colorspace.
-   * <p>
-   * NOTE: The planar YUV destination image is fully recoverable if this method
-   * throws a non-fatal {@link TJException} (unless
+   *
+   * <p>NOTE: The planar YUV destination image is fully recoverable if this
+   * method throws a non-fatal {@link TJException} (unless
    * {@link TJ#PARAM_STOPONWARNING} is set.)
    *
    * @param dstImage {@link YUVImage} instance that will receive the planar YUV
@@ -836,9 +836,9 @@ public class TJDecompressor implements Closeable {
    * source image associated with this decompressor instance and output an
    * 8-bit-per-sample packed-pixel grayscale, RGB, or CMYK image to the given
    * destination buffer.
-   * <p>
-   * NOTE: The destination image is fully recoverable if this method throws a
-   * non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING}
+   *
+   * <p>NOTE: The destination image is fully recoverable if this method throws
+   * a non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING}
    * is set.)
    *
    * @param dstBuf buffer that will receive the packed-pixel
@@ -866,7 +866,7 @@ public class TJDecompressor implements Closeable {
    * should be set to <code>destinationWidth</code>.  (Setting this parameter
    * to 0 is the equivalent of setting it to <code>destinationWidth</code>.)
    * However, you can also use this parameter to skip rows or to
-   * decompress/decode into a specific region of a larger image.  NOTE: if the
+   * decompress/decode into a specific region of a larger image.  NOTE: If the
    * source image is a lossy JPEG image, then <code>destinationWidth</code> is
    * either the scaled JPEG width (see {@link #setScalingFactor
    * setScalingFactor()}, {@link TJScalingFactor#getScaled
@@ -921,9 +921,9 @@ public class TJDecompressor implements Closeable {
    * source image associated with this decompressor instance and output an
    * 8-bit-per-sample packed-pixel decompressed/decoded image to the given
    * <code>BufferedImage</code> instance.
-   * <p>
-   * NOTE: The destination image is fully recoverable if this method throws a
-   * non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING}
+   *
+   * <p>NOTE: The destination image is fully recoverable if this method throws
+   * a non-fatal {@link TJException} (unless {@link TJ#PARAM_STOPONWARNING}
    * is set.)
    *
    * @param dstImage a <code>BufferedImage</code> instance that will receive

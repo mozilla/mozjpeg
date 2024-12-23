@@ -118,9 +118,10 @@
 #   absolute paths where necessary, using the same logic.
 
 #=============================================================================
+# Copyright 2018 Tobias C. Berner
 # Copyright 2018 Matthias Räncker
-# Copyright 2016, 2019 D. R. Commander
-# Copyright 2016 Dmitry Marakasov
+# Copyright 2016, 2019, 2024 D. R. Commander
+# Copyright 2016, 2021 Dmitry Marakasov
 # Copyright 2016 Roger Leigh
 # Copyright 2015 Alex Turbov
 # Copyright 2014 Rolf Eike Beer
@@ -179,6 +180,10 @@ macro(GNUInstallDirs_set_install_dir var docstring)
     "${_GNUInstallDirs_CMAKE_INSTALL_LAST_${var}}" STREQUAL
       "${CMAKE_INSTALL_${var}}")
     set(_GNUInstallDirs_CMAKE_INSTALL_FORCE_${var} "FORCE")
+  endif()
+
+  if(DEFINED CMAKE_INSTALL_${var} AND NOT CMAKE_INSTALL_${var} MATCHES "^/")
+    set_property(CACHE CMAKE_INSTALL_${var} PROPERTY TYPE PATH)
   endif()
 
   set(CMAKE_INSTALL_${var} "${CMAKE_INSTALL_DEFAULT_${var}}" CACHE PATH
@@ -300,7 +305,7 @@ GNUInstallDirs_set_install_dir(DATADIR
   "The directory under which read-only architecture-independent data files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_INFODIR)
-  if(CMAKE_SYSTEM_NAME MATCHES "^(.*BSD|DragonFly)$")
+  if(CMAKE_SYSTEM_NAME MATCHES "^(([^kF].*)?BSD|DragonFly)$")
     set(CMAKE_INSTALL_DEFAULT_INFODIR "info")
   else()
     set(CMAKE_INSTALL_DEFAULT_INFODIR "<CMAKE_INSTALL_DATAROOTDIR>/info")
@@ -310,7 +315,7 @@ GNUInstallDirs_set_install_dir(INFODIR
   "The directory into which info documentation files should be installed")
 
 if(NOT DEFINED CMAKE_INSTALL_DEFAULT_MANDIR)
-  if(CMAKE_SYSTEM_NAME MATCHES "^(.*BSD|DragonFly)$")
+  if(CMAKE_SYSTEM_NAME MATCHES "^(([^k].*)?BSD|DragonFly)$" AND NOT CMAKE_SYSTEM_NAME MATCHES "^(FreeBSD)$")
     set(CMAKE_INSTALL_DEFAULT_MANDIR "man")
   else()
     set(CMAKE_INSTALL_DEFAULT_MANDIR "<CMAKE_INSTALL_DATAROOTDIR>/man")

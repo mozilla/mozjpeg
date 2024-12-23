@@ -4,7 +4,7 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2016, 2022, D. R. Commander.
+ * Copyright (C) 2010, 2016, 2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -437,6 +437,7 @@ _jinit_d_main_controller(j_decompress_ptr cinfo, boolean need_full_buffer)
   main_ptr = (my_main_ptr)
     (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
                                 sizeof(my_main_controller));
+  memset(main_ptr, 0, sizeof(my_main_controller));
   cinfo->main = (struct jpeg_d_main_controller *)main_ptr;
   main_ptr->pub.start_pass = start_pass_main;
 

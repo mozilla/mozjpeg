@@ -1,17 +1,13 @@
 ;
 ; jccolext.asm - colorspace conversion (SSE2)
 ;
-; Copyright (C) 2016, D. R. Commander.
+; Copyright (C) 2016, 2024, D. R. Commander.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 
 %include "jcolsamp.inc"
 
@@ -48,15 +44,15 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
     mov         [esp], eax
     mov         ebp, esp                     ; ebp = aligned ebp
     lea         esp, [wk(0)]
-    pushpic     eax                     ; make a room for GOT address
+    PUSHPIC     eax                     ; make a room for GOT address
     push        ebx
 ;   push        ecx                     ; need not be preserved
 ;   push        edx                     ; need not be preserved
     push        esi
     push        edi
 
-    get_GOT     ebx                     ; get GOT address
-    movpic      POINTER [gotptr], ebx   ; save GOT address
+    GET_GOT     ebx                     ; get GOT address
+    MOVPIC      POINTER [gotptr], ebx   ; save GOT address
 
     mov         ecx, JDIMENSION [img_width(eax)]
     test        ecx, ecx
@@ -79,9 +75,9 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
     mov         eax, INT [num_rows(eax)]
     test        eax, eax
     jle         near .return
-    alignx      16, 7
+    ALIGNX      16, 7
 .rowloop:
-    pushpic     eax
+    PUSHPIC     eax
     push        edx
     push        ebx
     push        edi
@@ -92,11 +88,11 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
     mov         edi, JSAMPROW [edi]     ; outptr0
     mov         ebx, JSAMPROW [ebx]     ; outptr1
     mov         edx, JSAMPROW [edx]     ; outptr2
-    movpic      eax, POINTER [gotptr]   ; load GOT address (eax)
+    MOVPIC      eax, POINTER [gotptr]   ; load GOT address (eax)
 
     cmp         ecx, byte SIZEOF_XMMWORD
     jae         near .columnloop
-    alignx      16, 7
+    ALIGNX      16, 7
 
 %if RGB_PIXELSIZE == 3  ; ---------------
 
@@ -147,7 +143,7 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
     movdqu      xmmA, XMMWORD [esi+0*SIZEOF_XMMWORD]
     movdqu      xmmF, XMMWORD [esi+1*SIZEOF_XMMWORD]
     jmp         short .rgb_ycc_cnv
-    alignx      16, 7
+    ALIGNX      16, 7
 
 .columnloop:
     movdqu      xmmA, XMMWORD [esi+0*SIZEOF_XMMWORD]
@@ -232,7 +228,7 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
     movdqu      xmmA, XMMWORD [esi+0*SIZEOF_XMMWORD]
     movdqu      xmmE, XMMWORD [esi+1*SIZEOF_XMMWORD]
     jmp         short .rgb_ycc_cnv
-    alignx      16, 7
+    ALIGNX      16, 7
 
 .columnloop:
     movdqu      xmmA, XMMWORD [esi+0*SIZEOF_XMMWORD]
@@ -478,7 +474,7 @@ EXTN(jsimd_rgb_ycc_convert_sse2):
     pop         edi
     pop         ebx
     pop         edx
-    poppic      eax
+    POPPIC      eax
 
     add         esi, byte SIZEOF_JSAMPROW  ; input_buf
     add         edi, byte SIZEOF_JSAMPROW

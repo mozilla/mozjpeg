@@ -2,18 +2,14 @@
 ; jquanti.asm - sample data conversion and quantization (AVX2)
 ;
 ; Copyright 2009 Pierre Ossman <ossman@cendio.se> for Cendio AB
-; Copyright (C) 2016, 2018, D. R. Commander.
+; Copyright (C) 2016, 2018, 2024, D. R. Commander.
 ; Copyright (C) 2016, Matthieu Darbois.
 ;
 ; Based on the x86 SIMD extension for IJG JPEG library
 ; Copyright (C) 1999-2006, MIYASAKA Masaru.
 ; For conditions of distribution and use, see copyright notice in jsimdext.inc
 ;
-; This file should be assembled with NASM (Netwide Assembler),
-; can *not* be assembled with Microsoft's MASM or any compatible
-; assembler (including Borland's Turbo Assembler).
-; NASM is available from http://nasm.sourceforge.net/ or
-; http://sourceforge.net/project/showfiles.php?group_id=6208
+; This file should be assembled with NASM (Netwide Assembler) or Yasm.
 
 %include "jsimdext.inc"
 %include "jdct.inc"
@@ -107,8 +103,8 @@ EXTN(jsimd_convsamp_avx2):
 ; Quantize/descale the coefficients, and store into coef_block
 ;
 ; This implementation is based on an algorithm described in
-;   "How to optimize for the Pentium family of microprocessors"
-;   (http://www.agner.org/assem/).
+;   "Optimizing subroutines in assembly language:
+;   An optimization guide for x86 platforms" (https://agner.org/optimize).
 ;
 ; GLOBAL(void)
 ; jsimd_quantize_avx2(JCOEFPTR coef_block, DCTELEM *divisors,

@@ -30,15 +30,15 @@ add_executable(cjpeg_fuzzer${FUZZER_SUFFIX} cjpeg.cc ../cdjpeg.c ../rdbmp.c
 set_property(TARGET cjpeg_fuzzer${FUZZER_SUFFIX} PROPERTY COMPILE_FLAGS
   ${COMPILE_FLAGS})
 target_link_libraries(cjpeg_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY} jpeg-static)
-install(TARGETS cjpeg_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
-  ${FUZZ_BINDIR})
+install(TARGETS cjpeg_fuzzer${FUZZER_SUFFIX}
+  RUNTIME DESTINATION ${FUZZ_BINDIR} COMPONENT bin)
 
 macro(add_fuzz_target target source_file)
   add_executable(${target}_fuzzer${FUZZER_SUFFIX} ${source_file})
   target_link_libraries(${target}_fuzzer${FUZZER_SUFFIX} ${FUZZ_LIBRARY}
     turbojpeg-static)
-  install(TARGETS ${target}_fuzzer${FUZZER_SUFFIX} RUNTIME DESTINATION
-    ${FUZZ_BINDIR})
+  install(TARGETS ${target}_fuzzer${FUZZER_SUFFIX}
+    RUNTIME DESTINATION ${FUZZ_BINDIR} COMPONENT bin)
 endmacro()
 
 add_fuzz_target(compress compress.cc)

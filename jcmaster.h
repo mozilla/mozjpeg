@@ -2,21 +2,22 @@
  * jcmaster.h
  *
  * This file was part of the Independent JPEG Group's software:
- * Copyright (C) 1991-1997, Thomas G. Lane.
- * mozjpeg Modifications:
+ * Copyright (C) 1991-1995, Thomas G. Lane.
  * Copyright (C) 2014, Mozilla Corporation.
- * For conditions of distribution and use, see the accompanying README file.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2016, D. R. Commander.
+ * For conditions of distribution and use, see the accompanying README.ijg
+ * file.
  *
- * This file contains the master control structures for the JPEG compressor.
+ * This file contains master control structure for the JPEG compressor.
  */
-
 
 /* Private state */
 
 typedef enum {
   main_pass,                    /* input data, also do first output step */
   huff_opt_pass,                /* Huffman code optimization pass */
-  output_pass,                   /* data output pass */
+  output_pass,                  /* data output pass */
   trellis_pass            /* trellis quantization pass */
 } c_pass_type;
 
@@ -53,4 +54,4 @@ typedef struct {
   const char *jpeg_version;
 } my_comp_master;
 
-typedef my_comp_master * my_master_ptr;
+typedef my_comp_master *my_master_ptr;

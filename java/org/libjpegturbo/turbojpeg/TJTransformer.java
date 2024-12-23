@@ -87,23 +87,30 @@ public class TJTransformer extends TJDecompressor {
    * @param dstBufs an array of JPEG destination buffers.
    * <code>dstbufs[i]</code> will receive a JPEG image that has been
    * transformed using the parameters in <code>transforms[i]</code>.  Use
-   * {@link TJ#bufSize} to determine the maximum size for each buffer based on
-   * the transformed or cropped width and height and the level of subsampling
-   * used in the source image.
+   * {@link TJ#bufSize TJ.bufSize()} to determine the maximum size for each
+   * buffer based on the transformed or cropped width and height and the level
+   * of subsampling used in the source image.
    *
    * @param transforms an array of {@link TJTransform} instances, each of
    * which specifies the transform parameters and/or cropping region for the
    * corresponding transformed JPEG image
-   *
-   * @param flags the bitwise OR of one or more of
-   * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
    */
+  public void transform(byte[][] dstBufs, TJTransform[] transforms)
+                        throws TJException {
+    transformedSizes = transform(getJPEGBuf(), getJPEGSize(), dstBufs,
+                                 transforms);
+  }
+
+  /**
+   * @deprecated Use {@link #set TJDecompressor.set()} and
+   * {@link #transform(byte[][], TJTransform[])} instead.
+   */
+  @SuppressWarnings("checkstyle:JavadocMethod")
+  @Deprecated
   public void transform(byte[][] dstBufs, TJTransform[] transforms,
                         int flags) throws TJException {
-    if (jpegBuf == null)
-      throw new IllegalStateException("JPEG buffer not initialized");
-    transformedSizes = transform(jpegBuf, jpegBufSize, dstBufs, transforms,
-                                 flags);
+    processFlags(flags);
+    transform(dstBufs, transforms);
   }
 
   /**
@@ -115,30 +122,40 @@ public class TJTransformer extends TJDecompressor {
    * which specifies the transform parameters and/or cropping region for the
    * corresponding transformed JPEG image
    *
-   * @param flags the bitwise OR of one or more of
-   * {@link TJ#FLAG_BOTTOMUP TJ.FLAG_*}
-   *
    * @return an array of {@link TJDecompressor} instances, each of
    * which has a transformed JPEG image associated with it.
    */
-  public TJDecompressor[] transform(TJTransform[] transforms, int flags)
+  public TJDecompressor[] transform(TJTransform[] transforms)
                                     throws TJException {
     byte[][] dstBufs = new byte[transforms.length][];
-    if (jpegWidth < 1 || jpegHeight < 1)
+    if (getWidth() < 1 || getHeight() < 1)
       throw new IllegalStateException("JPEG buffer not initialized");
+    checkSubsampling();
     for (int i = 0; i < transforms.length; i++) {
-      int w = jpegWidth, h = jpegHeight;
+      int w = getWidth(), h = getHeight();
       if ((transforms[i].options & TJTransform.OPT_CROP) != 0) {
         if (transforms[i].width != 0) w = transforms[i].width;
         if (transforms[i].height != 0) h = transforms[i].height;
       }
-      dstBufs[i] = new byte[TJ.bufSize(w, h, jpegSubsamp)];
+      dstBufs[i] = new byte[TJ.bufSize(w, h, get(TJ.PARAM_SUBSAMP))];
     }
     TJDecompressor[] tjd = new TJDecompressor[transforms.length];
-    transform(dstBufs, transforms, flags);
+    transform(dstBufs, transforms);
     for (int i = 0; i < transforms.length; i++)
       tjd[i] = new TJDecompressor(dstBufs[i], transformedSizes[i]);
     return tjd;
+  }
+
+  /**
+   * @deprecated Use {@link #set TJDecompressor.set()} and
+   * {@link #transform(TJTransform[])} instead.
+   */
+  @SuppressWarnings("checkstyle:JavadocMethod")
+  @Deprecated
+  public TJDecompressor[] transform(TJTransform[] transforms, int flags)
+                                    throws TJException {
+    processFlags(flags);
+    return transform(transforms);
   }
 
   /**
@@ -157,7 +174,7 @@ public class TJTransformer extends TJDecompressor {
   private native void init() throws TJException;
 
   private native int[] transform(byte[] srcBuf, int srcSize, byte[][] dstBufs,
-    TJTransform[] transforms, int flags) throws TJException;
+    TJTransform[] transforms) throws TJException;
 
   static {
     TJLoader.load();

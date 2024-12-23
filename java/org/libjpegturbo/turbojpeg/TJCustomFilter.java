@@ -63,8 +63,8 @@ public interface TJCustomFilter {
    *
    * @param transformID ID number of the transformed image to which
    * <code>coeffBuffer</code> belongs.  This is the same as the index of the
-   * transform in the <code>transforms</code> array that was passed to {@link
-   * TJTransformer#transform TJTransformer.transform()}.
+   * transform in the <code>transforms</code> array that was passed to
+   * {@link TJTransformer#transform TJTransformer.transform()}.
    *
    * @param transform a {@link TJTransform} instance that specifies the
    * parameters and/or cropping region for this transform

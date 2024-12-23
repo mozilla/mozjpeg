@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 #undef org_libjpegturbo_turbojpeg_TJ_NUMSAMP
-#define org_libjpegturbo_turbojpeg_TJ_NUMSAMP 6L
+#define org_libjpegturbo_turbojpeg_TJ_NUMSAMP 7L
 #undef org_libjpegturbo_turbojpeg_TJ_SAMP_444
 #define org_libjpegturbo_turbojpeg_TJ_SAMP_444 0L
 #undef org_libjpegturbo_turbojpeg_TJ_SAMP_422
@@ -21,6 +21,10 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_SAMP_440 4L
 #undef org_libjpegturbo_turbojpeg_TJ_SAMP_411
 #define org_libjpegturbo_turbojpeg_TJ_SAMP_411 5L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_441
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_441 6L
+#undef org_libjpegturbo_turbojpeg_TJ_SAMP_UNKNOWN
+#define org_libjpegturbo_turbojpeg_TJ_SAMP_UNKNOWN -1L
 #undef org_libjpegturbo_turbojpeg_TJ_NUMPF
 #define org_libjpegturbo_turbojpeg_TJ_NUMPF 12L
 #undef org_libjpegturbo_turbojpeg_TJ_PF_RGB
@@ -59,16 +63,52 @@ extern "C" {
 #define org_libjpegturbo_turbojpeg_TJ_CS_CMYK 3L
 #undef org_libjpegturbo_turbojpeg_TJ_CS_YCCK
 #define org_libjpegturbo_turbojpeg_TJ_CS_YCCK 4L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_STOPONWARNING
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_STOPONWARNING 0L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_BOTTOMUP
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_BOTTOMUP 1L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_QUALITY
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_QUALITY 3L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_SUBSAMP
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_SUBSAMP 4L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_JPEGWIDTH
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_JPEGWIDTH 5L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_JPEGHEIGHT
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_JPEGHEIGHT 6L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_PRECISION
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_PRECISION 7L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_COLORSPACE
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_COLORSPACE 8L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_FASTUPSAMPLE
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_FASTUPSAMPLE 9L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_FASTDCT
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_FASTDCT 10L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_OPTIMIZE
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_OPTIMIZE 11L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_PROGRESSIVE
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_PROGRESSIVE 12L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_SCANLIMIT
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_SCANLIMIT 13L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_ARITHMETIC
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_ARITHMETIC 14L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_LOSSLESS
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_LOSSLESS 15L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_LOSSLESSPSV
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_LOSSLESSPSV 16L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_LOSSLESSPT
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_LOSSLESSPT 17L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_RESTARTBLOCKS
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_RESTARTBLOCKS 18L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_RESTARTROWS
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_RESTARTROWS 19L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_XDENSITY
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_XDENSITY 20L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_YDENSITY
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_YDENSITY 21L
+#undef org_libjpegturbo_turbojpeg_TJ_PARAM_DENSITYUNITS
+#define org_libjpegturbo_turbojpeg_TJ_PARAM_DENSITYUNITS 22L
 #undef org_libjpegturbo_turbojpeg_TJ_FLAG_BOTTOMUP
 #define org_libjpegturbo_turbojpeg_TJ_FLAG_BOTTOMUP 2L
-#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCEMMX
-#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCEMMX 8L
-#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE
-#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE 16L
-#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE2
-#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE2 32L
-#undef org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE3
-#define org_libjpegturbo_turbojpeg_TJ_FLAG_FORCESSE3 128L
 #undef org_libjpegturbo_turbojpeg_TJ_FLAG_FASTUPSAMPLE
 #define org_libjpegturbo_turbojpeg_TJ_FLAG_FASTUPSAMPLE 256L
 #undef org_libjpegturbo_turbojpeg_TJ_FLAG_FASTDCT
@@ -102,14 +142,6 @@ JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSize
  */
 JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__IIII
   (JNIEnv *, jclass, jint, jint, jint, jint);
-
-/*
- * Class:     org_libjpegturbo_turbojpeg_TJ
- * Method:    bufSizeYUV
- * Signature: (III)I
- */
-JNIEXPORT jint JNICALL Java_org_libjpegturbo_turbojpeg_TJ_bufSizeYUV__III
-  (JNIEnv *, jclass, jint, jint, jint);
 
 /*
  * Class:     org_libjpegturbo_turbojpeg_TJ

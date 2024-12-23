@@ -4,8 +4,10 @@
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1997, Thomas G. Lane.
  * Modified 2003-2010 by Guido Vollbeding.
+ * Lossless JPEG Modifications:
+ * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2010, 2016, 2018, D. R. Commander.
+ * Copyright (C) 2010, 2016, 2018, 2022-2023, D. R. Commander.
  * Copyright (C) 2014, Mozilla Corporation.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
@@ -19,10 +21,10 @@
 #define JPEG_INTERNALS
 #include "jinclude.h"
 #include "jpeglib.h"
-#include "jpegcomp.h"
-#include "jconfigint.h"
-#include "jmemsys.h"
+#include "jpegapicomp.h"
 #include "jcmaster.h"
+#include "jmemsys.h"
+#include "jconfigint.h"
 
 
 /*
@@ -40,11 +42,13 @@ GLOBAL(void)
 jpeg_calc_jpeg_dimensions(j_compress_ptr cinfo)
 /* Do computations that are needed before master selection phase */
 {
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
+
   /* Hardwire it to "no scaling" */
   cinfo->jpeg_width = cinfo->image_width;
   cinfo->jpeg_height = cinfo->image_height;
-  cinfo->min_DCT_h_scaled_size = DCTSIZE;
-  cinfo->min_DCT_v_scaled_size = DCTSIZE;
+  cinfo->min_DCT_h_scaled_size = data_unit;
+  cinfo->min_DCT_v_scaled_size = data_unit;
 }
 #endif
 
@@ -57,6 +61,7 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
   jpeg_component_info *compptr;
   long samplesperrow;
   JDIMENSION jd_samplesperrow;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
 #if JPEG_LIB_VERSION >= 70
 #if JPEG_LIB_VERSION >= 80
@@ -81,8 +86,12 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
   if ((long)jd_samplesperrow != samplesperrow)
     ERREXIT(cinfo, JERR_WIDTH_OVERFLOW);
 
-  /* For now, precision must match compiled-in value... */
-  if (cinfo->data_precision != BITS_IN_JSAMPLE)
+#ifdef C_LOSSLESS_SUPPORTED
+  if (cinfo->data_precision != 8 && cinfo->data_precision != 12 &&
+      cinfo->data_precision != 16)
+#else
+  if (cinfo->data_precision != 8 && cinfo->data_precision != 12)
+#endif
     ERREXIT1(cinfo, JERR_BAD_PRECISION, cinfo->data_precision);
 
   /* Check that number of components won't exceed internal array sizes */
@@ -113,17 +122,17 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
     compptr->component_index = ci;
     /* For compression, we never do DCT scaling. */
 #if JPEG_LIB_VERSION >= 70
-    compptr->DCT_h_scaled_size = compptr->DCT_v_scaled_size = DCTSIZE;
+    compptr->DCT_h_scaled_size = compptr->DCT_v_scaled_size = data_unit;
 #else
-    compptr->DCT_scaled_size = DCTSIZE;
+    compptr->DCT_scaled_size = data_unit;
 #endif
-    /* Size in DCT blocks */
+    /* Size in data units */
     compptr->width_in_blocks = (JDIMENSION)
       jdiv_round_up((long)cinfo->_jpeg_width * (long)compptr->h_samp_factor,
-                    (long)(cinfo->max_h_samp_factor * DCTSIZE));
+                    (long)(cinfo->max_h_samp_factor * data_unit));
     compptr->height_in_blocks = (JDIMENSION)
       jdiv_round_up((long)cinfo->_jpeg_height * (long)compptr->v_samp_factor,
-                    (long)(cinfo->max_v_samp_factor * DCTSIZE));
+                    (long)(cinfo->max_v_samp_factor * data_unit));
     /* Size in samples */
     compptr->downsampled_width = (JDIMENSION)
       jdiv_round_up((long)cinfo->_jpeg_width * (long)compptr->h_samp_factor,
@@ -136,15 +145,19 @@ initial_setup(j_compress_ptr cinfo, boolean transcode_only)
   }
 
   /* Compute number of fully interleaved MCU rows (number of times that
-   * main controller will call coefficient controller).
+   * main controller will call coefficient or difference controller).
    */
   cinfo->total_iMCU_rows = (JDIMENSION)
     jdiv_round_up((long)cinfo->_jpeg_height,
-                  (long)(cinfo->max_v_samp_factor * DCTSIZE));
+                  (long)(cinfo->max_v_samp_factor * data_unit));
 }
 
 
-#ifdef C_MULTISCAN_FILES_SUPPORTED
+#if defined(C_MULTISCAN_FILES_SUPPORTED) || defined(C_LOSSLESS_SUPPORTED)
+#define NEED_SCAN_SCRIPT
+#endif
+
+#ifdef NEED_SCAN_SCRIPT
 
 LOCAL(void)
 validate_script(j_compress_ptr cinfo)
@@ -173,13 +186,29 @@ validate_script(j_compress_ptr cinfo)
   if (cinfo->num_scans <= 0)
     ERREXIT1(cinfo, JERR_BAD_SCAN_SCRIPT, 0);
 
+#ifndef C_MULTISCAN_FILES_SUPPORTED
+  if (cinfo->num_scans > 1)
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+
+  scanptr = cinfo->scan_info;
+  if (scanptr->Ss != 0 && scanptr->Se == 0) {
+#ifdef C_LOSSLESS_SUPPORTED
+    cinfo->master->lossless = TRUE;
+    cinfo->progressive_mode = FALSE;
+    for (ci = 0; ci < cinfo->num_components; ci++)
+      component_sent[ci] = FALSE;
+#else
+    ERREXIT(cinfo, JERR_NOT_COMPILED);
+#endif
+  }
   /* For sequential JPEG, all scans must have Ss=0, Se=DCTSIZE2-1;
    * for progressive JPEG, no scan can have this.
    */
-  scanptr = cinfo->scan_info;
-  if (scanptr->Ss != 0 || scanptr->Se != DCTSIZE2 - 1) {
+  else if (scanptr->Ss != 0 || scanptr->Se != DCTSIZE2 - 1) {
 #ifdef C_PROGRESSIVE_SUPPORTED
     cinfo->progressive_mode = TRUE;
+    cinfo->master->lossless = FALSE;
     last_bitpos_ptr = &last_bitpos[0][0];
     for (ci = 0; ci < cinfo->num_components; ci++)
       for (coefi = 0; coefi < DCTSIZE2; coefi++)
@@ -188,7 +217,7 @@ validate_script(j_compress_ptr cinfo)
     ERREXIT(cinfo, JERR_NOT_COMPILED);
 #endif
   } else {
-    cinfo->progressive_mode = FALSE;
+    cinfo->progressive_mode = cinfo->master->lossless = FALSE;
     for (ci = 0; ci < cinfo->num_components; ci++)
       component_sent[ci] = FALSE;
   }
@@ -220,13 +249,10 @@ validate_script(j_compress_ptr cinfo)
        * out-of-range reconstructed DC values during the first DC scan,
        * which might cause problems for some decoders.
        */
-#if BITS_IN_JSAMPLE == 8
-#define MAX_AH_AL  10
-#else
-#define MAX_AH_AL  13
-#endif
+      int max_Ah_Al = cinfo->data_precision == 12 ? 13 : 10;
+
       if (Ss < 0 || Ss >= DCTSIZE2 || Se < Ss || Se >= DCTSIZE2 ||
-          Ah < 0 || Ah > MAX_AH_AL || Al < 0 || Al > MAX_AH_AL)
+          Ah < 0 || Ah > max_Ah_Al || Al < 0 || Al > max_Ah_Al)
         ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
       if (Ss == 0) {
         if (Se != 0)            /* DC and AC together not OK */
@@ -254,9 +280,25 @@ validate_script(j_compress_ptr cinfo)
       }
 #endif
     } else {
-      /* For sequential JPEG, all progression parameters must be these: */
-      if (Ss != 0 || Se != DCTSIZE2 - 1 || Ah != 0 || Al != 0)
-        ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
+#ifdef C_LOSSLESS_SUPPORTED
+      if (cinfo->master->lossless) {
+        /* The JPEG spec simply gives the range 0..15 for Al (Pt), but that
+         * seems wrong: the upper bound ought to depend on data precision.
+         * Perhaps they really meant 0..N-1 for N-bit precision, which is what
+         * we allow here.  Values greater than or equal to the data precision
+         * will result in a blank image.
+         */
+        if (Ss < 1 || Ss > 7 ||         /* predictor selection value */
+            Se != 0 || Ah != 0 ||
+            Al < 0 || Al >= cinfo->data_precision) /* point transform */
+          ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
+      } else
+#endif
+      {
+        /* For sequential JPEG, all progression parameters must be these: */
+        if (Ss != 0 || Se != DCTSIZE2 - 1 || Ah != 0 || Al != 0)
+          ERREXIT1(cinfo, JERR_BAD_PROG_SCRIPT, scanno);
+      }
       /* Make sure components are not sent twice */
       for (ci = 0; ci < ncomps; ci++) {
         thisi = scanptr->component_index[ci];
@@ -288,7 +330,7 @@ validate_script(j_compress_ptr cinfo)
   }
 }
 
-#endif /* C_MULTISCAN_FILES_SUPPORTED */
+#endif /* NEED_SCAN_SCRIPT */
 
 
 LOCAL(void)
@@ -297,7 +339,7 @@ select_scan_parameters(j_compress_ptr cinfo)
 {
   int ci;
 
-#ifdef C_MULTISCAN_FILES_SUPPORTED
+#ifdef NEED_SCAN_SCRIPT
   my_master_ptr master = (my_master_ptr) cinfo->master;
   if (master->pass_number < master->pass_number_scan_opt_base) {
     cinfo->comps_in_scan = 1;
@@ -356,10 +398,12 @@ select_scan_parameters(j_compress_ptr cinfo)
     for (ci = 0; ci < cinfo->num_components; ci++) {
       cinfo->cur_comp_info[ci] = &cinfo->comp_info[ci];
     }
-    cinfo->Ss = 0;
-    cinfo->Se = DCTSIZE2 - 1;
-    cinfo->Ah = 0;
-    cinfo->Al = 0;
+    if (!cinfo->master->lossless) {
+      cinfo->Ss = 0;
+      cinfo->Se = DCTSIZE2 - 1;
+      cinfo->Ah = 0;
+      cinfo->Al = 0;
+    }
   }
 }
 
@@ -371,6 +415,7 @@ per_scan_setup(j_compress_ptr cinfo)
 {
   int ci, mcublks, tmp;
   jpeg_component_info *compptr;
+  int data_unit = cinfo->master->lossless ? 1 : DCTSIZE;
 
   if (cinfo->comps_in_scan == 1) {
 
@@ -385,7 +430,7 @@ per_scan_setup(j_compress_ptr cinfo)
     compptr->MCU_width = 1;
     compptr->MCU_height = 1;
     compptr->MCU_blocks = 1;
-    compptr->MCU_sample_width = DCTSIZE;
+    compptr->MCU_sample_width = data_unit;
     compptr->last_col_width = 1;
     /* For noninterleaved scans, it is convenient to define last_row_height
      * as the number of block rows present in the last iMCU row.
@@ -408,10 +453,10 @@ per_scan_setup(j_compress_ptr cinfo)
     /* Overall image size in MCUs */
     cinfo->MCUs_per_row = (JDIMENSION)
       jdiv_round_up((long)cinfo->_jpeg_width,
-                    (long)(cinfo->max_h_samp_factor * DCTSIZE));
+                    (long)(cinfo->max_h_samp_factor * data_unit));
     cinfo->MCU_rows_in_scan = (JDIMENSION)
       jdiv_round_up((long)cinfo->_jpeg_height,
-                    (long)(cinfo->max_v_samp_factor * DCTSIZE));
+                    (long)(cinfo->max_v_samp_factor * data_unit));
 
     cinfo->blocks_in_MCU = 0;
 
@@ -421,7 +466,7 @@ per_scan_setup(j_compress_ptr cinfo)
       compptr->MCU_width = compptr->h_samp_factor;
       compptr->MCU_height = compptr->v_samp_factor;
       compptr->MCU_blocks = compptr->MCU_width * compptr->MCU_height;
-      compptr->MCU_sample_width = compptr->MCU_width * DCTSIZE;
+      compptr->MCU_sample_width = compptr->MCU_width * data_unit;
       /* Figure number of non-dummy blocks in last MCU column & row */
       tmp = (int)(compptr->width_in_blocks % compptr->MCU_width);
       if (tmp == 0) tmp = compptr->MCU_width;
@@ -495,7 +540,8 @@ prepare_for_pass(j_compress_ptr cinfo)
     /* Do Huffman optimization for a scan after the first one. */
     select_scan_parameters(cinfo);
     per_scan_setup(cinfo);
-    if (cinfo->Ss != 0 || cinfo->Ah == 0 || cinfo->arith_code) {
+    if (cinfo->Ss != 0 || cinfo->Ah == 0 || cinfo->arith_code ||
+        cinfo->master->lossless) {
       (*cinfo->entropy->start_pass) (cinfo, TRUE);
       (*cinfo->coef->start_pass) (cinfo, JBUF_CRANK_DEST);
       master->pub.call_pass_startup = FALSE;
@@ -889,7 +935,7 @@ finish_pass_master(j_compress_ptr cinfo)
 GLOBAL(void)
 jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
 {
-  my_master_ptr master = (my_master_ptr) cinfo->master;
+  my_master_ptr master = (my_master_ptr)cinfo->master;
 
   master->pub.prepare_for_pass = prepare_for_pass;
   master->pub.pass_startup = pass_startup;
@@ -897,11 +943,8 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
   master->pub.is_last_pass = FALSE;
   master->pub.call_pass_startup = FALSE;
 
-  /* Validate parameters, determine derived values */
-  initial_setup(cinfo, transcode_only);
-
   if (cinfo->scan_info != NULL) {
-#ifdef C_MULTISCAN_FILES_SUPPORTED
+#ifdef NEED_SCAN_SCRIPT
     validate_script(cinfo);
 #else
     ERREXIT(cinfo, JERR_NOT_COMPILED);
@@ -911,8 +954,33 @@ jinit_c_master_control(j_compress_ptr cinfo, boolean transcode_only)
     cinfo->num_scans = 1;
   }
 
-  if (cinfo->progressive_mode && !cinfo->arith_code)  /*  TEMPORARY HACK ??? */
-    cinfo->optimize_coding = TRUE; /* assume default tables no good for progressive mode */
+  /* Disable smoothing and subsampling in lossless mode, since those are lossy
+   * algorithms.  Set the JPEG colorspace to the input colorspace.  Disable raw
+   * (downsampled) data input, because it isn't particularly useful without
+   * subsampling and has not been tested in lossless mode.
+   */
+  if (cinfo->master->lossless) {
+    int ci;
+    jpeg_component_info *compptr;
+
+    cinfo->raw_data_in = FALSE;
+    cinfo->smoothing_factor = 0;
+    jpeg_default_colorspace(cinfo);
+    for (ci = 0, compptr = cinfo->comp_info; ci < cinfo->num_components;
+         ci++, compptr++)
+      compptr->h_samp_factor = compptr->v_samp_factor = 1;
+  }
+
+  /* Validate parameters, determine derived values */
+  initial_setup(cinfo, transcode_only);
+
+  if (cinfo->master->lossless ||        /*  TEMPORARY HACK ??? */
+      (cinfo->progressive_mode && !cinfo->arith_code))
+    cinfo->optimize_coding = TRUE; /* assume default tables no good for
+                                      progressive mode or lossless mode */
+  if (cinfo->data_precision == 12 && !cinfo->arith_code)
+    cinfo->optimize_coding = TRUE; /* assume default tables no good for 12-bit
+                                      data precision */
 
   /* Initialize my private state */
   if (transcode_only) {

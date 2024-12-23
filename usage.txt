@@ -160,6 +160,39 @@ file size is about the same --- often a little smaller.
 
 Switches for advanced users:
 
+        -precision N   Create JPEG file with N-bit data precision.
+                       N is 8, 12, or 16; default is 8.  If N is 16, then
+                       -lossless must also be specified.  CAUTION: 12-bit and
+                       16-bit JPEG is not yet widely implemented, so many
+                       decoders will be unable to view a 12-bit or 16-bit JPEG
+                       file at all.
+
+        -lossless psv[,Pt] Create a lossless JPEG file using the specified
+                        predictor selection value (1 - 7) and optional point
+                        transform (0 - {precision}-1, where {precision} is the
+                        JPEG data precision in bits).  A point transform value
+                        of 0 (the default) is necessary in order to create a
+                        fully lossless JPEG file.  (A non-zero point transform
+                        value right-shifts the input samples by the specified
+                        number of bits, which is effectively a form of lossy
+                        color quantization.)  CAUTION: lossless JPEG is not yet
+                        widely implemented, so many decoders will be unable to
+                        view a lossless JPEG file at all.  Note that the
+                        following features will be unavailable when compressing
+                        or decompressing a lossless JPEG file:
+                          * Quality/quantization table selection
+                          * Color space conversion (the JPEG image will use the
+                            same color space as the input image)
+                          * Color quantization
+                          * DCT/IDCT algorithm selection
+                          * Smoothing
+                          * Downsampling/upsampling
+                          * IDCT scaling
+                          * Partial image decompression
+                          * Transformations using jpegtran
+                        Any switches used to enable or configure those features
+                        will be ignored.
+
         -arithmetic     Use arithmetic coding.  CAUTION: arithmetic coded JPEG
                         is not yet widely implemented, so many decoders will
                         be unable to view an arithmetic coded JPEG file at
@@ -204,8 +237,9 @@ Switches for advanced users:
                         same results on all machines.
 
         -restart N      Emit a JPEG restart marker every N MCU rows, or every
-                        N MCU blocks if "B" is attached to the number.
-                        -restart 0 (the default) means no restart markers.
+                        N MCU blocks (samples in lossless mode) if "B" is
+                        attached to the number.  -restart 0 (the default) means
+                        no restart markers.
 
         -smooth N       Smooth the input image to eliminate dithering noise.
                         N, ranging from 1 to 100, indicates the strength of

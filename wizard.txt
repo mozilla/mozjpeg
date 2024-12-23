@@ -116,23 +116,23 @@ Multiple Scan / Progression Control
 
 By default, cjpeg emits a single-scan sequential JPEG file.  The
 -progressive switch generates a progressive JPEG file using a default series
-of progression parameters.  You can create multiple-scan sequential JPEG
-files or progressive JPEG files with custom progression parameters by using
-the -scans switch:
+of progression parameters.  You can create multiple-scan sequential or lossless
+JPEG files or progressive JPEG files with custom progression parameters by
+using the -scans switch:
 
         -scans file     Use the scan sequence given in the named file.
 
 The specified file should be a text file containing a "scan script".
 The script specifies the contents and ordering of the scans to be emitted.
 Each entry in the script defines one scan.  A scan definition specifies
-the components to be included in the scan, and for progressive JPEG it also
-specifies the progression parameters Ss,Se,Ah,Al for the scan.  Scan
-definitions are separated by semicolons (';').  A semicolon after the last
-scan definition is optional.
+the components to be included in the scan, and for progressive and lossless
+JPEG it also specifies the progression/lossless parameters Ss,Se,Ah,Al for the
+scan.  Scan definitions are separated by semicolons (';').  A semicolon after
+the last scan definition is optional.
 
 Each scan definition contains one to four component indexes, optionally
-followed by a colon (':') and the four progressive-JPEG parameters.  The
-component indexes denote which color component(s) are to be transmitted in
+followed by a colon (':') and the four progressive/lossless-JPEG parameters.
+The component indexes denote which color component(s) are to be transmitted in
 the scan.  Components are numbered in the order in which they appear in the
 JPEG SOF marker, with the first component being numbered 0.  (Note that these
 indexes are not the "component ID" codes assigned to the components, just
@@ -143,13 +143,24 @@ The progression parameters for each scan are:
         Se      Zigzag index of last coefficient included in scan
         Ah      Zero for first scan of a coefficient, else Al of prior scan
         Al      Successive approximation low bit position for scan
-If the progression parameters are omitted, the values 0,63,0,0 are used,
-producing a sequential JPEG file.  cjpeg automatically determines whether
+
+The lossless parameters for each scan are:
+        Ss      Predictor selection value
+        Se      Must be zero
+        Ah      Must be zero
+        Al      Point transform value
+
+If the progression/lossless parameters are omitted, the values 0,63,0,0 are
+used, producing a sequential JPEG file.  cjpeg automatically determines whether
 the script represents a progressive or sequential file, by observing whether
-Ss and Se values other than 0 and 63 appear.  (The -progressive switch is
-not needed to specify this; in fact, it is ignored when -scans appears.)
-The scan script must meet the JPEG restrictions on progression sequences.
-(cjpeg checks that the spec's requirements are obeyed.)  More specifically:
+Ss and Se values other than 0 and 63 appear.  cjpeg also automatically
+determines whether the script represents a lossless file, by observing whether
+Ss (the predictor selection value) is non-zero and Se is zero, which are
+illegal values for progressive and sequential files.  (The -progressive and
+-lossless switches are not needed to specify this; in fact, they are ignored
+when -scans appears.)  The scan script must meet the JPEG restrictions on
+progression sequences.  (cjpeg checks that the spec's requirements are obeyed.)
+More specifically:
 
     * An AC scan cannot include coefficients from more than one component.
 

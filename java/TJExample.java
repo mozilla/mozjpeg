@@ -1,6 +1,6 @@
 /*
- * Copyright (C)2011-2012, 2014-2015, 2017-2018, 2023 D. R. Commander.
- *                                                    All Rights Reserved.
+ * Copyright (C)2011-2012, 2014-2015, 2017-2018, 2022-2023 D. R. Commander.
+ *                                                         All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -52,7 +52,7 @@ class TJExample implements TJCustomFilter {
 
 
   static final String[] SUBSAMP_NAME = {
-    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1"
+    "4:4:4", "4:2:2", "4:2:0", "Grayscale", "4:4:0", "4:1:1", "4:4:1"
   };
 
   static final String[] COLORSPACE_NAME = {
@@ -140,8 +140,6 @@ class TJExample implements TJCustomFilter {
 
     System.out.println("-fastdct = Use the fastest DCT/IDCT algorithm available\n");
 
-    System.out.println("-accuratedct = Use the most accurate DCT/IDCT algorithm available\n");
-
     System.exit(1);
   }
 
@@ -150,11 +148,10 @@ class TJExample implements TJCustomFilter {
 
     try {
 
-      TJScalingFactor scalingFactor = new TJScalingFactor(1, 1);
+      TJScalingFactor scalingFactor = TJ.UNSCALED;
       int outSubsamp = -1, outQual = -1;
       TJTransform xform = new TJTransform();
-      boolean display = false;
-      int flags = 0;
+      boolean display = false, fastUpsample = false, fastDCT = false;
       int width, height;
       String inFormat = "jpg", outFormat = "jpg";
       BufferedImage img = null;
@@ -244,13 +241,10 @@ class TJExample implements TJCustomFilter {
           display = true;
         else if (argv[i].equalsIgnoreCase("-fastupsample")) {
           System.out.println("Using fast upsampling code");
-          flags |= TJ.FLAG_FASTUPSAMPLE;
+          fastUpsample = true;
         } else if (argv[i].equalsIgnoreCase("-fastdct")) {
           System.out.println("Using fastest DCT/IDCT algorithm");
-          flags |= TJ.FLAG_FASTDCT;
-        } else if (argv[i].equalsIgnoreCase("-accuratedct")) {
-          System.out.println("Using most accurate DCT/IDCT algorithm");
-          flags |= TJ.FLAG_ACCURATEDCT;
+          fastDCT = true;
         } else usage();
       }
 
@@ -291,16 +285,21 @@ class TJExample implements TJCustomFilter {
           TJTransform[] xforms = new TJTransform[1];
           xforms[0] = xform;
           xforms[0].options |= TJTransform.OPT_TRIM;
-          TJDecompressor[] tjds = tjt.transform(xforms, 0);
+          TJDecompressor[] tjds = tjt.transform(xforms);
           tjd = tjds[0];
           tjt.close();
         } else
           tjd = new TJDecompressor(jpegBuf);
+        tjd.set(TJ.PARAM_FASTUPSAMPLE, fastUpsample ? 1 : 0);
+        tjd.set(TJ.PARAM_FASTDCT, fastDCT ? 1 : 0);
 
         width = tjd.getWidth();
         height = tjd.getHeight();
-        int inSubsamp = tjd.getSubsamp();
-        int inColorspace = tjd.getColorspace();
+        int inSubsamp = tjd.get(TJ.PARAM_SUBSAMP);
+        int inColorspace = tjd.get(TJ.PARAM_COLORSPACE);
+
+        if (tjd.get(TJ.PARAM_LOSSLESS) == 1)
+          scalingFactor = TJ.UNSCALED;
 
         System.out.println((doTransform ? "Transformed" : "Input") +
                            " Image (jpg):  " + width + " x " + height +
@@ -322,16 +321,16 @@ class TJExample implements TJCustomFilter {
         /* Scaling and/or a non-JPEG output image format and/or compression
            options have been selected, so we need to decompress the
            input/transformed image. */
+        tjd.setScalingFactor(scalingFactor);
         width = scalingFactor.getScaled(width);
         height = scalingFactor.getScaled(height);
         if (outSubsamp < 0)
           outSubsamp = inSubsamp;
 
         if (!outFormat.equalsIgnoreCase("jpg"))
-          img = tjd.decompress(width, height, BufferedImage.TYPE_INT_RGB,
-                               flags);
+          img = tjd.decompress8(BufferedImage.TYPE_INT_RGB);
         else
-          imgBuf = tjd.decompress(width, 0, height, TJ.PF_BGRX, flags);
+          imgBuf = tjd.decompress8(0, TJ.PF_BGRX);
         tjd.close();
       } else {
         /* Input image is not a JPEG image.  Load it into memory. */
@@ -368,13 +367,14 @@ class TJExample implements TJCustomFilter {
                            " subsampling, quality = " + outQual);
 
         TJCompressor tjc = new TJCompressor();
-        tjc.setSubsamp(outSubsamp);
-        tjc.setJPEGQuality(outQual);
+        tjc.set(TJ.PARAM_SUBSAMP, outSubsamp);
+        tjc.set(TJ.PARAM_QUALITY, outQual);
+        tjc.set(TJ.PARAM_FASTDCT, fastDCT ? 1 : 0);
         if (img != null)
           tjc.setSourceImage(img, 0, 0, 0, 0);
         else
           tjc.setSourceImage(imgBuf, 0, 0, width, 0, height, TJ.PF_BGRX);
-        byte[] jpegBuf = tjc.compress(flags);
+        byte[] jpegBuf = tjc.compress();
         int jpegSize = tjc.getCompressedSize();
         tjc.close();
 

@@ -868,6 +868,10 @@ if(ENABLE_STATIC)
 
   add_executable(example-static example.c)
   target_link_libraries(example-static jpeg-static)
+  if(UNIX)
+    target_link_libraries(example-static m)
+  endif()
+
 endif()
 
 add_executable(rdjpgcom rdjpgcom.c)

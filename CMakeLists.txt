@@ -220,10 +220,8 @@ macro(boolean_number var)
   endif()
 endmacro()
 
-option(ENABLE_SHARED "Build shared libraries" TRUE)
-boolean_number(ENABLE_SHARED)
-option(ENABLE_STATIC "Build static libraries" TRUE)
-boolean_number(ENABLE_STATIC)
+option(BUILD_SHARED_LIBS "Build shared libraries" TRUE)
+boolean_number(BUILD_SHARED_LIBS)
 option(REQUIRE_SIMD
   "Generate a fatal error if SIMD extensions are not available for this platform (default is to fall back to a non-SIMD build)"
   FALSE)
@@ -242,7 +240,7 @@ if(CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
   set(WITH_JAVA 0)
 else()
   option(WITH_JAVA
-    "Build Java wrapper for the TurboJPEG API library (implies ENABLE_SHARED=1)"
+    "Build Java wrapper for the TurboJPEG API library (implies BUILD_SHARED_LIBS=1)"
     FALSE)
   boolean_number(WITH_JAVA)
 endif()
@@ -270,7 +268,7 @@ macro(report_option var desc)
 endmacro()
 
 if(WITH_JAVA)
-  set(ENABLE_SHARED 1)
+  set(BUILD_SHARED_LIBS 1)
 endif()
 
 # Explicitly setting CMAKE_POSITION_INDEPENDENT_CODE=FALSE disables PIC for all
@@ -279,14 +277,13 @@ endif()
 # to FALSE, we need to unset it, thus restoring the default behavior
 # (automatically using PIC for shared library targets.)
 if(DEFINED CMAKE_POSITION_INDEPENDENT_CODE AND
-  NOT CMAKE_POSITION_INDEPENDENT_CODE AND ENABLE_SHARED)
+  NOT CMAKE_POSITION_INDEPENDENT_CODE AND BUILD_SHARED_LIBS)
   unset(CMAKE_POSITION_INDEPENDENT_CODE CACHE)
 endif()
 
-report_option(ENABLE_SHARED "Shared libraries")
-report_option(ENABLE_STATIC "Static libraries")
+report_option(BUILD_SHARED_LIBS "Shared libraries")
 
-if(ENABLE_SHARED)
+if(BUILD_SHARED_LIBS)
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 endif()
 
@@ -653,7 +650,7 @@ if(WITH_JAVA)
   add_subdirectory(java)
 endif()
 
-if(ENABLE_SHARED)
+if(BUILD_SHARED_LIBS)
   # Compile a separate version of these source files with 12-bit and 16-bit
   # data precision.
   add_library(jpeg12 OBJECT ${JPEG12_SOURCES})
@@ -665,7 +662,7 @@ if(ENABLE_SHARED)
   add_subdirectory(sharedlib)
 endif()
 
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   # Compile a separate version of these source files with 12-bit and 16-bit
   # data precision.
   add_library(jpeg12-static OBJECT ${JPEG12_SOURCES})
@@ -683,7 +680,7 @@ if(ENABLE_STATIC)
 endif()
 
 if(WITH_TURBOJPEG)
-  if(ENABLE_SHARED)
+  if(BUILD_SHARED_LIBS)
     set(TURBOJPEG_SOURCES ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS} ${SIMD_OBJS}
       turbojpeg.c transupp.c jdatadst-tj.c jdatasrc-tj.c rdbmp.c rdppm.c
       wrbmp.c wrppm.c $<TARGET_OBJECTS:jpeg12> $<TARGET_OBJECTS:jpeg16>)
@@ -754,7 +751,7 @@ if(WITH_TURBOJPEG)
     endif()
   endif()
 
-  if(ENABLE_STATIC)
+  if(NOT BUILD_SHARED_LIBS)
     add_library(turbojpeg12-static OBJECT rdppm.c wrppm.c)
     set_property(TARGET turbojpeg12-static PROPERTY COMPILE_FLAGS
       "-DBITS_IN_JSAMPLE=12 -DPPM_SUPPORTED")
@@ -799,7 +796,7 @@ if(PNG_SUPPORTED)
   set(CJPEG_BMP_SOURCES ${CJPEG_BMP_SOURCES} rdpng.c)
 endif()
 
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   # Compile a separate version of these source files with 12-bit and 16-bit
   # data precision.
   add_library(cjpeg12-static OBJECT rdgif.c rdppm.c)
@@ -947,10 +944,10 @@ if(WITH_JAVA)
 endif()
 
 set(TEST_LIBTYPES "")
-if(ENABLE_SHARED)
+if(BUILD_SHARED_LIBS)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} shared)
 endif()
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   set(TEST_LIBTYPES ${TEST_LIBTYPES} static)
 endif()
 
@@ -1796,7 +1793,7 @@ endif()
 set(EXE ${CMAKE_EXECUTABLE_SUFFIX})
 
 if(WITH_TURBOJPEG)
-  if(ENABLE_SHARED)
+  if(BUILD_SHARED_LIBS)
     install(TARGETS turbojpeg EXPORT ${CMAKE_PROJECT_NAME}Targets
       INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib
@@ -1810,11 +1807,11 @@ if(WITH_TURBOJPEG)
         DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT bin OPTIONAL)
     endif()
   endif()
-  if(ENABLE_STATIC)
+  if(NOT BUILD_SHARED_LIBS)
     install(TARGETS turbojpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
       INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib)
-    if(NOT ENABLE_SHARED)
+    if(NOT BUILD_SHARED_LIBS)
       if(GENERATOR_IS_MULTI_CONFIG)
         set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
       else()
@@ -1828,11 +1825,11 @@ if(WITH_TURBOJPEG)
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT include)
 endif()
 
-if(ENABLE_STATIC)
+if(NOT BUILD_SHARED_LIBS)
   install(TARGETS jpeg-static EXPORT ${CMAKE_PROJECT_NAME}Targets
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT lib)
-  if(NOT ENABLE_SHARED)
+  if(NOT BUILD_SHARED_LIBS)
     if(GENERATOR_IS_MULTI_CONFIG)
       set(DIR "${CMAKE_CURRENT_BINARY_DIR}/\${CMAKE_INSTALL_CONFIG_NAME}")
     else()

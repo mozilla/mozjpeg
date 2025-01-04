@@ -1255,7 +1255,7 @@ foreach(libtype ${TEST_LIBTYPES})
   # Lossless (all arguments other than -lossless and -restart should have no
   # effect)
   add_bittest(cjpeg16 lossless
-    "-lossless;4;-restart;1;-quality;1;-grayscale;-optimize;-revert;-dct;float;-smooth;100;-baseline;-qslots;1,0,0;-sample;1x2,3x4,2x1"
+    "-revert;-lossless;4;-restart;1;-quality;1;-grayscale;-optimize;-dct;float;-smooth;100;-baseline;-qslots;1,0,0;-sample;1x2,3x4,2x1"
     testout16_lossless.jpg ${TESTIMAGES}/testorig.ppm
     ${MD5_JPEG_LOSSLESS})
   add_bittest(djpeg16 lossless
@@ -1418,7 +1418,7 @@ foreach(libtype ${TEST_LIBTYPES})
     endif()
 
     # CC: null  SAMP: fullsize  FDCT: islow  ENT: huff
-    add_bittest(${cjpeg} rgb-islow "-rgb;-revert;-dct;int;-icc;${TESTIMAGES}/test1.icc"
+    add_bittest(${cjpeg} rgb-islow "-revert;-rgb;-dct;int;-icc;${TESTIMAGES}/test1.icc"
       ${testout}_rgb_islow.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_RGB_ISLOW})
 
@@ -1433,7 +1433,7 @@ foreach(libtype ${TEST_LIBTYPES})
     set_tests_properties(${djpeg}-${libtype}-rgb-islow-icc-cmp PROPERTIES
       DEPENDS ${djpeg}-${libtype}-rgb-islow)
 
-    add_bittest(${jpegtran} icc "-copy;all;-icc;${TESTIMAGES}/test3.icc"
+    add_bittest(${jpegtran} icc "-revert;-copy;all;-icc;${TESTIMAGES}/test3.icc"
       ${testout}_rgb_islow2.jpg ${testout}_rgb_islow.jpg
       ${MD5_JPEG_RGB_ISLOW2} ${cjpeg}-${libtype}-rgb-islow)
 
@@ -1450,7 +1450,7 @@ foreach(libtype ${TEST_LIBTYPES})
     endif()
 
     # CC: RGB->YCC  SAMP: fullsize/h2v1  FDCT: ifast  ENT: 2-pass huff
-    add_bittest(${cjpeg} 422-ifast-opt "-sample;2x1;-revert;-dct;fast;-opt"
+    add_bittest(${cjpeg} 422-ifast-opt "-revert;-sample;2x1;-dct;fast;-opt"
       ${testout}_422_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_422_IFAST_OPT})
 
@@ -1460,7 +1460,7 @@ foreach(libtype ${TEST_LIBTYPES})
       ${MD5_PPM_422_IFAST} ${cjpeg}-${libtype}-422-ifast-opt)
 
     # CC: RGB->YCC  SAMP: fullsize/h1v2  FDCT: islow  ENT: huff
-    add_bittest(${cjpeg} 440-islow "-sample;1x2;-revert;-dct;int"
+    add_bittest(${cjpeg} 440-islow "-revert;-sample;1x2;-dct;int"
       ${testout}_440_islow.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_440_ISLOW})
 
@@ -1489,7 +1489,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
     # CC: RGB->YCC  SAMP: fullsize/h2v2  FDCT: ifast  ENT: prog huff
     add_bittest(${cjpeg} 420-q100-ifast-prog
-      "-sample;2x2;-quality;100;-revert;-dct;fast;-scans;${TESTIMAGES}/test.scan"
+      "-revert;-sample;2x2;-quality;100;-dct;fast;-scans;${TESTIMAGES}/test.scan"
       ${testout}_420_q100_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_420_IFAST_Q100_PROG})
 
@@ -1504,7 +1504,7 @@ foreach(libtype ${TEST_LIBTYPES})
       ${MD5_PPM_420M_Q100_IFAST} ${cjpeg}-${libtype}-420-q100-ifast-prog)
 
     # CC: RGB->Gray  SAMP: fullsize  FDCT: islow  ENT: huff
-    add_bittest(${cjpeg} gray-islow "-gray;-revert;-dct;int"
+    add_bittest(${cjpeg} gray-islow "-revert;-gray;-dct;int"
       ${testout}_gray_islow.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_GRAY_ISLOW})
 
@@ -1532,13 +1532,13 @@ foreach(libtype ${TEST_LIBTYPES})
 
     # CC: RGB->YCC  SAMP: fullsize smooth/h2v2 smooth  FDCT: islow
     # ENT: 2-pass huff
-    add_bittest(${cjpeg} 420s-ifast-opt "-sample;2x2;-smooth;1;-revert;-dct;int;-opt"
+    add_bittest(${cjpeg} 420s-ifast-opt "-revert;-sample;2x2;-smooth;1;-dct;int;-opt"
       ${testout}_420s_ifast_opt.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_420S_IFAST_OPT})
 
     if(FLOATTEST${sample_bits})
       # CC: RGB->YCC  SAMP: fullsize/int  FDCT: float  ENT: prog huff
-      add_bittest(${cjpeg} 3x2-float-prog "-sample;3x2;-revert;-dct;float;-prog"
+      add_bittest(${cjpeg} 3x2-float-prog "-revert;-sample;3x2;-dct;float;-prog"
         ${testout}_3x2_float_prog.jpg ${TESTIMAGES}/testorig.ppm
         ${MD5_JPEG_3x2_FLOAT_PROG_${FLOATTEST${sample_bits}_UC}})
 
@@ -1550,7 +1550,7 @@ foreach(libtype ${TEST_LIBTYPES})
     endif()
 
     # CC: RGB->YCC  SAMP: fullsize/int  FDCT: ifast  ENT: prog huff
-    add_bittest(${cjpeg} 3x2-ifast-prog "-sample;3x2;-revert;-dct;fast;-prog"
+    add_bittest(${cjpeg} 3x2-ifast-prog "-revert;-sample;3x2;-dct;fast;-prog"
       ${testout}_3x2_ifast_prog.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_3x2_IFAST_PROG})
 
@@ -1571,7 +1571,7 @@ foreach(libtype ${TEST_LIBTYPES})
 
       # CC: YCC->RGB  SAMP: fullsize  FDCT: islow  ENT: prog arith
       add_bittest(${cjpeg} 444-islow-progari
-        "-sample;1x1;-revert;-dct;int;-prog;-arithmetic"
+        "-revert;-sample;1x1;-dct;int;-prog;-arithmetic"
         ${testout}_444_islow_progari.jpg ${TESTIMAGES}/testorig.ppm
         ${MD5_JPEG_444_ISLOW_PROGARI})
     endif()
@@ -1645,7 +1645,7 @@ foreach(libtype ${TEST_LIBTYPES})
     # Lossless (all arguments other than -lossless and -restart should have no
     # effect)
     add_bittest(${cjpeg} lossless
-      "-lossless;4;-restart;1;-quality;1;-grayscale;-optimize;-revert;-dct;float;-smooth;100;-baseline;-qslots;1,0,0;-sample;1x2,3x4,2x1"
+      "-revert;-lossless;4;-restart;1;-quality;1;-grayscale;-optimize;-dct;float;-smooth;100;-baseline;-qslots;1,0,0;-sample;1x2,3x4,2x1"
       ${testout}_lossless.jpg ${TESTIMAGES}/testorig.ppm
       ${MD5_JPEG_LOSSLESS})
     add_bittest(${djpeg} lossless
@@ -1725,7 +1725,7 @@ foreach(libtype ${TEST_LIBTYPES})
       endif()
     endif()
 
-    add_bittest(${jpegtran} crop "-crop;120x90+20+50;-transpose;-perfect"
+    add_bittest(${jpegtran} crop "-revert;-crop;120x90+20+50;-transpose;-perfect"
       ${testout}_crop.jpg ${TESTIMAGES}/${TESTORIG}
       ${MD5_JPEG_CROP})
 

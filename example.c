@@ -131,6 +131,7 @@ write_JPEG_file(char *filename, int quality, int data_precision)
   cinfo.err = jpeg_std_error(&jerr);
   /* Now we can initialize the JPEG compression object. */
   jpeg_create_compress(&cinfo);
+  jpeg_c_set_int_param(&cinfo, JINT_COMPRESS_PROFILE, JCP_FASTEST);
 
   /* Step 2: specify data destination (eg, a file) */
   /* Note: steps 2 and 3 can be done in either order. */

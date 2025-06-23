@@ -790,24 +790,43 @@ endif()
 set(CDJPEG_COMPILE_FLAGS
   "-DBMP_SUPPORTED -DGIF_SUPPORTED -DPPM_SUPPORTED -DTARGA_SUPPORTED ${USE_SETMODE}")
 
+set(_RDPNG_SOURCE "") # Initialize _RDPNG_SOURCE
 if(PNG_SUPPORTED)
   report_option(PNG_SUPPORTED "PNG reading support")
-  set(COMPILE_FLAGS "${COMPILE_FLAGS} -DPNG_SUPPORTED")
-  set(CJPEG_BMP_SOURCES ${CJPEG_BMP_SOURCES} rdpng.c)
+  set(CDJPEG_COMPILE_FLAGS "${CDJPEG_COMPILE_FLAGS} -DPNG_SUPPORTED")
+  set(_RDPNG_SOURCE "rdpng.c") # Set rdpng.c source file if PNG support is enabled
+
+  # to avoid finding shared library from CMake cache
+  unset(PNG_LIBRARY CACHE)
+  unset(PNG_LIBRARY_RELEASE CACHE)
+  unset(PNG_LIBRARY_DEBUG CACHE)
+  unset(ZLIB_LIBRARY CACHE)
+  unset(ZLIB_LIBRARY_RELEASE CACHE)
+  unset(ZLIB_LIBRARY_DEBUG CACHE)
+
+  if (APPLE)
+    find_package(ZLIB REQUIRED) # macos doesn't have static zlib
+  endif()
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
+  find_package(PNG 1.6 REQUIRED)
+  if (NOT APPLE)
+    find_package(ZLIB REQUIRED)
+  endif()
 endif()
 
 if(NOT BUILD_SHARED_LIBS)
   # Compile a separate version of these source files with 12-bit and 16-bit
   # data precision.
-  add_library(cjpeg12-static OBJECT rdgif.c rdppm.c)
+  add_library(cjpeg12-static OBJECT rdgif.c rdppm.c ${_RDPNG_SOURCE})
   set_property(TARGET cjpeg12-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-  add_library(cjpeg16-static OBJECT rdgif.c rdppm.c)
+  add_library(cjpeg16-static OBJECT rdgif.c rdppm.c ${_RDPNG_SOURCE})
   set_property(TARGET cjpeg16-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=16 -DGIF_SUPPORTED -DPPM_SUPPORTED")
   add_executable(cjpeg-static cjpeg.c cdjpeg.c rdbmp.c rdgif.c rdppm.c
     rdjpeg.c
-    rdswitch.c rdtarga.c $<TARGET_OBJECTS:cjpeg12-static>
+    rdswitch.c rdtarga.c ${_RDPNG_SOURCE}
+    $<TARGET_OBJECTS:cjpeg12-static>
     $<TARGET_OBJECTS:cjpeg16-static>)
   set_property(TARGET cjpeg-static PROPERTY COMPILE_FLAGS
     ${CDJPEG_COMPILE_FLAGS})
@@ -816,43 +835,30 @@ if(NOT BUILD_SHARED_LIBS)
     target_link_libraries(cjpeg-static m)
   endif()
 
-  if(PNG_SUPPORTED)
-    # to avoid finding shared library from CMake cache
-    unset(PNG_LIBRARY CACHE)
-    unset(PNG_LIBRARY_RELEASE CACHE)
-    unset(PNG_LIBRARY_DEBUG CACHE)
-    unset(ZLIB_LIBRARY CACHE)
-    unset(ZLIB_LIBRARY_RELEASE CACHE)
-    unset(ZLIB_LIBRARY_DEBUG CACHE)
-
-    if (APPLE)
-      find_package(ZLIB REQUIRED) # macos doesn't have static zlib
-    endif()
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_STATIC_LIBRARY_SUFFIX})
-    find_package(PNG 1.6 REQUIRED)
-    if (NOT APPLE)
-      find_package(ZLIB REQUIRED)
-    endif()
-    target_include_directories(cjpeg-static PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
-    target_link_libraries(cjpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
-  endif()
-
   # Compile a separate version of these source files with 12-bit and 16-bit
   # data precision.
-  add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c)
+  add_library(djpeg12-static OBJECT rdcolmap.c wrgif.c wrppm.c ${_RDPNG_SOURCE})
   set_property(TARGET djpeg12-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=12 -DGIF_SUPPORTED -DPPM_SUPPORTED")
-  add_library(djpeg16-static OBJECT wrppm.c)
+  add_library(djpeg16-static OBJECT wrppm.c ${_RDPNG_SOURCE})
   set_property(TARGET djpeg16-static PROPERTY COMPILE_FLAGS
     "-DBITS_IN_JSAMPLE=16 -DPPM_SUPPORTED")
   add_executable(djpeg-static djpeg.c cdjpeg.c rdcolmap.c rdswitch.c wrbmp.c
-    wrgif.c wrppm.c wrtarga.c $<TARGET_OBJECTS:djpeg12-static>
+    wrgif.c wrppm.c wrtarga.c ${_RDPNG_SOURCE}
+    $<TARGET_OBJECTS:djpeg12-static>
     $<TARGET_OBJECTS:djpeg16-static>)
   set_property(TARGET djpeg-static PROPERTY COMPILE_FLAGS
     ${CDJPEG_COMPILE_FLAGS})
   target_link_libraries(djpeg-static jpeg-static)
   if(UNIX)
     target_link_libraries(djpeg-static m)
+  endif()
+
+  if(PNG_SUPPORTED)
+    target_include_directories(cjpeg-static PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+    target_include_directories(djpeg-static PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
+    target_link_libraries(cjpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+    target_link_libraries(djpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
   endif()
 
   add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)

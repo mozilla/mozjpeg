@@ -40,6 +40,7 @@
 #include "cdjpeg.h"             /* Common decls for cjpeg/djpeg applications */
 #include "jversion.h"           /* for version message */
 #include "jconfigint.h"
+#include <time.h>
 
 
 /* Create the add-on message string table. */
@@ -170,6 +171,7 @@ static char *outfilename;       /* for -outfile switch */
 static boolean memdst;          /* for -memdst switch */
 static boolean report;          /* for -report switch */
 static boolean strict;          /* for -strict switch */
+static int loop_count;          /* for -loop switch (benchmarking) */
 
 
 #ifdef CJPEG_FUZZER
@@ -352,6 +354,7 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
   memdst = FALSE;
   report = FALSE;
   strict = FALSE;
+  loop_count = 1;
   cinfo->err->trace_level = 0;
 
   /* Scan command line options, adjust parameters */
@@ -542,6 +545,16 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
               progname);
       exit(EXIT_FAILURE);
 #endif
+
+    } else if (keymatch(arg, "loop", 2)) {
+      /* Repeat compression N times for benchmarking (implies -memdst) */
+      if (++argn >= argc) {
+        fprintf(stderr, "%s: missing argument for loop\n", progname);
+        usage();
+      }
+      loop_count = atoi(argv[argn]);
+      if (loop_count < 1) loop_count = 1;
+      memdst = TRUE;
 
     } else if (keymatch(arg, "memdst", 2)) {
       /* Use in-memory destination manager */
@@ -948,79 +961,171 @@ main(int argc, char **argv)
   else
     jpeg_stdio_dest(&cinfo, output_file);
 
-#ifdef CJPEG_FUZZER
-  if (setjmp(myerr.setjmp_buffer))
-    HANDLE_ERROR()
-#endif
+  /* Pre-load pixel data into memory for -loop benchmarking */
+  if (loop_count > 1 && cinfo.data_precision == 8) {
+    JDIMENSION row;
+    JDIMENSION w = cinfo.image_width;
+    JDIMENSION h = cinfo.image_height;
+    int nc = cinfo.input_components;
+    size_t row_stride = (size_t)w * nc;
+    unsigned char *pixbuf = (unsigned char *)malloc(row_stride * h);
+    JSAMPROW rowptr;
+    struct timespec loop_t0, loop_t1;
+    int rep;
 
-  /* Start compressor */
-  jpeg_start_compress(&cinfo, TRUE);
-
-  /* Copy metadata */
-  if (copy_markers) {
-    jpeg_saved_marker_ptr marker;
-    
-    /* In the current implementation, we don't actually need to examine the
-     * option flag here; we just copy everything that got saved.
-     * But to avoid confusion, we do not output JFIF and Adobe APP14 markers
-     * if the encoder library already wrote one.
-     */
-    for (marker = src_mgr->marker_list; marker != NULL; marker = marker->next) {
-      if (cinfo.write_JFIF_header &&
-          marker->marker == JPEG_APP0 &&
-          marker->data_length >= 5 &&
-          GETJOCTET(marker->data[0]) == 0x4A &&
-          GETJOCTET(marker->data[1]) == 0x46 &&
-          GETJOCTET(marker->data[2]) == 0x49 &&
-          GETJOCTET(marker->data[3]) == 0x46 &&
-          GETJOCTET(marker->data[4]) == 0)
-        continue;                       /* reject duplicate JFIF */
-      if (cinfo.write_Adobe_marker &&
-          marker->marker == JPEG_APP0+14 &&
-          marker->data_length >= 5 &&
-          GETJOCTET(marker->data[0]) == 0x41 &&
-          GETJOCTET(marker->data[1]) == 0x64 &&
-          GETJOCTET(marker->data[2]) == 0x6F &&
-          GETJOCTET(marker->data[3]) == 0x62 &&
-          GETJOCTET(marker->data[4]) == 0x65)
-        continue;                       /* reject duplicate Adobe */
-      jpeg_write_marker(&cinfo, marker->marker, marker->data,
-                        marker->data_length);
+    if (pixbuf == NULL) {
+      fprintf(stderr, "%s: can't allocate pixel buffer for -loop\n", progname);
+      exit(EXIT_FAILURE);
     }
-  }
-  if (icc_profile != NULL)
-    jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
 
-  /* Process data */
-  if (cinfo.data_precision == 16) {
-#ifdef C_LOSSLESS_SUPPORTED
-    while (cinfo.next_scanline < cinfo.image_height) {
+    /* First pass: read pixels from source manager into memory buffer,
+       and do a normal compression (this is the "warmup" iteration) */
+    jpeg_start_compress(&cinfo, TRUE);
+    if (copy_markers) {
+      jpeg_saved_marker_ptr marker;
+
+      for (marker = src_mgr->marker_list; marker != NULL;
+           marker = marker->next) {
+        if (cinfo.write_JFIF_header &&
+            marker->marker == JPEG_APP0 &&
+            marker->data_length >= 5 &&
+            GETJOCTET(marker->data[0]) == 0x4A &&
+            GETJOCTET(marker->data[1]) == 0x46 &&
+            GETJOCTET(marker->data[2]) == 0x49 &&
+            GETJOCTET(marker->data[3]) == 0x46 &&
+            GETJOCTET(marker->data[4]) == 0)
+          continue;
+        if (cinfo.write_Adobe_marker &&
+            marker->marker == JPEG_APP0+14 &&
+            marker->data_length >= 5 &&
+            GETJOCTET(marker->data[0]) == 0x41 &&
+            GETJOCTET(marker->data[1]) == 0x64 &&
+            GETJOCTET(marker->data[2]) == 0x6F &&
+            GETJOCTET(marker->data[3]) == 0x62 &&
+            GETJOCTET(marker->data[4]) == 0x65)
+          continue;
+        jpeg_write_marker(&cinfo, marker->marker, marker->data,
+                          marker->data_length);
+      }
+    }
+    if (icc_profile != NULL)
+      jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
+    for (row = 0; row < h; row++) {
       num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
-      (void)jpeg16_write_scanlines(&cinfo, src_mgr->buffer16, num_scanlines);
-    }
-#else
-    ERREXIT1(&cinfo, JERR_BAD_PRECISION, cinfo.data_precision);
-#endif
-  } else if (cinfo.data_precision == 12) {
-    while (cinfo.next_scanline < cinfo.image_height) {
-      num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
-      (void)jpeg12_write_scanlines(&cinfo, src_mgr->buffer12, num_scanlines);
-    }
-  } else {
-  while (cinfo.next_scanline < cinfo.image_height) {
-    num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
-#if JPEG_RAW_READER
-    if (is_jpeg)
-      (void) jpeg_write_raw_data(&cinfo, src_mgr->plane_pointer, num_scanlines);
-    else
-#endif
+      memcpy(pixbuf + row * row_stride, src_mgr->buffer[0], row_stride);
       (void)jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
     }
+    (*src_mgr->finish_input) (&cinfo, src_mgr);
+    jpeg_finish_compress(&cinfo);
+
+    /* Timed loop: feed from memory buffer */
+    clock_gettime(CLOCK_MONOTONIC, &loop_t0);
+    for (rep = 0; rep < loop_count; rep++) {
+      free(outbuffer);
+      outbuffer = NULL;
+      outsize = 0;
+      jpeg_mem_dest(&cinfo, &outbuffer, &outsize);
+      jpeg_start_compress(&cinfo, TRUE);
+      for (row = 0; row < h; row++) {
+        rowptr = pixbuf + row * row_stride;
+        (void)jpeg_write_scanlines(&cinfo, &rowptr, 1);
+      }
+      jpeg_finish_compress(&cinfo);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &loop_t1);
+
+    {
+      double elapsed = (loop_t1.tv_sec - loop_t0.tv_sec) +
+                       (loop_t1.tv_nsec - loop_t0.tv_nsec) / 1e9;
+      double mpix = (double)w * h * loop_count / 1e6;
+      fprintf(stderr, "%d loops, %.3f s total, %.3f ms/iter, "
+              "%.1f Mpixels/sec\n",
+              loop_count, elapsed, elapsed * 1000.0 / loop_count,
+              mpix / elapsed);
+    }
+    free(pixbuf);
+  } else {
+    /* Normal single-pass compression */
+
+#ifdef CJPEG_FUZZER
+    if (setjmp(myerr.setjmp_buffer))
+      HANDLE_ERROR()
+#endif
+
+    /* Start compressor */
+    jpeg_start_compress(&cinfo, TRUE);
+
+    /* Copy metadata */
+    if (copy_markers) {
+      jpeg_saved_marker_ptr marker;
+
+      /* In the current implementation, we don't actually need to examine the
+       * option flag here; we just copy everything that got saved.
+       * But to avoid confusion, we do not output JFIF and Adobe APP14 markers
+       * if the encoder library already wrote one.
+       */
+      for (marker = src_mgr->marker_list; marker != NULL;
+           marker = marker->next) {
+        if (cinfo.write_JFIF_header &&
+            marker->marker == JPEG_APP0 &&
+            marker->data_length >= 5 &&
+            GETJOCTET(marker->data[0]) == 0x4A &&
+            GETJOCTET(marker->data[1]) == 0x46 &&
+            GETJOCTET(marker->data[2]) == 0x49 &&
+            GETJOCTET(marker->data[3]) == 0x46 &&
+            GETJOCTET(marker->data[4]) == 0)
+          continue;                       /* reject duplicate JFIF */
+        if (cinfo.write_Adobe_marker &&
+            marker->marker == JPEG_APP0+14 &&
+            marker->data_length >= 5 &&
+            GETJOCTET(marker->data[0]) == 0x41 &&
+            GETJOCTET(marker->data[1]) == 0x64 &&
+            GETJOCTET(marker->data[2]) == 0x6F &&
+            GETJOCTET(marker->data[3]) == 0x62 &&
+            GETJOCTET(marker->data[4]) == 0x65)
+          continue;                       /* reject duplicate Adobe */
+        jpeg_write_marker(&cinfo, marker->marker, marker->data,
+                          marker->data_length);
+      }
+    }
+    if (icc_profile != NULL)
+      jpeg_write_icc_profile(&cinfo, icc_profile, (unsigned int)icc_len);
+
+    /* Process data */
+    if (cinfo.data_precision == 16) {
+#ifdef C_LOSSLESS_SUPPORTED
+      while (cinfo.next_scanline < cinfo.image_height) {
+        num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
+        (void)jpeg16_write_scanlines(&cinfo, src_mgr->buffer16,
+                                     num_scanlines);
+      }
+#else
+      ERREXIT1(&cinfo, JERR_BAD_PRECISION, cinfo.data_precision);
+#endif
+    } else if (cinfo.data_precision == 12) {
+      while (cinfo.next_scanline < cinfo.image_height) {
+        num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
+        (void)jpeg12_write_scanlines(&cinfo, src_mgr->buffer12,
+                                     num_scanlines);
+      }
+    } else {
+      while (cinfo.next_scanline < cinfo.image_height) {
+        num_scanlines = (*src_mgr->get_pixel_rows) (&cinfo, src_mgr);
+#if JPEG_RAW_READER
+        if (is_jpeg)
+          (void)jpeg_write_raw_data(&cinfo, src_mgr->plane_pointer,
+                                    num_scanlines);
+        else
+#endif
+          (void)jpeg_write_scanlines(&cinfo, src_mgr->buffer, num_scanlines);
+      }
+    }
+
+    /* Finish compression and close input */
+    (*src_mgr->finish_input) (&cinfo, src_mgr);
+    jpeg_finish_compress(&cinfo);
   }
 
-  /* Finish compression and release memory */
-  (*src_mgr->finish_input) (&cinfo, src_mgr);
-  jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
 
   /* Close files, if we opened them */

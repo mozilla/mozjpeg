@@ -859,6 +859,11 @@ if(NOT BUILD_SHARED_LIBS)
     target_include_directories(djpeg-static PUBLIC ${PNG_INCLUDE_DIR} ${ZLIB_INCLUDE_DIR})
     target_link_libraries(cjpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
     target_link_libraries(djpeg-static ${PNG_LIBRARY} ${ZLIB_LIBRARY})
+    if(UNIX)
+      # libpng.a pulls floor()/pow() from libm, so -lm has to follow it.
+      target_link_libraries(cjpeg-static m)
+      target_link_libraries(djpeg-static m)
+    endif()
   endif()
 
   add_executable(jpegtran-static jpegtran.c cdjpeg.c rdswitch.c transupp.c)

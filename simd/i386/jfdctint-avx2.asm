@@ -122,7 +122,7 @@ F_3_072 equ DESCALE(3299298341, 30 - CONST_BITS)  ; FIX(3.072711026)
 %if %9 == 1
     vpsllw      %1, %7, PASS1_BITS      ; %1=data0_4
 %else
-    vpaddw      %7, %7, [GOTOFF(ebx, PW_DESCALE_P2X)]
+    vpaddsw     %7, %7, [GOTOFF(ebx, PW_DESCALE_P2X)]
     vpsraw      %1, %7, PASS1_BITS      ; %1=data0_4
 %endif
 

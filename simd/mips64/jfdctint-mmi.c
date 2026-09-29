@@ -362,8 +362,8 @@ static uint64_t const_value[] = {
   out0 = _mm_adds_pi16(tmp10, tmp11);         /* out0=tmp10+tmp11 */ \
   out4 = _mm_subs_pi16(tmp10, tmp11);         /* out4=tmp10-tmp11 */ \
   \
-  out0 = _mm_add_pi16(out0, PW_DESCALE_P2X); \
-  out4 = _mm_add_pi16(out4, PW_DESCALE_P2X); \
+  out0 = _mm_adds_pi16(out0, PW_DESCALE_P2X); \
+  out4 = _mm_adds_pi16(out4, PW_DESCALE_P2X); \
   out0 = _mm_srai_pi16(out0, PASS1_BITS); \
   out4 = _mm_srai_pi16(out4, PASS1_BITS); \
   \

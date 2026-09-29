@@ -274,8 +274,12 @@ void jsimd_fdct_islow_neon(DCTELEM *data)
   tmp11 = vaddq_s16(tmp1, tmp2);
   tmp12 = vsubq_s16(tmp1, tmp2);
 
-  row0 = vrshrq_n_s16(vaddq_s16(tmp10, tmp11), PASS1_BITS);
-  row4 = vrshrq_n_s16(vsubq_s16(tmp10, tmp11), PASS1_BITS);
+  /* Use saturating arithmetic for the final butterfly to prevent 16-bit
+   * overflow when overshoot deringing produces large uniform column values.
+   * See https://github.com/mozilla/mozjpeg/issues/444
+   */
+  row0 = vrshrq_n_s16(vqaddq_s16(tmp10, tmp11), PASS1_BITS);
+  row4 = vrshrq_n_s16(vqsubq_s16(tmp10, tmp11), PASS1_BITS);
 
   tmp12_add_tmp13 = vaddq_s16(tmp12, tmp13);
   z1_l = vmull_lane_s16(vget_low_s16(tmp12_add_tmp13), consts.val[0], 2);

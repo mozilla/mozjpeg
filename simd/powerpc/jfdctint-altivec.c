@@ -168,11 +168,14 @@
   tmp11 = vec_add(tmp1, tmp2); \
   tmp12 = vec_sub(tmp1, tmp2); \
   \
-  out0  = vec_add(tmp10, tmp11); \
-  out0  = vec_add(out0, pw_descale_p2x); \
+  /* Use saturating add/sub to prevent 16-bit overflow when overshoot \
+   * deringing produces large uniform column values (issue #444).     \
+   */ \
+  out0  = vec_adds(tmp10, tmp11); \
+  out0  = vec_adds(out0, pw_descale_p2x); \
   out0  = vec_sra(out0, pass1_bits); \
-  out4  = vec_sub(tmp10, tmp11); \
-  out4  = vec_add(out4, pw_descale_p2x); \
+  out4  = vec_subs(tmp10, tmp11); \
+  out4  = vec_adds(out4, pw_descale_p2x); \
   out4  = vec_sra(out4, pass1_bits); \
   \
   DO_FDCT_COMMON(2); \

@@ -118,11 +118,11 @@ F_3_072 equ DESCALE(3299298341, 30 - CONST_BITS)  ; FIX(3.072711026)
 
     vperm2i128  %7, %1, %1, 0x01        ; %7=tmp11_10
     vpsignw     %1, %1, [rel PW_1_NEG1]  ; %1=tmp10_neg11
-    vpaddw      %7, %7, %1              ; %7=(tmp10+tmp11)_(tmp10-tmp11)
+    vpaddsw     %7, %7, %1              ; %7=(tmp10+tmp11)_(tmp10-tmp11)
 %if %9 == 1
     vpsllw      %1, %7, PASS1_BITS      ; %1=data0_4
 %else
-    vpaddw      %7, %7, [rel PW_DESCALE_P2X]
+    vpaddsw     %7, %7, [rel PW_DESCALE_P2X]
     vpsraw      %1, %7, PASS1_BITS      ; %1=data0_4
 %endif
 

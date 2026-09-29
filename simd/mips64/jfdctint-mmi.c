@@ -356,11 +356,14 @@ static uint64_t const_value[] = {
   tmp11 = _mm_add_pi16(tmp1, tmp2);           /* tmp11=tmp1+tmp2 */ \
   tmp12 = _mm_sub_pi16(tmp1, tmp2);           /* tmp12=tmp1-tmp2 */ \
   \
-  out0 = _mm_add_pi16(tmp10, tmp11);          /* out0=tmp10+tmp11 */ \
-  out4 = _mm_sub_pi16(tmp10, tmp11);          /* out4=tmp10-tmp11 */ \
+  /* Use saturating add/sub to prevent 16-bit overflow when overshoot \
+   * deringing produces large uniform column values (issue #444).     \
+   */ \
+  out0 = _mm_adds_pi16(tmp10, tmp11);         /* out0=tmp10+tmp11 */ \
+  out4 = _mm_subs_pi16(tmp10, tmp11);         /* out4=tmp10-tmp11 */ \
   \
-  out0 = _mm_add_pi16(out0, PW_DESCALE_P2X); \
-  out4 = _mm_add_pi16(out4, PW_DESCALE_P2X); \
+  out0 = _mm_adds_pi16(out0, PW_DESCALE_P2X); \
+  out4 = _mm_adds_pi16(out4, PW_DESCALE_P2X); \
   out0 = _mm_srai_pi16(out0, PASS1_BITS); \
   out4 = _mm_srai_pi16(out4, PASS1_BITS); \
   \

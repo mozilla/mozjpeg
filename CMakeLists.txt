@@ -1756,6 +1756,21 @@ foreach(libtype ${TEST_LIBTYPES})
     set_tests_properties(example-${sample_bits}bit-${libtype}-decompress-cmp
       PROPERTIES DEPENDS example-${sample_bits}bit-${libtype}-decompress)
 
+    # Regression test for issue #444: overshoot deringing + SIMD DCT overflow.
+    # An 8x8 half-black/half-white image triggers maximum overshoot, which
+    # overflows the 16-bit column pass butterfly in the SIMD forward DCT.
+    # Without the fix, the block's brightness is completely inverted.
+    # NOTE: no -revert flag, so mozjpeg extensions (deringing) are active.
+    if(sample_bits EQUAL 8)
+      add_test(NAME ${cjpeg}-${libtype}-issue444
+        COMMAND cjpeg${suffix} -dct int -quality 25 -sample 1x1
+          -outfile ${testout}_issue444.jpg ${TESTIMAGES}/issue444.ppm)
+      add_bittest(${djpeg} issue444 "-dct;int;-ppm"
+        ${testout}_issue444.ppm ${testout}_issue444.jpg
+        ca2f28ac51471eba0e0d30bc7492901c
+        ${cjpeg}-${libtype}-issue444)
+    endif()
+
   endforeach()
 
 endforeach()

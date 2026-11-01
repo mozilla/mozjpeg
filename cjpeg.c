@@ -247,6 +247,8 @@ usage(void)
   fprintf(stderr, "  -notrellis     Disable trellis optimization\n");
   fprintf(stderr, "  -trellis-dc    Enable trellis optimization of DC coefficients (default)\n");
   fprintf(stderr, "  -notrellis-dc  Disable trellis optimization of DC coefficients\n");
+  fprintf(stderr, "  -trellis-threads N  Trellis-quantize on up to N threads (0 = one per CPU;\n");
+  fprintf(stderr, "                 default 1).  The output is the same for any N.\n");
   fprintf(stderr, "  -tune-psnr     Tune trellis optimization for PSNR\n");
   fprintf(stderr, "  -tune-hvs-psnr Tune trellis optimization for PSNR-HVS (default)\n");
   fprintf(stderr, "  -tune-ssim     Tune trellis optimization for SSIM\n");
@@ -671,6 +673,13 @@ parse_switches(j_compress_ptr cinfo, int argc, char **argv,
       }
       jpeg_c_set_float_param(cinfo, JFLOAT_TRELLIS_DELTA_DC_WEIGHT, atof(argv[argn]));
       
+    } else if (keymatch(arg, "trellis-threads", 10)) {
+      if (++argn >= argc) {      /* advance to next argument */
+        fprintf(stderr, "%s: missing argument for trellis-threads\n", progname);
+        usage();
+      }
+      jpeg_c_set_int_param(cinfo, JINT_TRELLIS_THREADS, atoi(argv[argn]));
+
     } else if (keymatch(arg, "trellis-dc", 9)) {
       /* enable DC trellis quantization */
       jpeg_c_set_bool_param(cinfo, JBOOLEAN_TRELLIS_QUANT_DC, TRUE);

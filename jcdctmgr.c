@@ -925,18 +925,43 @@ static const float jpeg_lambda_weights_csf_luma[64] = {
   0.43454f, 0.42146f, 0.34609f, 0.24072f, 0.15975f, 0.10701f, 0.07558f, 0.05875f,
 };
 
-#define DC_TRELLIS_MAX_CANDIDATES 9
-
 LOCAL(int) get_num_dc_trellis_candidates(int dc_quantval) {
   /* Higher qualities can tolerate higher DC distortion */
   return MIN(DC_TRELLIS_MAX_CANDIDATES, (2 + 60 / dc_quantval)|1);
 }
 
 #if BITS_IN_JSAMPLE == 8
+GLOBAL(trellis_scratch *)
+jalloc_trellis_scratch(j_compress_ptr cinfo, JDIMENSION max_blocks)
+{
+  trellis_scratch *scratch;
+  size_t n = (size_t)max_blocks + 1;
+  int i;
+
+  scratch = (trellis_scratch *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr)cinfo, JPOOL_IMAGE,
+                                sizeof(trellis_scratch));
+#define ALLOC_SCRATCH(type) \
+  (type *)(*cinfo->mem->alloc_large) ((j_common_ptr)cinfo, JPOOL_IMAGE, \
+                                      n * sizeof(type))
+  scratch->accumulated_zero_block_cost = ALLOC_SCRATCH(float);
+  scratch->accumulated_block_cost = ALLOC_SCRATCH(float);
+  scratch->block_run_start = ALLOC_SCRATCH(int);
+  scratch->requires_eob = ALLOC_SCRATCH(int);
+  for (i = 0; i < DC_TRELLIS_MAX_CANDIDATES; i++) {
+    scratch->accumulated_dc_cost[i] = ALLOC_SCRATCH(float);
+    scratch->dc_cost_backtrack[i] = ALLOC_SCRATCH(int);
+    scratch->dc_candidate[i] = ALLOC_SCRATCH(JCOEF);
+  }
+#undef ALLOC_SCRATCH
+  return scratch;
+}
+
 GLOBAL(void)
 quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
-                 JBLOCKROW coef_blocks_above, JBLOCKROW src_above)
+                 JBLOCKROW coef_blocks_above, JBLOCKROW src_above,
+                 trellis_scratch *scratch)
 {
   int i, j, k, l;
   float accumulated_zero_dist[DCTSIZE2];
@@ -954,10 +979,10 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
                             jpeg_lambda_weights_csf_luma :
                             jpeg_lambda_weights_flat;
   int Ss, Se;
-  float *accumulated_zero_block_cost = NULL;
-  float *accumulated_block_cost = NULL;
-  int *block_run_start = NULL;
-  int *requires_eob = NULL;
+  float *accumulated_zero_block_cost = scratch->accumulated_zero_block_cost;
+  float *accumulated_block_cost = scratch->accumulated_block_cost;
+  int *block_run_start = scratch->block_run_start;
+  int *requires_eob = scratch->requires_eob;
   int has_eob;
   float cost_all_zeros;
   float best_cost_skip;
@@ -965,9 +990,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   int zero_run;
   int run_bits;
   int rate;
-  float *accumulated_dc_cost[DC_TRELLIS_MAX_CANDIDATES];
-  int *dc_cost_backtrack[DC_TRELLIS_MAX_CANDIDATES];
-  JCOEF *dc_candidate[DC_TRELLIS_MAX_CANDIDATES];
+  float **accumulated_dc_cost = scratch->accumulated_dc_cost;
+  int **dc_cost_backtrack = scratch->dc_cost_backtrack;
+  JCOEF **dc_candidate = scratch->dc_candidate;
   int mode = 1;
   float lambda_table[DCTSIZE2];
   const int dc_trellis_candidates = get_num_dc_trellis_candidates(qtbl->quantval[0]);
@@ -979,33 +1004,9 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
   if (Se < Ss)
     return;
   if (cinfo->master->trellis_eob_opt) {
-    accumulated_zero_block_cost = (float *)malloc((num_blocks + 1) * sizeof(float));
-    accumulated_block_cost = (float *)malloc((num_blocks + 1) * sizeof(float));
-    block_run_start = (int *)malloc(num_blocks * sizeof(int));
-    requires_eob = (int *)malloc((num_blocks + 1) * sizeof(int));
-    if (!accumulated_zero_block_cost ||
-        !accumulated_block_cost ||
-        !block_run_start ||
-        !requires_eob) {
-      ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
-    }
-
     accumulated_zero_block_cost[0] = 0;
     accumulated_block_cost[0] = 0;
     requires_eob[0] = 0;
-  }
-  
-  if (cinfo->master->trellis_quant_dc) {
-    for (i = 0; i < dc_trellis_candidates; i++) {
-      accumulated_dc_cost[i] = (float *)malloc(num_blocks * sizeof(float));
-      dc_cost_backtrack[i] = (int *)malloc(num_blocks * sizeof(int));
-      dc_candidate[i] = (JCOEF *)malloc(num_blocks * sizeof(JCOEF));
-      if (!accumulated_dc_cost[i] ||
-          !dc_cost_backtrack[i] ||
-          !dc_candidate[i]) {
-        ERREXIT(cinfo, JERR_OUT_OF_MEMORY);
-      }
-    }
   }
   
   norm = 0.0;
@@ -1290,10 +1291,6 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
       last_block = block_run_start[bi]-1;
       bi--;
     }
-    free(accumulated_zero_block_cost);
-    free(accumulated_block_cost);
-    free(block_run_start);
-    free(requires_eob);
   }
   
   if (cinfo->master->trellis_q_opt) {
@@ -1318,12 +1315,6 @@ quantize_trellis(j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actb
 
     /* Save DC predictor */
     *last_dc_val = coef_blocks[num_blocks-1][0];
-
-    for (i = 0; i < dc_trellis_candidates; i++) {
-      free(accumulated_dc_cost[i]);
-      free(dc_cost_backtrack[i]);
-      free(dc_candidate[i]);
-    }
   }
 
 }

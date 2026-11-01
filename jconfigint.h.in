@@ -10,6 +10,9 @@
 /* How to obtain function inlining. */
 #define INLINE  @INLINE@
 
+/* Define if trellis quantization can use multiple threads (pthreads). */
+#cmakedefine WITH_TRELLIS_THREADS 1
+
 /* How to obtain thread-local storage */
 #define THREAD_LOCAL  @THREAD_LOCAL@
 

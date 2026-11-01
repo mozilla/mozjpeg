@@ -40,10 +40,29 @@ typedef struct {
 EXTERN(void) jpeg_make_c_derived_tbl(j_compress_ptr cinfo, boolean isDC,
                                      int tblno, c_derived_tbl **pdtbl);
 
+#define DC_TRELLIS_MAX_CANDIDATES 9
+
+/* Working memory for quantize_trellis(), allocated once rather than per row
+ * so that rows can be quantized on threads that must not allocate or fail.
+ */
+typedef struct {
+  float *accumulated_zero_block_cost;
+  float *accumulated_block_cost;
+  int *block_run_start;
+  int *requires_eob;
+  float *accumulated_dc_cost[DC_TRELLIS_MAX_CANDIDATES];
+  int *dc_cost_backtrack[DC_TRELLIS_MAX_CANDIDATES];
+  JCOEF *dc_candidate[DC_TRELLIS_MAX_CANDIDATES];
+} trellis_scratch;
+
+EXTERN(trellis_scratch *) jalloc_trellis_scratch(j_compress_ptr cinfo,
+                                                 JDIMENSION max_blocks);
+
 /* Generate an optimal table definition given the specified counts */
 EXTERN(void) quantize_trellis
         (j_compress_ptr cinfo, c_derived_tbl *dctbl, c_derived_tbl *actbl, JBLOCKROW coef_blocks, JBLOCKROW src, JDIMENSION num_blocks,
                  JQUANT_TBL * qtbl, double *norm_src, double *norm_coef, JCOEF *last_dc_val,
-         JBLOCKROW coef_blocks_above, JBLOCKROW src_above);
+         JBLOCKROW coef_blocks_above, JBLOCKROW src_above,
+         trellis_scratch *scratch);
 EXTERN(void) jpeg_gen_optimal_table(j_compress_ptr cinfo, JHUFF_TBL *htbl,
                                     long freq[]);

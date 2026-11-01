@@ -157,6 +157,7 @@ jpeg_c_int_param_supported (const j_compress_ptr cinfo, J_INT_PARAM param)
   case JINT_TRELLIS_NUM_LOOPS:
   case JINT_BASE_QUANT_TBL_IDX:
   case JINT_DC_SCAN_OPT_MODE:
+  case JINT_TRELLIS_THREADS:
     return TRUE;
   }
 
@@ -191,6 +192,11 @@ jpeg_c_set_int_param (j_compress_ptr cinfo, J_INT_PARAM param, int value)
   case JINT_DC_SCAN_OPT_MODE:
     cinfo->master->dc_scan_opt_mode = value;
     break;
+  case JINT_TRELLIS_THREADS:
+    if (value < 0)
+      ERREXIT(cinfo, JERR_BAD_PARAM_VALUE);
+    cinfo->master->trellis_threads = value;
+    break;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }
@@ -211,6 +217,8 @@ jpeg_c_get_int_param (const j_compress_ptr cinfo, J_INT_PARAM param)
     return cinfo->master->quant_tbl_master_idx;
   case JINT_DC_SCAN_OPT_MODE:
     return cinfo->master->dc_scan_opt_mode;
+  case JINT_TRELLIS_THREADS:
+    return cinfo->master->trellis_threads;
   default:
     ERREXIT(cinfo, JERR_BAD_PARAM);
   }

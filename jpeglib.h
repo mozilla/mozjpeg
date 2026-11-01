@@ -344,7 +344,8 @@ typedef enum {
   JINT_TRELLIS_FREQ_SPLIT = 0x6FAFF127, /* splitting point for frequency in trellis quantization */
   JINT_TRELLIS_NUM_LOOPS = 0xB63EBF39, /* number of trellis loops */
   JINT_BASE_QUANT_TBL_IDX = 0x44492AB1, /* base quantization table index */
-  JINT_DC_SCAN_OPT_MODE = 0x0BE7AD3C /* DC scan optimization mode */
+  JINT_DC_SCAN_OPT_MODE = 0x0BE7AD3C, /* DC scan optimization mode */
+  JINT_TRELLIS_THREADS = 0x759C6A9D /* threads for trellis quantization: 1 (default) = none, 0 = one per CPU */
 } J_INT_PARAM;
 
 

@@ -19,6 +19,13 @@
 #include "jpeglib.h"
 #include "jsamplecomp.h"
 #include "jchuff.h"
+#ifdef WITH_TRELLIS_THREADS
+#include <pthread.h>
+#include <unistd.h>
+#endif
+
+/* Upper bound on JINT_TRELLIS_THREADS */
+#define MAX_TRELLIS_THREADS  64
 
 /* We use a full-image coefficient buffer when doing Huffman optimization,
  * and also for writing multiple-scan JPEG files.  In all cases, the DCT
@@ -57,6 +64,9 @@ typedef struct {
 
   /* when using trellis quantization, need to keep a copy of all unquantized coefficients */
   jvirt_barray_ptr whole_image_uq[MAX_COMPONENTS];
+
+  /* Trellis quantization working memory, one per thread */
+  trellis_scratch *scratch[MAX_TRELLIS_THREADS];
 
 } my_coef_controller;
 
@@ -353,36 +363,297 @@ compress_first_pass(j_compress_ptr cinfo, _JSAMPIMAGE input_buf)
 }
 
 #if BITS_IN_JSAMPLE == 8
+/*
+ * Trellis-quantize one iMCU row of one component.  An iMCU row depends only
+ * on its own unquantized coefficients and on Huffman tables that are fixed for
+ * the pass: the DC predictor restarts at 0, and the block row above is only
+ * consulted within the iMCU row.  That is what lets rows run in parallel.
+ */
+LOCAL(void)
+trellis_iMCU_row(j_compress_ptr cinfo, jpeg_component_info *compptr,
+                 c_derived_tbl *dctbl, c_derived_tbl *actbl, void *arith_r,
+                 trellis_scratch *scratch, JBLOCKARRAY buffer,
+                 JBLOCKARRAY buffer_dst, JDIMENSION iMCU_row_num)
+{
+  JDIMENSION last_iMCU_row = cinfo->total_iMCU_rows - 1;
+  JDIMENSION blocks_across, MCUs_across, MCUindex;
+  int bi, h_samp_factor, block_row, block_rows, ndummy;
+  JCOEF lastDC;
+  JBLOCKROW thisblockrow, lastblockrow;
+
+  /* Count non-dummy DCT block rows in this iMCU row. */
+  if (iMCU_row_num < last_iMCU_row)
+    block_rows = compptr->v_samp_factor;
+  else {
+    /* NB: can't use last_row_height here, since may not be set! */
+    block_rows = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
+    if (block_rows == 0) block_rows = compptr->v_samp_factor;
+  }
+  blocks_across = compptr->width_in_blocks;
+  h_samp_factor = compptr->h_samp_factor;
+  /* Count number of dummy blocks to be added at the right margin. */
+  ndummy = (int) (blocks_across % h_samp_factor);
+  if (ndummy > 0)
+    ndummy = h_samp_factor - ndummy;
+
+  lastDC = 0;
+
+  /* Perform DCT for all non-dummy blocks in this iMCU row.  Each call
+   * on forward_DCT processes a complete horizontal row of DCT blocks.
+   */
+  for (block_row = 0; block_row < block_rows; block_row++) {
+    thisblockrow = buffer[block_row];
+    lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
+#ifdef C_ARITH_CODING_SUPPORTED
+    if (cinfo->arith_code)
+      quantize_trellis_arith(cinfo, (arith_rates *) arith_r, thisblockrow,
+                             buffer_dst[block_row], blocks_across,
+                             cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
+                             cinfo->master->norm_src[compptr->quant_tbl_no],
+                             cinfo->master->norm_coef[compptr->quant_tbl_no],
+                             &lastDC, lastblockrow, buffer_dst[block_row-1]);
+    else
+#endif
+      quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
+                       buffer_dst[block_row], blocks_across,
+                       cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
+                       cinfo->master->norm_src[compptr->quant_tbl_no],
+                       cinfo->master->norm_coef[compptr->quant_tbl_no],
+                       &lastDC, lastblockrow, buffer_dst[block_row-1],
+                       scratch);
+
+    if (ndummy > 0) {
+      /* Create dummy blocks at the right edge of the image. */
+      thisblockrow += blocks_across; /* => first dummy block */
+      jzero_far((void *) thisblockrow, ndummy * sizeof(JBLOCK));
+      lastDC = thisblockrow[-1][0];
+      for (bi = 0; bi < ndummy; bi++) {
+        thisblockrow[bi][0] = lastDC;
+      }
+    }
+  }
+  /* If at end of image, create dummy block rows as needed.
+   * The tricky part here is that within each MCU, we want the DC values
+   * of the dummy blocks to match the last real block's DC value.
+   * This squeezes a few more bytes out of the resulting file...
+   */
+  if (iMCU_row_num == last_iMCU_row) {
+    blocks_across += ndummy;  /* include lower right corner */
+    MCUs_across = blocks_across / h_samp_factor;
+    for (block_row = block_rows; block_row < compptr->v_samp_factor;
+         block_row++) {
+      thisblockrow = buffer[block_row];
+      lastblockrow = buffer[block_row-1];
+      jzero_far((void *) thisblockrow,
+                (size_t) (blocks_across * sizeof(JBLOCK)));
+      for (MCUindex = 0; MCUindex < MCUs_across; MCUindex++) {
+        lastDC = lastblockrow[h_samp_factor-1][0];
+        for (bi = 0; bi < h_samp_factor; bi++) {
+          thisblockrow[bi][0] = lastDC;
+        }
+        thisblockrow += h_samp_factor; /* advance to next MCU in row */
+        lastblockrow += h_samp_factor;
+      }
+    }
+  }
+}
+
+/* Scratch space for one trellis thread, allocated on first use and reused by
+ * every later pass.
+ */
+LOCAL(trellis_scratch *)
+get_trellis_scratch(j_compress_ptr cinfo, int thread)
+{
+  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
+  JDIMENSION max_blocks = 0;
+  int ci;
+
+  if (coef->scratch[thread] == NULL) {
+    for (ci = 0; ci < cinfo->num_components; ci++)
+      max_blocks = MAX(max_blocks, cinfo->comp_info[ci].width_in_blocks);
+    coef->scratch[thread] = jalloc_trellis_scratch(cinfo, max_blocks);
+  }
+  return coef->scratch[thread];
+}
+
+#ifdef WITH_TRELLIS_THREADS
+
+typedef struct {
+  j_compress_ptr cinfo;
+  c_derived_tbl dctbl[MAX_COMPS_IN_SCAN], actbl[MAX_COMPS_IN_SCAN];
+  JBLOCKARRAY *buffer, *buffer_dst;     /* per job: component-major */
+  JDIMENSION num_jobs, next_job;
+  pthread_mutex_t lock;
+} trellis_pass;
+
+typedef struct {
+  trellis_pass *pass;
+  trellis_scratch *scratch;
+} trellis_worker;
+
+/* Runs on each thread, including the calling one.  Nothing here may call the
+ * error handler: it would longjmp (or exit) on a thread that does not own
+ * cinfo.  That is why the scratch space is allocated before the threads start.
+ */
+static void *
+trellis_worker_main(void *arg)
+{
+  trellis_worker *worker = (trellis_worker *) arg;
+  trellis_pass *pass = worker->pass;
+  j_compress_ptr cinfo = pass->cinfo;
+  JDIMENSION job, rows = cinfo->total_iMCU_rows;
+  int ci;
+
+  for (;;) {
+    pthread_mutex_lock(&pass->lock);
+    job = pass->next_job++;
+    pthread_mutex_unlock(&pass->lock);
+    if (job >= pass->num_jobs)
+      break;
+    ci = (int) (job / rows);
+    trellis_iMCU_row(cinfo, cinfo->cur_comp_info[ci], &pass->dctbl[ci],
+                     &pass->actbl[ci], NULL, worker->scratch,
+                     pass->buffer[job], pass->buffer_dst[job], job % rows);
+  }
+  return NULL;
+}
+
+LOCAL(int)
+trellis_thread_count(j_compress_ptr cinfo)
+{
+  int threads = cinfo->master->trellis_threads;
+
+  if (threads == 0) {
+    long cores = sysconf(_SC_NPROCESSORS_ONLN);
+    threads = cores > 0 ? (int) cores : 1;
+  }
+  return MIN(threads, MAX_TRELLIS_THREADS);
+}
+
+/*
+ * Trellis-quantize every iMCU row of the scan up front, across threads.  Rows
+ * are independent (see trellis_iMCU_row) and each writes only its own blocks,
+ * so the result is the single-threaded one byte for byte.  Returns FALSE,
+ * having done nothing, when the pass must run row by row instead:
+ * trellis_q_opt sums floats across rows, so their order matters, and
+ * arithmetic coding is not parallelized.
+ *
+ * The virtual arrays are accessed here, serially, because access_virt_barray
+ * is not thread-safe.  Holding every row's pointers at once is valid because
+ * this library never uses a backing store: the arrays are fully in memory.
+ */
+LOCAL(boolean)
+trellis_all_rows(j_compress_ptr cinfo)
+{
+  my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
+  JDIMENSION rows = cinfo->total_iMCU_rows, row, job;
+  trellis_pass pass;
+  trellis_worker workers[MAX_TRELLIS_THREADS];
+  pthread_t threads[MAX_TRELLIS_THREADS];
+  int num_threads, started, ci, i;
+
+  if (cinfo->arith_code || cinfo->master->trellis_q_opt)
+    return FALSE;
+  pass.num_jobs = rows * (JDIMENSION) cinfo->comps_in_scan;
+  num_threads = trellis_thread_count(cinfo);
+  if ((JDIMENSION) num_threads > pass.num_jobs)
+    num_threads = (int) pass.num_jobs;
+  if (num_threads < 2)
+    return FALSE;
+
+  pass.cinfo = cinfo;
+  pass.next_job = 0;
+  pass.buffer = (JBLOCKARRAY *)
+    (*cinfo->mem->alloc_small) ((j_common_ptr) cinfo, JPOOL_IMAGE,
+                                2 * pass.num_jobs * sizeof(JBLOCKARRAY));
+  pass.buffer_dst = pass.buffer + pass.num_jobs;
+  for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
+    jpeg_component_info *compptr = cinfo->cur_comp_info[ci];
+    c_derived_tbl *dctbl = &pass.dctbl[ci], *actbl = &pass.actbl[ci];
+
+    jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
+    jpeg_make_c_derived_tbl(cinfo, FALSE, compptr->ac_tbl_no, &actbl);
+    for (row = 0; row < rows; row++) {
+      job = (JDIMENSION) ci * rows + row;
+      pass.buffer[job] = (*cinfo->mem->access_virt_barray)
+        ((j_common_ptr) cinfo, coef->whole_image[compptr->component_index],
+         row * compptr->v_samp_factor, (JDIMENSION) compptr->v_samp_factor,
+         TRUE);
+      pass.buffer_dst[job] = (*cinfo->mem->access_virt_barray)
+        ((j_common_ptr) cinfo, coef->whole_image_uq[compptr->component_index],
+         row * compptr->v_samp_factor, (JDIMENSION) compptr->v_samp_factor,
+         TRUE);
+    }
+  }
+  for (i = 0; i < num_threads; i++) {
+    workers[i].pass = &pass;
+    workers[i].scratch = get_trellis_scratch(cinfo, i);
+  }
+
+  if (pthread_mutex_init(&pass.lock, NULL) != 0)
+    return FALSE;
+  /* If a thread fails to start, the others take its share of the rows. */
+  for (started = 1; started < num_threads; started++)
+    if (pthread_create(&threads[started], NULL, trellis_worker_main,
+                       &workers[started]) != 0)
+      break;
+  trellis_worker_main(&workers[0]);
+  for (i = 1; i < started; i++)
+    pthread_join(threads[i], NULL);
+  pthread_mutex_destroy(&pass.lock);
+  return TRUE;
+}
+
+#else
+
+LOCAL(boolean)
+trellis_all_rows(j_compress_ptr cinfo)
+{
+  return FALSE;
+}
+
+#endif /* WITH_TRELLIS_THREADS */
+
+METHODDEF(boolean)
+compress_trellis_pass_emit(j_compress_ptr cinfo, JSAMPIMAGE input_buf)
+{
+  /* Every row was quantized when the pass started; only emit them now. */
+  return compress_output(cinfo, input_buf);
+}
+
 METHODDEF(boolean)
 compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 {
   my_coef_ptr coef = (my_coef_ptr) cinfo->coef;
-  JDIMENSION last_iMCU_row = cinfo->total_iMCU_rows - 1;
-  JDIMENSION blocks_across, MCUs_across, MCUindex;
-  int bi, ci, h_samp_factor, block_row, block_rows, ndummy;
-  JCOEF lastDC;
+  int ci;
   jpeg_component_info *compptr;
   JBLOCKARRAY buffer;
-  JBLOCKROW thisblockrow, lastblockrow;
   JBLOCKARRAY buffer_dst;
+
+  if (coef->iMCU_row_num == 0 && trellis_all_rows(cinfo)) {
+    coef->pub.compress_data = compress_trellis_pass_emit;
+    return compress_output(cinfo, input_buf);
+  }
 
   for (ci = 0; ci < cinfo->comps_in_scan; ci++) {
     c_derived_tbl dctbl_data;
     c_derived_tbl *dctbl = &dctbl_data;
     c_derived_tbl actbl_data;
     c_derived_tbl *actbl = &actbl_data;
-    
+    void *arith_r = NULL;
+
 #ifdef C_ARITH_CODING_SUPPORTED
     arith_rates arith_r_data;
-    arith_rates *arith_r = &arith_r_data;
 #endif
-    
+
     compptr = cinfo->cur_comp_info[ci];
 
 #ifdef C_ARITH_CODING_SUPPORTED
-    if (cinfo->arith_code)
-      jget_arith_rates(cinfo, compptr->dc_tbl_no, compptr->ac_tbl_no, arith_r);
-    else
+    if (cinfo->arith_code) {
+      jget_arith_rates(cinfo, compptr->dc_tbl_no, compptr->ac_tbl_no,
+                       &arith_r_data);
+      arith_r = &arith_r_data;
+    } else
 #endif
     {
       jpeg_make_c_derived_tbl(cinfo, TRUE, compptr->dc_tbl_no, &dctbl);
@@ -399,81 +670,10 @@ compress_trellis_pass (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
     ((j_common_ptr) cinfo, coef->whole_image_uq[compptr->component_index],
      coef->iMCU_row_num * compptr->v_samp_factor,
      (JDIMENSION)compptr->v_samp_factor, TRUE);
-    
-    /* Count non-dummy DCT block rows in this iMCU row. */
-    if (coef->iMCU_row_num < last_iMCU_row)
-      block_rows = compptr->v_samp_factor;
-    else {
-      /* NB: can't use last_row_height here, since may not be set! */
-      block_rows = (int) (compptr->height_in_blocks % compptr->v_samp_factor);
-      if (block_rows == 0) block_rows = compptr->v_samp_factor;
-    }
-    blocks_across = compptr->width_in_blocks;
-    h_samp_factor = compptr->h_samp_factor;
-    /* Count number of dummy blocks to be added at the right margin. */
-    ndummy = (int) (blocks_across % h_samp_factor);
-    if (ndummy > 0)
-      ndummy = h_samp_factor - ndummy;
-    
-    lastDC = 0;
 
-    /* Perform DCT for all non-dummy blocks in this iMCU row.  Each call
-     * on forward_DCT processes a complete horizontal row of DCT blocks.
-     */
-    for (block_row = 0; block_row < block_rows; block_row++) {
-      thisblockrow = buffer[block_row];
-      lastblockrow = (block_row > 0) ? buffer[block_row-1] : NULL;
-#ifdef C_ARITH_CODING_SUPPORTED
-      if (cinfo->arith_code)
-        quantize_trellis_arith(cinfo, arith_r, thisblockrow,
-                               buffer_dst[block_row], blocks_across,
-                               cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
-                               cinfo->master->norm_src[compptr->quant_tbl_no],
-                               cinfo->master->norm_coef[compptr->quant_tbl_no],
-                               &lastDC, lastblockrow, buffer_dst[block_row-1]);
-      else
-#endif
-        quantize_trellis(cinfo, dctbl, actbl, thisblockrow,
-                         buffer_dst[block_row], blocks_across,
-                         cinfo->quant_tbl_ptrs[compptr->quant_tbl_no],
-                         cinfo->master->norm_src[compptr->quant_tbl_no],
-                         cinfo->master->norm_coef[compptr->quant_tbl_no],
-                         &lastDC, lastblockrow, buffer_dst[block_row-1]);
-      
-      if (ndummy > 0) {
-        /* Create dummy blocks at the right edge of the image. */
-        thisblockrow += blocks_across; /* => first dummy block */
-        jzero_far((void *) thisblockrow, ndummy * sizeof(JBLOCK));
-        lastDC = thisblockrow[-1][0];
-        for (bi = 0; bi < ndummy; bi++) {
-          thisblockrow[bi][0] = lastDC;
-        }
-      }
-    }
-    /* If at end of image, create dummy block rows as needed.
-     * The tricky part here is that within each MCU, we want the DC values
-     * of the dummy blocks to match the last real block's DC value.
-     * This squeezes a few more bytes out of the resulting file...
-     */
-    if (coef->iMCU_row_num == last_iMCU_row) {
-      blocks_across += ndummy;  /* include lower right corner */
-      MCUs_across = blocks_across / h_samp_factor;
-      for (block_row = block_rows; block_row < compptr->v_samp_factor;
-           block_row++) {
-        thisblockrow = buffer[block_row];
-        lastblockrow = buffer[block_row-1];
-        jzero_far((void *) thisblockrow,
-                  (size_t) (blocks_across * sizeof(JBLOCK)));
-        for (MCUindex = 0; MCUindex < MCUs_across; MCUindex++) {
-          lastDC = lastblockrow[h_samp_factor-1][0];
-          for (bi = 0; bi < h_samp_factor; bi++) {
-            thisblockrow[bi][0] = lastDC;
-          }
-          thisblockrow += h_samp_factor; /* advance to next MCU in row */
-          lastblockrow += h_samp_factor;
-        }
-      }
-    }
+    trellis_iMCU_row(cinfo, compptr, dctbl, actbl, arith_r,
+                     get_trellis_scratch(cinfo, 0), buffer, buffer_dst,
+                     coef->iMCU_row_num);
   }
 
   /* NB: compress_output will increment iMCU_row_num if successful.

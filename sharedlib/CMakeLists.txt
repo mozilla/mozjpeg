@@ -53,6 +53,9 @@ add_library(jpeg SHARED ${JPEG_SRCS} ${DEFFILE} ${SIMD_TARGET_OBJECTS}
 if(UNIX)
   target_link_libraries(jpeg m)
 endif()
+if(WITH_TRELLIS_THREADS)
+  target_link_libraries(jpeg Threads::Threads)
+endif()
 
 set_target_properties(jpeg PROPERTIES SOVERSION ${SO_MAJOR_VERSION}
   VERSION ${SO_MAJOR_VERSION}.${SO_AGE}.${SO_MINOR_VERSION})
